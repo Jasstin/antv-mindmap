@@ -1,0 +1,24 @@
+{
+  "name": "mindmap",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@antv/g6": "^4.6.4",
+    "lodash": "^4.17.21",
+    "vue": "^3.2.25"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.182",
+    "@vitejs/plugin-vue": "^2.3.1",
+    "sass": "^1.51.0",
+    "string-hash": "^1.1.3",
+    "typescript": "^4.5.4",
+    "vite": "^2.9.5",
+    "vue-tsc": "^0.34.7"
+  }
+}
