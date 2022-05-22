@@ -41,7 +41,7 @@ export const edit = (id: string) => {
     const {name, type, fontSize, width, height} = NodeData._cfg?.model as NodeData
     let ratio = Tree.getZoom()
     let {x, y} = Tree.getClientByPoint(pointX, pointY)
-    EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio)
+    EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
     EditInput.handleInputBlur = (name: string) => {
         if (name.trim().length) {
             update(id, name.replace(/\s/g, ''))
@@ -53,11 +53,22 @@ export const edit = (id: string) => {
     Tree.on('wheelzoom', () => {
         ratio = Tree.getZoom()
         let {x, y} = Tree.getClientByPoint(pointX, pointY)
-        EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio)
+        EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
     })
 }
 export const update = (id: string, name: string) => {
     IMData.update(id, name)
+    rePaint()
+}
+export const selectNode = (id: string, selected: boolean) => {
+    let tree: TreeGraph | null = globalTree.value as TreeGraph
+    if (IMData._selectNode) {
+        tree.setItemState(IMData._selectNode.id, 'selected', false)
+    }
+    IMData.update(id, {isCurrentSelected: selected})
+    if (selected) {
+        tree.setItemState(id, 'selected', true)
+    }
     rePaint()
 }
 export const deleteNode = (id: string) => {

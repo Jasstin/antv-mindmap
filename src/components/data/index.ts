@@ -5,6 +5,7 @@ import {globalFontSize, maxFontCount, paddingH, paddingV} from "../variable";
 class IMData {
     data: NodeData | null = null
     _data: NodeData | any[] = []
+    _selectNode: NodeData | null = null
 
     private createMdataFromData(rawData: InputData, id: string, parent: NodeData | null = null): NodeData {
         const {label, name, desc, content, children: rawChildren, collapse, isSubView} = rawData
@@ -27,6 +28,7 @@ class IMData {
             collapse: collapse || false,
             parentId: parent?.id ?? '0',
             type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+            isCurrentSelected: false,
             children: [],
             _children: []
         }
@@ -121,6 +123,7 @@ class IMData {
                 width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
                 height: (fontSize + paddingV) * wrapContent.line + paddingV,
                 type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+                isCurrentSelected: false,
                 children: [],
                 _children: []
             }
@@ -162,6 +165,7 @@ class IMData {
                 width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
                 height: (fontSize + paddingV) * wrapContent.line + paddingV,
                 type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+                isCurrentSelected: false,
                 children: [],
                 _children: []
             }
@@ -206,6 +210,7 @@ class IMData {
                 width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
                 height: (fontSize + paddingV) * wrapContent.line + paddingV,
                 type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+                isCurrentSelected: false,
                 children: [],
                 _children: []
             }
@@ -254,17 +259,30 @@ class IMData {
         }
     }
 
-    update(id: string, name: string) {
+    update(id: string, data: string | { name?: string, isCurrentSelected?: boolean }) {
         const d = this.find(id)
         if (!d) return
         const fontSize = globalFontSize[d.depth] || 12;
         const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
+        let name, isCurrentSelect;
+        if (typeof data !== 'string') {
+            if (data.isCurrentSelected) {
+                this._selectNode && (this._selectNode.isCurrentSelected = false)
+                this._selectNode = d;
+            }
+            name = data?.name ?? d.fullName
+            isCurrentSelect = data?.isCurrentSelected ?? d.isCurrentSelected
+        } else {
+            name = data;
+        }
         const wrapContent = wrapString(name, size, fontSize)
         d.fullName = name;
         d.name = wrapContent.text;
         d.label = wrapContent.text;
         d.width = Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3);
         d.height = (fontSize + paddingV) * wrapContent.line + paddingV;
+        d.isCurrentSelected = isCurrentSelect
+        console.log(d)
     }
 
     backParent() {

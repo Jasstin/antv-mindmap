@@ -10,6 +10,7 @@ export interface NodeData {
     isSubView: boolean // 当前节点是否为主节点 true：为主节点
     width: number // 节点宽度
     height: number // 节点高度
+    isCurrentSelected: boolean // 是否为当前选中节点
     desc?: string // 可配置的描述字段
     content?: string //可配置的内容字段
     [key: string]: any

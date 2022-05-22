@@ -10,7 +10,7 @@ class EditInput {
         this.bindEvent()
     }
 
-    showInput(x: number, y: number, width: number, height: number, name: string, fontSize: number, type: string, radius: number) {
+    showInput(x: number, y: number, width: number, height: number, name: string, fontSize: number, type: string, radius: number, ratio: number) {
         let NodeInput = this._input;
         if (!NodeInput) return;
         this._fontSize = fontSize
@@ -26,9 +26,9 @@ class EditInput {
         NodeInput.value = name
         NodeInput.style.fontSize = fontSize + 'px'
         NodeInput.style.textAlign = 'left'
-        NodeInput.style.paddingTop = paddingV / 2 + 'px'
-        NodeInput.style.paddingLeft = paddingH / 2 + 'px'
-        NodeInput.style.lineHeight = fontSize + paddingV + 'px'
+        NodeInput.style.paddingTop = paddingV / 2 * ratio + 'px'
+        NodeInput.style.paddingLeft = paddingH / 2 * ratio + 'px'
+        NodeInput.style.lineHeight = fontSize + paddingV * ratio + 'px'
         NodeInput.style.borderRadius = radius + 'px'
         NodeInput.style.zIndex = '1'
         NodeInput.style.resize = 'none'

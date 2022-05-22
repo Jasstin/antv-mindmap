@@ -1,4 +1,4 @@
-import G6, {IGroup, IShape, ModelConfig, Modes} from "@antv/g6";
+import G6, {IGroup, IShape} from "@antv/g6";
 import {
     themeColor,
     themeColor_sub,
@@ -8,8 +8,11 @@ import {
     paddingH,
     paddingV,
     branch,
-    branchColor, globalFontSize
+    branchColor, globalTree
 } from "../variable";
+import Color from 'color';
+
+let activeStrokeColor = Color(themeColor.value).fade(0.2).string();
 
 enum textBaseline {
     top = "top"
@@ -55,7 +58,8 @@ function drawCollapse(group: IGroup, params: { width, height, collapseNum }) {
         r,
         fill: 'transparent',
         stroke: themeColor.value,
-        lineWidth: 2
+        lineWidth: 2,
+        cursor: 'pointer'
     }
     const textStyle = {
         x: params.width + lineStyle.width + r - widthHeight[0] / 2 + 3,
@@ -65,12 +69,12 @@ function drawCollapse(group: IGroup, params: { width, height, collapseNum }) {
         fontSize,
         fontWeight: 600,
         textBaseline: textBaseline.top,
-        cursor: 'point'
+        cursor: 'pointer'
     }
     const container = group.addGroup({name: 'add-btn', visible: true, capture: true})
-    container?.addShape('circle', {attrs: circleStyle})
     container?.addShape('rect', {attrs: lineStyle})
-    container?.addShape('text', {attrs: textStyle})
+    container?.addShape('circle', {attrs: circleStyle, action: 'expand'})
+    container?.addShape('text', {attrs: textStyle, action: 'expand'})
 }
 
 // 根节点
@@ -80,15 +84,26 @@ G6.registerNode(
             const fontSize = cfg?.fontSize as number;
             const FillColor = themeColor.value
             const FontColor = fontColor_root.value
-            const {width, height, _children} = cfg
-            const RectStyle = {x: 0, y: 0, width, height, radius, fill: FillColor}
+            const {width, height, _children, isCurrentSelected} = cfg
+            const RectStyle = {
+                x: 0,
+                y: 0,
+                width,
+                height,
+                radius,
+                fill: FillColor,
+                cursor: 'pointer',
+                stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
+                lineWidth: 2,
+            }
             const TextStyle = {
                 x: paddingV,
                 y: paddingH - 1,
                 text: cfg?.label,
                 fill: FontColor,
                 fontSize: fontSize,
-                textBaseline: textBaseline.top
+                textBaseline: textBaseline.top,
+                cursor: 'pointer'
             }
             const container = group?.addShape('rect', {attrs: RectStyle, name: 'big-rect-shape', zIndex: 0}) as IShape
             group?.addShape('text', {attrs: TextStyle, name: 'text-shape', zIndex: 1})
@@ -97,6 +112,24 @@ G6.registerNode(
                 drawCollapse(group, {width, height, collapseNum: _children.length})
             }
             return container;
+        },
+        setState: function (name, state, node) {
+            const group = node.getContainer();
+            let wrapper = group.get('children').filter(t => t.get('name') === 'big-rect-shape')[0]
+            if (name === 'hover') {
+                let hoverColor = Color(themeColor.value).fade(0.5).string();
+                if (state) {
+                    wrapper?.attr('stroke', hoverColor)
+                } else {
+                    if (node.get('model').isCurrentSelected) {
+                        wrapper?.attr('stroke', activeStrokeColor)
+                    } else {
+                        wrapper?.attr('stroke', 'transparent')
+                    }
+                }
+            } else if (name === 'selected') {
+                wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
+            }
         },
         getAnchorPoints() {
             return [
@@ -111,8 +144,18 @@ G6.registerNode(
         drawShape: function drawShape(cfg, group) {
             if (!cfg) return
             const fontSize = cfg.fontSize as number;
-            const {width, height, _children} = cfg
-            const RectStyle = {x: 0, y: 0, width, height, radius, fill: themeColor_sub.value}
+            const {width, height, _children, isCurrentSelected} = cfg
+            const RectStyle = {
+                x: 0,
+                y: 0,
+                width,
+                height,
+                radius,
+                fill: themeColor_sub.value,
+                cursor: 'pointer',
+                stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
+                lineWidth: 2
+            }
             const TextStyle = {
                 x: paddingV,
                 y: paddingH - 1,
@@ -120,10 +163,17 @@ G6.registerNode(
                 fill: fontColor_sub.value,
                 fontSize,
                 textBaseline: 'top',
-                lineHeight: fontSize + paddingH
+                lineHeight: fontSize + paddingH,
+                cursor: 'pointer'
             }
-            const container = group?.addShape('rect', {attrs: RectStyle, name: 'big-rect-shape', zIndex: 0})
-            group?.addShape('text', {attrs: TextStyle, name: 'text', zIndex: 1})
+            const container = group?.addShape('rect', {
+                attrs: RectStyle,
+                name: 'big-rect-shape',
+                zIndex: 0,
+                draggable: true,
+
+            })
+            group?.addShape('text', {attrs: TextStyle, name: 'text', zIndex: 1, draggable: true})
             drawAddBtn(group, {
                 width,
                 height,
@@ -135,6 +185,24 @@ G6.registerNode(
                 drawCollapse(group, {width, height, collapseNum: _children.length})
             }
             return container;
+        },
+        setState: function (name, state, node) {
+            const group = node.getContainer();
+            let wrapper = group.get('children').filter(t => t.get('name') === 'big-rect-shape')[0]
+            if (name === 'hover') {
+                let hoverColor = Color(themeColor.value).fade(0.5).string();
+                if (state) {
+                    wrapper?.attr('stroke', hoverColor)
+                } else {
+                    if (node.get('model').isCurrentSelected) {
+                        wrapper?.attr('stroke', activeStrokeColor)
+                    } else {
+                        wrapper?.attr('stroke', 'transparent')
+                    }
+                }
+            } else if (name === 'selected') {
+                wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
+            }
         },
         getAnchorPoints() {
             return [
@@ -149,8 +217,14 @@ G6.registerNode(
         draw(cfg, group) {
             if (!cfg) return
             const fontSize = cfg.fontSize as number;
-            const {width, height, _children} = cfg
-            const RectStyle = {x: 0, y: 0, width, height}
+            const {width, height, _children, isCurrentSelected} = cfg
+            const RectStyle = {
+                x: 0, y: 0, width, height, cursor: 'pointer',
+                radius,
+                stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
+                lineWidth: 2,
+                fill: 'transparent'
+            }
             const TextStyle = {
                 x: paddingV,
                 y: paddingH,
@@ -158,10 +232,16 @@ G6.registerNode(
                 fill: fontColor_sub.value,
                 fontSize,
                 textBaseline: 'top',
-                lineHeight: fontSize + paddingH
+                lineHeight: fontSize + paddingH,
+                cursor: 'pointer',
             }
-            const container = group?.addShape('rect', {attrs: RectStyle, name: 'big-rect-shape', zIndex: 0})
-            group?.addShape('text', {attrs: TextStyle, name: 'text', zIndex: 1})
+            const container = group?.addShape('rect', {
+                attrs: RectStyle,
+                name: 'big-rect-shape',
+                zIndex: 0,
+                draggable: true
+            })
+            group?.addShape('text', {attrs: TextStyle, name: 'text', zIndex: 1, draggable: true})
             drawAddBtn(group, {
                 width,
                 height,
@@ -179,6 +259,24 @@ G6.registerNode(
                 [0, 0.5],
                 [1, 0.5],
             ];
+        },
+        setState: function (name, state, node) {
+            const group = node.getContainer();
+            let wrapper = group.get('children').filter(t => t.get('name') === 'big-rect-shape')[0]
+            if (name === 'hover') {
+                let hoverColor = Color(themeColor.value).fade(0.5).string();
+                if (state) {
+                    wrapper?.attr('stroke', hoverColor)
+                } else {
+                    if (node.get('model').isCurrentSelected) {
+                        wrapper?.attr('stroke', activeStrokeColor)
+                    } else {
+                        wrapper?.attr('stroke', 'transparent')
+                    }
+                }
+            } else if (name === 'selected') {
+                wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
+            }
         },
     }
 );
