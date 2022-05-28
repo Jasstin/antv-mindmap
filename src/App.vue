@@ -118,6 +118,7 @@ html, body {
   padding: 0;
   outline: none;
   overflow: hidden;
+  user-select: none;
 }
 
 .container {

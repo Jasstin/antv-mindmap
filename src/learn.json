@@ -17,7 +17,7 @@
       },
       {
         "name": "简单图形",
-        "collapse": true,
+        "collapse": false,
         "icon": "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.51yuansu.com%2Fpic3%2Fcover%2F03%2F65%2F14%2F5bdfe6f5b499f_610.jpg&refer=http%3A%2F%2Fpic.51yuansu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1639821785&t=1a633d135238c7908aafc6faebffbd4b",
         "iconSize": [
           20,
@@ -57,31 +57,6 @@
   },
   {
     "name": "添加删除元素"
-  },
-  {
-    "name": "简单图形",
-    "collapse": false,
-    "icon": "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fpic.51yuansu.com%2Fpic3%2Fcover%2F03%2F65%2F14%2F5bdfe6f5b499f_610.jpg&refer=http%3A%2F%2Fpic.51yuansu.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=jpeg?sec=1639821785&t=1a633d135238c7908aafc6faebffbd4b",
-    "iconSize": [
-      20,
-      20
-    ],
-    "fontSize": 16,
-    "fontColor": "rgba(255,78,56,0.6)",
-    "children": [
-      {
-        "name": "柱形图"
-      },
-      {
-        "name": "折线图"
-      },
-      {
-        "name": "散点图"
-      }
-    ]
-  },
-  {
-    "name": "比例尺"
   },
   {
     "name": "生成器"

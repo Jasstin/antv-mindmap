@@ -1,6 +1,7 @@
 import {InputData, NodeData} from "../interface";
 import {fittingString, wrapString} from "../utils";
 import {globalFontSize, maxFontCount, paddingH, paddingV} from "../variable";
+import {collapse} from "../tree/methods";
 
 class IMData {
     data: NodeData | null = null
@@ -8,7 +9,16 @@ class IMData {
     _selectNode: NodeData | null = null
 
     private createMdataFromData(rawData: InputData, id: string, parent: NodeData | null = null): NodeData {
-        const {label, name, desc, content, children: rawChildren, collapse, isSubView} = rawData
+        const {
+            label,
+            name,
+            desc,
+            content,
+            children: rawChildren,
+            _children: _rawChildren,
+            collapse,
+            isSubView
+        } = rawData
         const depth = parent ? parent.depth + 1 : 0
         const fontSize = globalFontSize[depth] || 12;
         const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
@@ -43,6 +53,17 @@ class IMData {
                 })
             }
         }
+        if (_rawChildren) {
+            if (!data.collapse) {
+                _rawChildren.forEach((c, j) => {
+                    data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+                })
+            } else {
+                _rawChildren.forEach((c, j) => {
+                    data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+                })
+            }
+        }
         return data
     }
 
@@ -67,14 +88,6 @@ class IMData {
         return data?.id === id ? data : null
     }
 
-    expand(id: string): NodeData | null {
-        return this.eoc(id, false)
-    }
-
-    collapse(id: string): NodeData | null {
-        return this.eoc(id, true)
-    }
-
     /**
      * 展开或折叠(expand or collapse)
      */
@@ -87,6 +100,17 @@ class IMData {
         return d
     }
 
+    expand(id: string): NodeData | null {
+        return this.eoc(id, false)
+    }
+
+    collapse(id: string): NodeData | null {
+        return this.eoc(id, true)
+    }
+
+    /**
+     * 支持传入单节点、带有子级的节点
+     * */
     add(id: string, rawData: string | InputData): NodeData | null {
         const p = this.find(id)
         if (p) {
@@ -96,13 +120,15 @@ class IMData {
             if (!p.children) {
                 p.children = []
             }
-            let name, desc, content;
+            let name, desc, content, children, _children;
             if (typeof rawData === 'string') {
                 name = rawData
             } else {
                 name = rawData.name || rawData.label
                 desc = rawData.desc
                 content = rawData.content
+                children = rawData.children
+                _children = rawData._children
             }
             const depth = p ? p.depth + 1 : 0
             const fontSize = globalFontSize[depth] || 12;
@@ -127,6 +153,15 @@ class IMData {
                 children: [],
                 _children: []
             }
+            if (children || _children) {
+                children.forEach((item, i) => {
+                    data?.children?.push(this.createMdataFromData(item, `${data.id}-${i}`, data))
+                })
+                _children.forEach((item, i) => {
+                    data?.children?.push(this.createMdataFromData(item, `${data.id}-${i}`, data))
+                })
+            }
+            console.log(data)
             p.children.push(data)
             return data
         }
@@ -226,8 +261,11 @@ class IMData {
         if (d) {
             const p = this.find(d.parentId)
             if (!p) return
-            p.children = p.children.filter(t => t.id !== id)
-            p.children.forEach((t, i) => t.id = `${p.id}-${i}`)
+            let children = p.children.filter(t => t.id !== id)
+            p.children = []
+            children.forEach((item, i) => {
+                p.children.push(this.createMdataFromData(item, p.id + '-' + i, p))
+            })
         }
     }
 
@@ -282,7 +320,6 @@ class IMData {
         d.width = Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3);
         d.height = (fontSize + paddingV) * wrapContent.line + paddingV;
         d.isCurrentSelected = isCurrentSelect
-        console.log(d)
     }
 
     backParent() {

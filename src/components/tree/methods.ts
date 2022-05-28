@@ -1,10 +1,11 @@
 import IMData from '../data/index'
 import {InputData, NodeData} from "../interface";
-import {globalTree, radius} from "../variable";
+import {globalTree, radius, themeColor} from "../variable";
 import {TreeGraph} from "@antv/g6";
 import History from "../data/history";
 import EditInput from "../editInput";
 import {INode} from "@antv/g6-core/lib/interface/item";
+import {find} from "lodash";
 
 /***
  * data 为History栈里面的历史数据
@@ -62,12 +63,23 @@ export const update = (id: string, name: string) => {
 }
 export const selectNode = (id: string, selected: boolean) => {
     let tree: TreeGraph | null = globalTree.value as TreeGraph
-    if (IMData._selectNode) {
+    if (IMData._selectNode && tree.findDataById(IMData._selectNode.id)) {
         tree.setItemState(IMData._selectNode.id, 'selected', false)
     }
     IMData.update(id, {isCurrentSelected: selected})
     if (selected) {
         tree.setItemState(id, 'selected', true)
+    }
+    rePaint()
+}
+export const cancelAllSelect = () => {
+    let tree: TreeGraph | null = globalTree.value as TreeGraph
+    if (IMData._selectNode) {
+        const id = IMData._selectNode.id;
+        if (tree.findDataById(id)) {
+            tree.setItemState(id, 'selected', false)
+        }
+        IMData.update(id, {isCurrentSelected: false})
     }
     rePaint()
 }
@@ -100,4 +112,16 @@ export const reDo = (id: string) => {
 }
 export const unDo = (id: string) => {
     rePaint(History.goBack())
+}
+/***
+ * 将childId节点从原节点删除，移动到新的parentId节点下面
+ * */
+export const moveToChild = (childId, parentId) => {
+    const data = IMData.find(childId);
+    IMData.add(parentId, data);
+    IMData.removeItem(childId);
+    rePaint()
+}
+export const findData = (id) => {
+    return IMData.find(id);
 }

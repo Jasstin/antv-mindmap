@@ -3,7 +3,6 @@ import IMData from "../data";
 import contextMenu from '../menu'
 import {NodeData, InputData} from "../interface";
 import {mindmap, toolbar, tooltip} from "../plugins";
-import watchDrag from '../dragEvent'
 import {
     branch,
     branchColor,
@@ -138,11 +137,7 @@ class Tree {
             scaleRatio: layoutConfig?.scaleRatio || 1,
             modes: {
                 default: [],
-                edit: ['edit-mindmap', {
-                    type: 'drag-node',
-                    enableDelegate: true,
-                    enableDebounce: true,
-                }]
+                edit: ['edit-mindmap']
             },
             plugins: [] as any
         }
@@ -179,7 +174,6 @@ class Tree {
         let global = window as Window
         global.mindTree = tree
         setGlobalTree(tree)
-        watchDrag()
         return tree;
     }
 
