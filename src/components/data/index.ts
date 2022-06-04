@@ -8,7 +8,7 @@ class IMData {
     _data: NodeData | any[] = []
     _selectNode: NodeData | null = null
 
-    private createMdataFromData(rawData: InputData, id: string, parent: NodeData | null = null): NodeData {
+    private createMdataFromData(rawData: InputData | NodeData, id: string, parent: NodeData | null = null): NodeData {
         const {
             label,
             name,
@@ -43,26 +43,14 @@ class IMData {
             _children: []
         }
         if (rawChildren) {
-            if (!data.collapse) {
-                rawChildren.forEach((c, j) => {
-                    data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
-                })
-            } else {
-                rawChildren.forEach((c, j) => {
-                    data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
-                })
-            }
+            rawChildren.filter(t => !t.destroyed).forEach((c, j) => {
+                data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+            })
         }
         if (_rawChildren) {
-            if (!data.collapse) {
-                _rawChildren.forEach((c, j) => {
-                    data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
-                })
-            } else {
-                _rawChildren.forEach((c, j) => {
-                    data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
-                })
-            }
+            _rawChildren.filter(t => !t.destroyed).forEach((c, j) => {
+                data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+            })
         }
         return data
     }
@@ -161,7 +149,6 @@ class IMData {
                     data?.children?.push(this.createMdataFromData(item, `${data.id}-${i}`, data))
                 })
             }
-            console.log(data)
             p.children.push(data)
             return data
         }
@@ -256,16 +243,24 @@ class IMData {
         return null
     }
 
-    removeItem(id: string) {
+    /**
+     * 删除节点及其所有子节点 支持逻辑删除与物理删除
+     * 逻辑删除： 在数据中，被打上destroyed的标识，会在下一次重置数据的时候删除 应用场景听：moveData 先逻辑删除再物理删除
+     * 物理删除： 本次操作就将数据删除掉
+     * */
+    removeItem(id: string, real = true) {
         const d = this.find(id)
         if (d) {
             const p = this.find(d.parentId)
             if (!p) return
-            let children = p.children.filter(t => t.id !== id)
-            p.children = []
-            children.forEach((item, i) => {
-                p.children.push(this.createMdataFromData(item, p.id + '-' + i, p))
+            p.children.forEach(d => {
+                if (d.id === id) {
+                    d.destroyed = true
+                }
             })
+        }
+        if (real) {
+            this.init(this.data)
         }
     }
 
@@ -326,6 +321,32 @@ class IMData {
         let _data = this._data.pop()
         // Todo:合并最新的改动
         this.data = _data
+    }
+
+    moveData(pid: string, id: string, index: number) {
+        let data = this.find(id);
+        const p = this.find(pid);
+        let isSibling = data.parentId === pid
+        if (p.collapse) {
+            this.expand(pid)
+        }
+        if (data.collapse) {
+            this.expand(id)
+        }
+        if (!isSibling) {
+            this.removeItem(id, false);
+        }
+        if (p.children.length) {
+            let _data = [...p.children.filter(node => node.id != id)]
+            p.children = []
+            _data.splice(index, 0, data)
+            _data.forEach((item, index) => p.children.push(this.createMdataFromData(item, p.id + '-' + index, p)))
+        } else {
+            this.add(pid, data)
+        }
+        // 重新梳理id
+        this.init(this.data)
+        console.log(this.data)
     }
 }
 

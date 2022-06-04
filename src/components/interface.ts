@@ -13,6 +13,7 @@ export interface NodeData {
     isCurrentSelected: boolean // 是否为当前选中节点
     desc?: string // 可配置的描述字段
     content?: string //可配置的内容字段
+    destroyed?: boolean // 是否被废弃
     [key: string]: any
 }
 

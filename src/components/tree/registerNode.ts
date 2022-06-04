@@ -150,9 +150,10 @@ G6.registerNode(
                 width,
                 height,
                 _children,
+                style,
                 isCurrentSelected
-            } = cfg as { width: number, height: number, _children: any[], isCurrentSelected: boolean }
-            const RectStyle = {
+            } = cfg
+            const RectStyle = Object.assign({}, {
                 x: 0,
                 y: 0,
                 width,
@@ -162,21 +163,8 @@ G6.registerNode(
                 cursor: 'pointer',
                 stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
                 lineWidth: 2
-            }
-            const expandWidth = _children.length ? 80 : 30
-            const DragStyle = {
-                x: -expandWidth / (_children.length ? 4 : 2),
-                y: -10,
-                width: +width + expandWidth,
-                height: +height + 20,
-                radius,
-                cursor: 'grab',
-                stroke: activeStrokeColor,
-                lineWidth: 2,
-                lineDash: [1, 5],
-                opacity: 0
-            }
-            const TextStyle = {
+            }, style)
+            const TextStyle = Object.assign({}, {
                 x: paddingV,
                 y: paddingH - 1,
                 text: cfg.label,
@@ -185,16 +173,10 @@ G6.registerNode(
                 textBaseline: 'top',
                 lineHeight: fontSize + paddingH,
                 cursor: 'pointer'
-            }
+            }, style)
             const container = group?.addShape('rect', {
                 attrs: RectStyle,
                 name: 'big-rect-shape',
-                zIndex: 0,
-                draggable: true,
-            })
-            group?.addShape('rect', {
-                attrs: DragStyle,
-                name: 'drag',
                 zIndex: 0,
                 draggable: true,
             })
@@ -227,24 +209,6 @@ G6.registerNode(
                 }
             } else if (name === 'selected') {
                 wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
-            } else if (name === 'drag') {
-                if (state) {
-                    group.get('children').forEach(node => {
-                        if (node.get('name') === 'drag') {
-                            node.attr('opacity', 1)
-                        } else {
-                            node.attr('opacity', 0.2)
-                        }
-                    })
-                } else {
-                    group.get('children').forEach(node => {
-                        if (node.get('name') === 'drag') {
-                            node.attr('opacity', 0)
-                        } else {
-                            node.attr('opacity', 1)
-                        }
-                    })
-                }
             }
         },
         getAnchorPoints() {
@@ -264,16 +228,17 @@ G6.registerNode(
                 width,
                 height,
                 _children,
+                style,
                 isCurrentSelected
             } = cfg as { width: number, height: number, _children: any[], isCurrentSelected: any[] }
-            const RectStyle = {
+            const RectStyle = Object.assign({}, {
                 x: 0, y: 0, width, height, cursor: 'pointer',
                 radius,
                 stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
                 lineWidth: 2,
                 fill: 'transparent'
-            }
-            const TextStyle = {
+            }, style)
+            const TextStyle = Object.assign({}, {
                 x: paddingV,
                 y: paddingH,
                 text: cfg.label,
@@ -282,31 +247,13 @@ G6.registerNode(
                 textBaseline: 'top',
                 lineHeight: fontSize + paddingH,
                 cursor: 'pointer',
-            }
+            }, style)
             const expandWidth = _children.length ? 80 : 30
-            const DragStyle = {
-                x: -expandWidth / (_children.length ? 4 : 2),
-                y: -10,
-                width: +width + expandWidth,
-                height: +height + 20,
-                radius,
-                cursor: 'grab',
-                stroke: activeStrokeColor,
-                lineWidth: 2,
-                lineDash: [1, 5],
-                opacity: 0
-            }
             const container = group?.addShape('rect', {
                 attrs: RectStyle,
                 name: 'big-rect-shape',
                 zIndex: 0,
                 draggable: true
-            })
-            group?.addShape('rect', {
-                attrs: DragStyle,
-                name: 'drag',
-                zIndex: 0,
-                draggable: true,
             })
             group?.addShape('text', {attrs: TextStyle, name: 'text', zIndex: 1, draggable: true})
             drawAddBtn(group, {
@@ -343,24 +290,6 @@ G6.registerNode(
                 }
             } else if (name === 'selected') {
                 wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
-            } else if (name === 'drag') {
-                if (state) {
-                    group.get('children').forEach(node => {
-                        if (node.get('name') === 'drag') {
-                            node.attr('opacity', 1)
-                        } else {
-                            node.attr('opacity', 0.2)
-                        }
-                    })
-                } else {
-                    group.get('children').forEach(node => {
-                        if (node.get('name') === 'drag') {
-                            node.attr('opacity', 0)
-                        } else {
-                            node.attr('opacity', 1)
-                        }
-                    })
-                }
             }
         },
     }
@@ -370,15 +299,21 @@ G6.registerEdge('hvh', {
         if (!cfg || !group) return
         const startPoint = cfg.startPoint;
         const endPoint = cfg.endPoint;
+        let dist = endPoint.y < startPoint.y ? 10 : -10;
+        if (endPoint.y === startPoint.y) {
+            dist = 0;
+        }
         const shape = group.addShape('path', {
             attrs: {
                 stroke: branchColor.value,
                 lineWidth: branch.value,
+                opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
                 path: [
-                    ['M', startPoint?.x, startPoint?.y],
-                    ['L', endPoint?.x ?? 0 / 3 + (2 / 3) * (startPoint?.x ?? 1), startPoint?.y], // 三分之一处
-                    ['L', endPoint?.x ?? 0 / 3 + (2 / 3) * (startPoint?.x ?? 1), endPoint?.y], // 三分之二处
-                    ['L', endPoint?.x, endPoint?.y],
+                    ['M', startPoint.x, startPoint.y],
+                    ['L', endPoint.x / 3 + (2 / 3) * (startPoint.x), startPoint.y], // 三分之一处
+                    ['L', endPoint.x / 3 + (2 / 3) * (startPoint.x), startPoint.y + (endPoint.y - startPoint.y) + dist],
+                    ['Q', endPoint.x / 3 + (2 / 3) * (startPoint.x), startPoint.y + (endPoint.y - startPoint.y), endPoint.x / 3 + (2 / 3) * (startPoint.x) + 10, endPoint.y], // 三分之二处
+                    ['L', endPoint.x, endPoint.y],
                 ],
             },
             // must be assigned in G6 3.3 and later versions. it can be any value you want

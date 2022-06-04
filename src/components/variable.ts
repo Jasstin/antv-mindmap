@@ -35,3 +35,5 @@ export const currentNode = ref<INode | null>(null) // 当前选中的节点
 export const setCurrentNode = (val: INode) => currentNode.value = val
 export const globalTree = ref<TreeGraph | null>(null) // 树实例
 export const setGlobalTree = (val: TreeGraph) => globalTree.value = val
+export const lineType = ref<string>('cubic-horizontal')
+export const setLineType = (val: string) => lineType.value = val

@@ -66,13 +66,13 @@ export default defineComponent({
     const themeList = reactive<input>({
       'branch': {type: 'range', value: 1, desc: '线条宽度', min: 1, max: 6, step: 1},
       'branchColor': {type: 'color', value: '#1380ff', desc: '线条颜色'},
-      'xGap': {type: 'range', value: 15, desc: '节点横向间距', min: 30, max: 100, step: 1},
+      'xGap': {type: 'range', value: 50, desc: '节点横向间距', min: 30, max: 100, step: 1},
       'yGap': {type: 'range', value: 10, desc: '节点纵向间距', min: 10, max: 100, step: 1},
       'themeColor': {type: 'color', value: '#1380ff', desc: '根节点背景色'},
       'rootFontColor': {type: 'color', value: '#ffffff', desc: '根节点文字颜色'},
       'subThemeColor': {type: 'color', value: '#f5f5f5', desc: '二级节点背景色'},
       'subFontColor': {type: 'color', value: '#333333', desc: '二级节点文字颜色'},
-      'sharp-corner': {type: 'checkbox', value: false, desc: '直线链接'},
+      'sharp-corner': {type: 'checkbox', value: true, desc: '直线链接'},
       'scale-ratio': {type: 'range', value: 1, desc: '初始化缩放比例', min: 0, max: 10, step: 0.1}
     })
     const featureList = reactive<input>({

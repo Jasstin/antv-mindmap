@@ -125,3 +125,7 @@ export const moveToChild = (childId, parentId) => {
 export const findData = (id) => {
     return IMData.find(id);
 }
+export const moveData = (parentId, nodeId, index) => {
+    IMData.moveData(parentId, nodeId, index);
+    rePaint()
+}

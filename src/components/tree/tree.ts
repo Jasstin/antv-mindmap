@@ -11,7 +11,7 @@ import {
     changeRootFontColor, changeScaleRatio,
     changeSubFontColor,
     changeSubThemeColor,
-    changeThemeColor, changeTimetravel, paddingH, paddingV, setGlobalTree
+    changeThemeColor, changeTimetravel, lineType, paddingH, paddingV, setGlobalTree, setLineType
 } from "../variable";
 import './registerNode' // 自定义节点形状
 import './registerBehavior'
@@ -63,6 +63,7 @@ interface Variable {
     fitBtn?: boolean,
     downloadBtn?: boolean
     scaleRatio?: number
+    lineType?: string
 }
 
 class Tree {
@@ -102,7 +103,8 @@ class Tree {
                 centerBtn,
                 fitBtn,
                 downloadBtn,
-                scaleRatio
+                scaleRatio,
+                lineType: layoutConfig?.sharpCorner ? 'hvh' : 'cubic-horizontal'
             })
         }
         const config = {
@@ -139,7 +141,8 @@ class Tree {
                 default: [],
                 edit: ['edit-mindmap']
             },
-            plugins: [] as any
+            plugins: [] as any,
+            groupByTypes: false,
         }
         const plugins = [];
         plugins.push(toolbar)
@@ -203,7 +206,8 @@ class Tree {
                        centerBtn,
                        fitBtn,
                        downloadBtn,
-                       scaleRatio
+                       scaleRatio,
+                       lineType
                    }: Variable) {
         branch && changeBranch(branch)
         branchColor && changeBranchColor(branchColor)
@@ -216,6 +220,8 @@ class Tree {
         fitBtn && changeFitBtn(fitBtn)
         downloadBtn && changeDownloadBtn(downloadBtn)
         scaleRatio && changeScaleRatio(scaleRatio)
+        lineType && setLineType(lineType)
+
     }
 
     changeLayout(layoutConfig?: layoutConfig) {
