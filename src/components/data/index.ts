@@ -346,7 +346,6 @@ class IMData {
         }
         // 重新梳理id
         this.init(this.data)
-        console.log(this.data)
     }
 }
 

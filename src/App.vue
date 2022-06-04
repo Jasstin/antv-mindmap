@@ -29,6 +29,7 @@
         :mindmap="featureList['mindmap'].value"
         :watchResize="featureList['watchResize'].value"
         :nodeMenu="nodeMenuList"
+        :onDragEnd="onDragEnd"
     ></mindmap>
     <div class="right-bottom">
       <div style="font-weight: bold;font-size: 16px">样式设置</div>
@@ -54,6 +55,7 @@
 import learn from './learn.json'
 import {defineComponent, reactive, ref} from 'vue'
 import Mindmap from "./components/MindMap.vue"
+import {deleteNode} from "./components/tree/methods";
 
 type input = { [key: string]: { type: string, value: boolean | string | number, desc?: string, min?: number, max?: number, step?: number, disabled?: boolean } }
 
@@ -100,12 +102,20 @@ export default defineComponent({
         }
       }]
     ]
-
+    const $mindmap = ref('mindMapRef');
     return {
       data,
       nodeMenuList,
       featureList,
       themeList
+    }
+  },
+  mounted() {
+    console.log(this.$refs.mindMapRef)
+  },
+  methods: {
+    onDragEnd() {
+      console.log('onDragEnd', arguments)
     }
   }
 })

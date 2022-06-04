@@ -11,6 +11,7 @@ import {
     themeColor,
     lineType
 } from "../variable";
+import emitter from "../mitt";
 
 G6.registerBehavior('edit-mindmap', {
     dragging: false,
@@ -134,7 +135,6 @@ G6.registerBehavior('edit-mindmap', {
             let coditionH_outer = (clientX - width > node.clientX - width * 2) && (clientX + width < node.clientX + size + width * 2);
             let coditionV_outer = (clientY - height > firstNode.clientY - height * 2) && (clientY + height < lastNode.clientY + lastNode.height + height * 2); // 所有节点的纵向区域
             if (coditionH_inner && coditionV_inner) {
-                console.log(node)
                 // 拖拽节点与树节点有重合部分
                 nodes.push({
                     nodeId: nodeId,
@@ -187,7 +187,6 @@ G6.registerBehavior('edit-mindmap', {
                     }
                 })
             }
-            console.log(nodes, node)
             node = node.length ? node[0] : nodes[0]
             let nodeId = node.sameLevel ? node.parentId : node.nodeId;
             if (nodeId.indexOf(this.dragNodeId) != -1) {
@@ -226,10 +225,10 @@ G6.registerBehavior('edit-mindmap', {
                 if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
                     index++
                 } else {
-                    console.log(node.id)
                     break;
                 }
             }
+            emitter.emit('onDragEnd', [this.dragNodeId, this.selectNodeId, index]);
             moveData(this.selectNodeId, this.dragNodeId, index)
         }
         //    还原

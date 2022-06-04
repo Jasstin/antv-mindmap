@@ -11,6 +11,18 @@ import Tree from './tree/tree'
 import {tooltip} from "./plugins";
 import {changeNodeMenuList, setGlobalTree} from "./variable";
 import EditInput from './editInput'
+import {
+  addData,
+  update,
+  deleteNode,
+  deleteOneNode,
+  expand,
+  collapse,
+  addSibling,
+  addParent,
+  findData
+} from './tree/methods'
+import emitter from "./mitt";
 
 let tree;
 export default {
@@ -57,18 +69,22 @@ export default {
     ctm: Boolean,//  开启右键菜单
     nodeMenu: Array, // 菜单配置
     // 钩子函数
-    onBeforeInit: Function,
-    onInit: Function,
     onAdd: Function,
     onExpand: Function,
     onCollapse: Function,
     onSelectedNode: Function,
     onAfterEdit: Function,
-    onDragChangeParent: Function
+    onDragEnd: Function
   },
   mounted() {
     this.treeInit()
     this.inputInit()
+    this.$props.onAdd && emitter.on('onAdd', this.$props.onAdd)
+    this.$props.onExpand && emitter.on('onExpand', this.$props.onExpand)
+    this.$props.onCollapse && emitter.on('onCollapse', this.$props.onCollapse)
+    this.$props.onSelectedNode && emitter.on('onSelectedNode', this.$props.onSelectedNode)
+    this.$props.onAfterEdit && emitter.on('onAfterEdit', this.$props.onAfterEdit)
+    this.$props.onDragEnd && emitter.on('onDragEnd', this.$props.onDragEnd)
   },
   methods: {
     treeInit() {
@@ -78,7 +94,16 @@ export default {
     },
     inputInit() {
       EditInput.init('node-input')
-    }
+    },
+    add: addData,
+    update,
+    deleteNode,
+    deleteOneNode,
+    expand,
+    collapse,
+    addSibling,
+    addParent,
+    find: findData
   },
   watch: {
     '$props.tooltip': {

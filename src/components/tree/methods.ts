@@ -5,7 +5,7 @@ import {TreeGraph} from "@antv/g6";
 import History from "../data/history";
 import EditInput from "../editInput";
 import {INode} from "@antv/g6-core/lib/interface/item";
-import {find} from "lodash";
+import emitter from '../mitt'
 
 /***
  * data 为History栈里面的历史数据
@@ -22,6 +22,7 @@ export const rePaint = (data?: NodeData) => {
 export const addData = (id: string, rawData: string | InputData) => {
     let data = IMData.add(id, rawData)
     rePaint()
+    emitter.emit('onAdd', data)
     if (data) edit(data.id)
 }
 export const addParent = (id: string, rawData: string | InputData) => {
@@ -45,6 +46,7 @@ export const edit = (id: string) => {
     EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
     EditInput.handleInputBlur = (name: string) => {
         if (name.trim().length) {
+            emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
             update(id, name.replace(/\s/g, ''))
         } else if (name === '') {
             deleteOneNode(id)
@@ -69,6 +71,7 @@ export const selectNode = (id: string, selected: boolean) => {
     IMData.update(id, {isCurrentSelected: selected})
     if (selected) {
         tree.setItemState(id, 'selected', true)
+        emitter.emit('onSelectedNode', findData(id))
     }
     rePaint()
 }
@@ -93,10 +96,12 @@ export const deleteOneNode = (id: string) => {
 }
 export const collapse = (id: string) => {
     IMData.collapse(id)
+    emitter.emit('onCollapse', findData(id))
     rePaint()
 }
 export const expand = (id: string) => {
     IMData.expand(id)
+    emitter.emit('onExpand', findData(id))
     rePaint()
 }
 export const onlyShowCurrent = (id: string) => {
