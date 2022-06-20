@@ -11,7 +11,7 @@ import {
     changeRootFontColor, changeScaleRatio,
     changeSubFontColor,
     changeSubThemeColor,
-    changeThemeColor, changeTimetravel, lineType, paddingH, paddingV, setGlobalTree, setLineType
+    changeThemeColor, changeTimetravel, globalTree, lineType, paddingH, paddingV, setGlobalTree, setLineType
 } from "../variable";
 import './registerNode' // 自定义节点形状
 import './registerBehavior'
@@ -177,7 +177,12 @@ class Tree {
         let global = window as Window
         global.mindTree = tree
         setGlobalTree(tree)
+        this.bindEvent(tree)
         return tree;
+    }
+
+    bindEvent(tree) {
+
     }
 
     enableFeature(layoutConfig?: layoutConfig) {

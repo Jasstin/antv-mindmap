@@ -11,14 +11,14 @@ class History {
 
     goBack(n: number = 1) {
         this.index--
-        if (this.index < 0) this.index = 0
+        if (this.index <= 0) this.index = 0
         let data = this.data[this.index]
         return data
     }
 
     forword(n: number = 1) {
         this.index++
-        if (this.index > this.data.length - 1) this.index = this.data.length - 1
+        if (this.index >= this.data.length - 1) this.index = this.data.length - 1
         let data = this.data[this.index]
         return data
     }

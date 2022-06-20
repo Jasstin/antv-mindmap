@@ -154,6 +154,7 @@
   }
 
   .group {
+    width: 165px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
@@ -167,6 +168,13 @@
     padding: 8px 10px;
     cursor: pointer;
     min-width: 100px;
+    display: flex;
+    justify-content: space-between;
+
+    .small-tip {
+      font-size: 10px;
+      color: #ddd;
+    }
 
     &:hover {
       background: rgba(255, 255, 255, 0.1);

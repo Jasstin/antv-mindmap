@@ -1,5 +1,5 @@
 import G6 from "@antv/g6";
-import {cancelAllSelect, edit, expand, findData, moveData, moveToChild, selectNode} from "./methods";
+import {cancelAllSelect, edit, expand, findData, moveData, moveToChild, selectNode, getSelectedNodes} from "./methods";
 import {
     branch,
     branchColor,
@@ -9,9 +9,10 @@ import {
     paddingH,
     radius,
     themeColor,
-    lineType
+    lineType, isCurrentEdit
 } from "../variable";
 import emitter from "../mitt";
+import hotkeys from "./hotkeys";
 
 G6.registerBehavior('edit-mindmap', {
     dragging: false,
@@ -26,8 +27,14 @@ G6.registerBehavior('edit-mindmap', {
             'node:dblclick': 'editNode',
             'node:mouseover': 'hoverNode',
             'node:mouseleave': 'clearHoverStatus',
-            'node:dragstart': 'dragStart'
+            'node:dragstart': 'dragStart',
+            'node:contextmenu': 'selectNode',
+            'keydown': 'keyDown',
+            'canvas:click': 'clickCanvas'
         };
+    },
+    clickCanvas(evt) {
+        cancelAllSelect()
     },
     clickNode(evt) {
         const tree = evt.currentTarget;
@@ -40,6 +47,10 @@ G6.registerBehavior('edit-mindmap', {
         } else {
             selectNode(model.id, !model.isCurrentSelected)
         }
+    },
+    selectNode(evt) {
+        const model = evt.item.get('model');
+        selectNode(model.id, !model.isCurrentSelected)
     },
     editNode(evt) {
         const item = evt.item;
@@ -331,4 +342,31 @@ G6.registerBehavior('edit-mindmap', {
             tree.addItem('node', model);
         }
     },
+    keyDown(evt) {
+        // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
+        if (isCurrentEdit.value) return;
+        const {key, shiftKey, ctrlKey, altKey, metaKey} = evt;
+        console.log('处理按键', key, shiftKey, ctrlKey, altKey, metaKey, evt)
+        let handler = hotkeys.filter(item => item.key === key)
+        if (!handler.length) return;
+        if (shiftKey || ctrlKey || altKey || metaKey) {
+            if (shiftKey) {
+                handler = handler.filter(item => item.control?.indexOf('shift') > -1)
+            }
+            if (ctrlKey) {
+                handler = handler.filter(item => item.control?.indexOf('ctrl') > -1)
+            }
+            if (metaKey) {
+                handler = handler.filter(item => item.control?.indexOf('cmd') > -1)
+            }
+            if (altKey) {
+                handler = handler.filter(item => item.control?.indexOf('alt') > -1)
+            }
+        } else if (handler.length === 1 && handler[0].control) {
+            handler = []
+        }
+        if (!handler.length) return;
+        evt.preventDefault(); // 禁止默认事件
+        handler[0].Event.call(this, getSelectedNodes())
+    }
 });

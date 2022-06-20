@@ -1,39 +1,46 @@
 import IMData from '../data/index'
 import {InputData, NodeData} from "../interface";
-import {globalTree, radius, themeColor} from "../variable";
+import {globalTree, radius, setIsCurrentEdit, themeColor} from "../variable";
 import {TreeGraph} from "@antv/g6";
 import History from "../data/history";
 import EditInput from "../editInput";
 import {INode} from "@antv/g6-core/lib/interface/item";
 import emitter from '../mitt'
+import {pushData, popData} from "./clipboard";
 
 /***
  * data 为History栈里面的历史数据
  */
-export const rePaint = (data?: NodeData) => {
+export const rePaint = (stack = true) => {
     let tree: TreeGraph | null = globalTree.value as TreeGraph
     if (!IMData.data) return
-    tree?.data(data || IMData.data)
-    if (data === undefined) {
+    tree?.data(IMData.data)
+    if (stack) {
         History.push(IMData.data)
     }
     tree?.layout()
 }
-export const addData = (id: string, rawData: string | InputData) => {
+export const addData = (id: string, rawData: string | InputData, editNow = true) => {
     let data = IMData.add(id, rawData)
     rePaint()
     emitter.emit('onAdd', data)
-    if (data) edit(data.id)
+    if (editNow) {
+        if (data) edit(data.id)
+    }
 }
-export const addParent = (id: string, rawData: string | InputData) => {
+export const addParent = (id: string, rawData: string | InputData, editNow = true) => {
     let data = IMData.addParent(id, rawData)
     rePaint()
-    if (data) edit(data.id)
+    if (editNow) {
+        if (data) edit(data.id)
+    }
 }
-export const addSibling = (id: string, rawData: string | InputData) => {
+export const addSibling = (id: string, rawData: string | InputData, editNow = true) => {
     let data = IMData.addSibling(id, rawData)
     rePaint()
-    if (data) edit(data.id)
+    if (editNow) {
+        if (data) edit(data.id)
+    }
 }
 export const edit = (id: string) => {
     const Tree = globalTree.value
@@ -43,6 +50,7 @@ export const edit = (id: string) => {
     const {name, type, fontSize, width, height} = NodeData._cfg?.model as NodeData
     let ratio = Tree.getZoom()
     let {x, y} = Tree.getClientByPoint(pointX, pointY)
+    setIsCurrentEdit(true)
     EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
     EditInput.handleInputBlur = (name: string) => {
         if (name.trim().length) {
@@ -52,6 +60,11 @@ export const edit = (id: string) => {
             deleteOneNode(id)
         }
         Tree.off('wheelzoom')
+        EditInput.hideInput()
+        let timer = setTimeout(() => {
+            setIsCurrentEdit(false);
+            clearTimeout(timer)
+        }, 500)
     }
     Tree.on('wheelzoom', () => {
         ratio = Tree.getZoom()
@@ -61,7 +74,7 @@ export const edit = (id: string) => {
 }
 export const update = (id: string, name: string) => {
     IMData.update(id, name)
-    rePaint()
+    selectNode(id, true)
 }
 export const selectNode = (id: string, selected: boolean) => {
     let tree: TreeGraph | null = globalTree.value as TreeGraph
@@ -85,6 +98,13 @@ export const cancelAllSelect = () => {
         IMData.update(id, {isCurrentSelected: false})
     }
     rePaint()
+}
+export const getSelectedNodes = () => {
+    if (IMData._selectNode) {
+        return [IMData._selectNode]
+    } else {
+        return []
+    }
 }
 export const deleteNode = (id: string) => {
     IMData.removeItem(id)
@@ -112,11 +132,19 @@ export const backParent = (id: string) => {
     IMData.backParent(id)
     rePaint()
 }
-export const reDo = (id: string) => {
-    rePaint(History.forword())
+export const reDo = () => {
+    let data = History.forword();
+    if (data) {
+        IMData.data = {...data}
+    }
+    rePaint(false)
 }
-export const unDo = (id: string) => {
-    rePaint(History.goBack())
+export const unDo = () => {
+    let data = History.goBack();
+    if (data) {
+        IMData.data = {...data}
+    }
+    rePaint(false)
 }
 /***
  * 将childId节点从原节点删除，移动到新的parentId节点下面
@@ -132,5 +160,29 @@ export const findData = (id) => {
 }
 export const moveData = (parentId, nodeId, index) => {
     IMData.moveData(parentId, nodeId, index);
+    rePaint()
+}
+export const copy = (ids) => {
+    pushData(ids.map(id => findData(id)))
+}
+export const cut = (ids) => {
+    pushData(ids.map(id => findData(id)))
+    ids.forEach(id => {
+        deleteNode(id)
+    })
+}
+export const paste = (pid) => {
+    let data = popData()
+    if (data) {
+        data.forEach(item => {
+            addData(pid, item, false)
+        })
+        rePaint()
+    }
+}
+export const createACopy = (id) => {
+    copy([id])
+    let d = findData(id)
+    paste(findData(id).parentId)
     rePaint()
 }

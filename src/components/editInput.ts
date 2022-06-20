@@ -48,7 +48,10 @@ class EditInput {
             NodeInput.style.borderRadius = '0px'
             NodeInput.style.borderBottom = `1px solid ${themeColor.value}`
         }
-        NodeInput.focus()
+        let timer = setTimeout(() => {
+            NodeInput.focus()
+            clearTimeout(timer)
+        }, 100)
     }
 
     changeLength(ev: Event) {
@@ -64,20 +67,19 @@ class EditInput {
     bindEvent() {
         if (!this._input) return
         this._input.addEventListener('input', this.changeLength.bind(this))
-        this._input.addEventListener('blur', this.handleSave.bind(this))
+        this._input.addEventListener('blur', () => {
+            this.handleInputBlur(this._input.value)
+        })
         this._input.addEventListener('keydown', (ev) => {
             if (ev.key === 'Enter') {
-                this.handleSave.call(this, ev)
+                let input = ev.target as HTMLInputElement
+                this.handleInputBlur.call(this, input.value)
             }
         })
     }
 
-    handleSave(ev: Event) {
-        let input = ev.target as HTMLInputElement
-        if (typeof this.handleInputBlur === 'function') {
-            this.handleInputBlur(input.value)
-        }
-        input.style.display = 'none'
+    hideInput() {
+        this._input.style.display = 'none'
     }
 
     handleInputBlur(name: string) {

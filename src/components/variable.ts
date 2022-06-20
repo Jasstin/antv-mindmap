@@ -37,3 +37,5 @@ export const globalTree = ref<TreeGraph | null>(null) // 树实例
 export const setGlobalTree = (val: TreeGraph) => globalTree.value = val
 export const lineType = ref<string>('cubic-horizontal')
 export const setLineType = (val: string) => lineType.value = val
+export const isCurrentEdit = ref<boolean>(false)
+export const setIsCurrentEdit = (val: boolean) => isCurrentEdit.value = val

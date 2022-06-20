@@ -12,6 +12,7 @@ import {
     backParent
 } from "./tree/methods"
 import {INode} from "@antv/g6-core/lib/interface/item";
+import hotkeys from "./tree/hotkeys";
 
 const nodeMenuMap = {
     add: {
@@ -125,7 +126,12 @@ function renderNodeMenu(evt: any) {
                 if (!isSubView && depth === 0 && item === 'only-show-current') return ''
                 if (isSubView && depth === 0 && item === 'only-show-current') itemInfo = nodeMenuMap['back-parent']
                 nodeMenuClickList[itemInfo.name] = itemInfo.click;
-                return `<li code="Node" name="${itemInfo.name}">${itemInfo.title}</li>`
+                let hotkey = hotkeys.filter(item => item.name === itemInfo.name)[0]
+                if (hotkey) {
+                    return `<li code="Node" name="${itemInfo.name}"><div code="Node" name="${itemInfo.name}">${itemInfo.title}</div><div class="small-tip" code="Node" name="${itemInfo.name}">${hotkey.control ? `${hotkey.control}+` : ''}${hotkey.key}</div></li>`
+                } else {
+                    return `<li code="Node" name="${itemInfo.name}">${itemInfo.title}</li>`
+                }
             } else if (typeof item === 'object' && item.title) {
                 // 外部配置
                 nodeMenuClickList[item.name] = item.click;
