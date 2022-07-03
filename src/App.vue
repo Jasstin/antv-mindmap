@@ -52,11 +52,10 @@
   </div>
 </template>
 <script lang="ts">
-import learn from './learn.json'
+import learn from './test.json'
 import {defineComponent, reactive, ref} from 'vue'
-import Mindmap from "./components/MindMap.vue"
-import {deleteNode} from "./components/tree/methods";
-
+import Mindmap from "./components/MindMap"
+// import "../dist/style.css"
 type input = { [key: string]: { type: string, value: boolean | string | number, desc?: string, min?: number, max?: number, step?: number, disabled?: boolean } }
 
 export default defineComponent({
@@ -89,7 +88,7 @@ export default defineComponent({
       'mindmap': {type: 'checkbox', value: true, desc: '脑图缩略图', disabled: true},
       'watchResize': {type: 'checkbox', value: true, desc: '监听屏幕变化时重置脑图大小', disabled: true},
     })
-    const data = ref(learn)
+    const data = ref({})
     const nodeMenuList = [
       ['add-sibling', 'add', 'add-parent'],
       ['edit', 'delete', 'collapse', 'expand'],
@@ -112,6 +111,10 @@ export default defineComponent({
   },
   mounted() {
     console.log(this.$refs.mindMapRef)
+    let timer = setTimeout(()=>{
+      this.data = learn;
+      clearTimeout(timer)
+    });
   },
   methods: {
     onDragEnd() {

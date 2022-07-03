@@ -1,0 +1,178 @@
+{
+  "info": {
+    "id": "6290dfaf7d40192ad9defd54",
+    "title": "9"
+  },
+  "children": [
+    {
+      "info": {
+        "id": "6290dfa97d40192ad9defd51",
+        "title": "6"
+      },
+      "children": [
+        {
+          "info": {
+            "id": "6290dfa77d40192ad9defd50",
+            "title": "5"
+          },
+          "children": [
+            {
+              "info": {
+                "id": "6290dfa57d40192ad9defd4f",
+                "title": "1111222233335555"
+              },
+              "children": [
+                {
+                  "info": {
+                    "id": "6290dfa37d40192ad9defd4e",
+                    "title": "3"
+                  },
+                  "children": [
+                    {
+                      "info": {
+                        "id": "6290df9f7d40192ad9defd4d",
+                        "title": "2"
+                      },
+                      "children": [
+                        {
+                          "info": {
+                            "id": "618cf5b7a227ea87b4364d88",
+                            "title": "1"
+                          },
+                          "children": [
+                            {
+                              "info": {
+                                "id": "6290df9b7d40192ad9defd4b",
+                                "title": "1-1"
+                              },
+                              "children": null,
+                              "id": "6290df9b7d40192ad9defd4b",
+                              "name": "1-1",
+                              "parentId": "618cf5b7a227ea87b4364d88",
+                              "lineColor": "#1380FF",
+                              "hasChildren": true
+                            }
+                          ],
+                          "id": "618cf5b7a227ea87b4364d88",
+                          "name": "1",
+                          "parentId": "6290df9f7d40192ad9defd4d",
+                          "lineColor": "#1380FF",
+                          "hasChildren": false
+                        }
+                      ],
+                      "id": "6290df9f7d40192ad9defd4d",
+                      "name": "2",
+                      "parentId": "6290dfa37d40192ad9defd4e",
+                      "lineColor": "#1380FF",
+                      "hasChildren": false
+                    }
+                  ],
+                  "id": "6290dfa37d40192ad9defd4e",
+                  "name": "3",
+                  "parentId": "6290dfa57d40192ad9defd4f",
+                  "lineColor": "#1380FF",
+                  "hasChildren": false
+                }
+              ],
+              "id": "6290dfa57d40192ad9defd4f",
+              "name": "1111222233335555",
+              "parentId": "6290dfa77d40192ad9defd50",
+              "lineColor": "#1380FF",
+              "hasChildren": false
+            }
+          ],
+          "id": "6290dfa77d40192ad9defd50",
+          "name": "5",
+          "parentId": "6290dfa97d40192ad9defd51",
+          "lineColor": "#1380FF",
+          "hasChildren": false
+        }
+      ],
+      "id": "6290dfa97d40192ad9defd51",
+      "name": "6",
+      "parentId": "6290dfaf7d40192ad9defd54",
+      "lineColor": "#1380FF",
+      "hasChildren": false
+    },
+    {
+      "info": {
+        "id": "6290dfad7d40192ad9defd53",
+        "title": "8"
+      },
+      "children": [
+        {
+          "info": {
+            "id": "6290dfb47d40192ad9defd57",
+            "title": "12"
+          },
+          "children": null,
+          "id": "6290dfb47d40192ad9defd57",
+          "name": "12",
+          "parentId": "6290dfad7d40192ad9defd53",
+          "lineColor": "#1380FF",
+          "hasChildren": true
+        }
+      ],
+      "id": "6290dfad7d40192ad9defd53",
+      "name": "8",
+      "parentId": "6290dfaf7d40192ad9defd54",
+      "lineColor": "#1380FF",
+      "hasChildren": false
+    },
+    {
+      "info": {
+        "id": "6290dfab7d40192ad9defd52",
+        "title": "7"
+      },
+      "children": [
+        {
+          "info": {
+            "id": "6290dfb27d40192ad9defd56",
+            "title": "11"
+          },
+          "children": [
+            {
+              "info": {
+                "id": "6290dfb07d40192ad9defd55",
+                "title": "10"
+              },
+              "children": null,
+              "id": "6290dfb07d40192ad9defd55",
+              "name": "10",
+              "parentId": "6290dfb27d40192ad9defd56",
+              "lineColor": "#1380FF",
+              "hasChildren": true
+            },
+            {
+              "info": {
+                "id": "6290df9d7d40192ad9defd4c",
+                "title": "1-2"
+              },
+              "children": null,
+              "id": "6290df9d7d40192ad9defd4c",
+              "name": "1-2",
+              "parentId": "6290dfb27d40192ad9defd56",
+              "lineColor": "#1380FF",
+              "hasChildren": true
+            }
+          ],
+          "id": "6290dfb27d40192ad9defd56",
+          "name": "11",
+          "parentId": "6290dfab7d40192ad9defd52",
+          "lineColor": "#1380FF",
+          "hasChildren": false
+        }
+      ],
+      "id": "6290dfab7d40192ad9defd52",
+      "name": "7",
+      "parentId": "6290dfaf7d40192ad9defd54",
+      "lineColor": "#1380FF",
+      "hasChildren": false
+    }
+  ],
+  "id": "6290dfaf7d40192ad9defd54",
+  "name": "9",
+  "parentId": null,
+  "lineColor": "#1380FF",
+  "hasChildren": false
+}

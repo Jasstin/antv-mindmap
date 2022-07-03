@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="container" class="mindmap-container" />
+    <div id="mxs-mindmap_container" class="mindmap-container"/>
     <textarea id="node-input" />
   </div>
 </template>
@@ -23,7 +23,8 @@ import {
   findData
 } from './tree/methods'
 import emitter from "./mitt";
-
+const isArray = (arg)=>Object.prototype.toString.call(arg).toLowerCase().indexOf('array')>5;
+const isObject = (arg)=>Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
 let tree;
 export default {
   props: {
@@ -77,20 +78,34 @@ export default {
     onDragEnd: Function
   },
   mounted() {
-    this.treeInit()
-    this.inputInit()
     this.$props.onAdd && emitter.on('onAdd', this.$props.onAdd)
     this.$props.onExpand && emitter.on('onExpand', this.$props.onExpand)
     this.$props.onCollapse && emitter.on('onCollapse', this.$props.onCollapse)
     this.$props.onSelectedNode && emitter.on('onSelectedNode', this.$props.onSelectedNode)
     this.$props.onAfterEdit && emitter.on('onAfterEdit', this.$props.onAfterEdit)
     this.$props.onDragEnd && emitter.on('onDragEnd', this.$props.onDragEnd)
+    this.changeCanvasSize()
+    window.addEventListener("resize",this.changeCanvasSize)
   },
   methods: {
+    changeCanvasSize(){
+      this.$nextTick(()=>{
+      const height = this.$el.parentNode.offsetHeight;
+      const width = this.$el.offsetWidth;
+      this.$el.style.height = height+'px';
+      if(tree){
+        tree.changeSize(width,height);
+        console.log("重新调整画布大小",width,height);
+      }
+    })
+    },
     treeInit() {
       const {modelValue} = this.$props
-      tree = new Tree('container', modelValue)
-      tree.init(this.$props)
+      this.$nextTick(()=>{
+        tree = new Tree('mxs-mindmap_container', modelValue)
+        tree.init(this.$props)
+        console.log("树初始化完毕");
+      })
     },
     inputInit() {
       EditInput.init('node-input')
@@ -106,6 +121,17 @@ export default {
     find: findData
   },
   watch: {
+    '$props.modelValue':{
+      handler(val){
+        console.log("接收到数据",val)
+        if(isArray(val)&& !val.length) return;
+        if(isObject(val)&& !Object.keys(val).length) return;
+        console.log("准备树初始化")
+        this.treeInit()
+        this.inputInit()
+      },
+      immediate:true
+    },
     '$props.tooltip': {
       handler(val) {
         if (val) {

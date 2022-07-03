@@ -1,14 +1,18 @@
 {
-  "name": "mindmap",
+  "name": "mxs-mindmap",
   "private": true,
   "version": "0.0.0",
+  "main": "./dist/mxs-mindmap.umd.js",
+  "module": "./dist/mxs-mindmap.es.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lib": "vite build --config vite-lib.config.ts && tsc --project tsconfig.lib.json"
   },
   "dependencies": {
     "@antv/g6": "^4.6.4",
+    "@babel/types": "^7.18.7",
     "color": "^4.2.3",
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
