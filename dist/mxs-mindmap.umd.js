@@ -124,7 +124,8 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
         children: [],
-        _children: []
+        _children: [],
+        rawData
       };
       if (rawChildren) {
         rawChildren.filter((t) => !t.destroyed).forEach((c, j) => {
