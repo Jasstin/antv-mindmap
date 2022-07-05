@@ -986,7 +986,7 @@ function handleMenuClick(target, item, graph) {
   } else if (target.getAttribute("code") === "Node") {
     let name = target.getAttribute("name");
     if (name) {
-      nodeMenuClickList[name](item, graph);
+      nodeMenuClickList[name](item.get("model"), item, graph);
     }
   }
 }

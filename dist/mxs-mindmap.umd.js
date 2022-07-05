@@ -992,7 +992,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     } else if (target.getAttribute("code") === "Node") {
       let name2 = target.getAttribute("name");
       if (name2) {
-        nodeMenuClickList[name2](item, graph);
+        nodeMenuClickList[name2](item.get("model"), item, graph);
       }
     }
   }
