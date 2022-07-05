@@ -11,71 +11,71 @@ import {
   onlyShowCurrent,
   backParent
 } from "./tree/methods"
-import { INode } from "@antv/g6-core/lib/interface/item";
 import hotkeys from "./tree/hotkeys";
+import { NodeData } from "./interface";
 
 const nodeMenuMap = {
   add: {
     name: 'add',
     title: '添加子节点',
-    click: (node: INode) => {
-      addData(node?._cfg?.model?.id as string, '')
+    click: (node: NodeData) => {
+      addData(node?.id as string, '')
     }
   },
   'add-parent': {
     name: 'add-parent',
     title: '添加父级节点',
-    click: (node: INode) => {
-      addParent(node?._cfg?.model?.id as string, '')
+    click: (node: NodeData) => {
+      addParent(node?.id as string, '')
     }
   },
   'add-sibling': {
     name: 'add-sibling',
     title: '添加兄弟节点',
-    click: (node: INode) => {
-      addSibling(node?._cfg?.model?.id as string, '')
+    click: (node: NodeData) => {
+      addSibling(node?.id as string, '')
     }
   },
   'edit': {
     name: 'edit',
     title: '编辑当前节点',
-    click: (node: INode) => {
-      edit(node?._cfg?.model?.id as string)
+    click: (node: NodeData) => {
+      edit(node?.id as string)
     }
   },
   'delete': {
     name: 'delete',
     title: '删除当前节点',
-    click: (node: INode) => {
-      deleteNode(node?._cfg?.model?.id as string)
+    click: (node:NodeData) => {
+      deleteNode(node?.id as string)
     }
   },
   'collapse': {
     name: 'collapse',
     title: '收起当前节点',
-    click: (node: INode) => {
-      collapse(node?._cfg?.model?.id as string)
+    click: (node:NodeData) => {
+      collapse(node?.id as string)
     }
   },
   'expand': {
     name: 'expand',
     title: '展开当前节点',
-    click: (node: INode) => {
-      expand(node?._cfg?.model?.id as string)
+    click: (node:NodeData) => {
+      expand(node?.id as string)
     }
   },
   'only-show-current': {
     name: 'only-show-current',
     title: '进入当前节点',
-    click: (node: INode) => {
-      onlyShowCurrent(node?._cfg?.model?.id as string)
+    click: (node:NodeData) => {
+      onlyShowCurrent(node?.id as string)
     }
   },
   'back-parent': {
     name: 'back-parent',
     title: '返回上一级节点',
-    click: (node: INode) => {
-      backParent(node?._cfg?.model?.id as string)
+    click: (node:NodeData) => {
+      backParent(node?.id as string)
     }
   }
 }

@@ -145,6 +145,7 @@
   overflow: hidden;
   color: #fff !important;
   z-index: 2;
+  position: fixed !important;
 }
 .g6-component-contextmenu ul, .g6-component-contextmenu li {
   list-style: none;

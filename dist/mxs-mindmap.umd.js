@@ -210,6 +210,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           parentId: id,
           collapse: false,
           isSubView: false,
+          rawData: typeof rawData === "string" ? {} : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -261,6 +262,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           collapse: false,
           isSubView: false,
           parentId: d.parentId,
+          rawData: typeof rawData === "string" ? {} : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -305,6 +307,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           parentId,
           collapse: false,
           isSubView: false,
+          rawData: typeof rawData === "string" ? {} : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -839,72 +842,63 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       name: "add",
       title: "\u6DFB\u52A0\u5B50\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        addData((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id, "");
+        addData(node == null ? void 0 : node.id, "");
       }
     },
     "add-parent": {
       name: "add-parent",
       title: "\u6DFB\u52A0\u7236\u7EA7\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        addParent((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id, "");
+        addParent(node == null ? void 0 : node.id, "");
       }
     },
     "add-sibling": {
       name: "add-sibling",
       title: "\u6DFB\u52A0\u5144\u5F1F\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        addSibling((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id, "");
+        addSibling(node == null ? void 0 : node.id, "");
       }
     },
     "edit": {
       name: "edit",
       title: "\u7F16\u8F91\u5F53\u524D\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        edit((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        edit(node == null ? void 0 : node.id);
       }
     },
     "delete": {
       name: "delete",
       title: "\u5220\u9664\u5F53\u524D\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        deleteNode((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        deleteNode(node == null ? void 0 : node.id);
       }
     },
     "collapse": {
       name: "collapse",
       title: "\u6536\u8D77\u5F53\u524D\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        collapse((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        collapse(node == null ? void 0 : node.id);
       }
     },
     "expand": {
       name: "expand",
       title: "\u5C55\u5F00\u5F53\u524D\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        expand((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        expand(node == null ? void 0 : node.id);
       }
     },
     "only-show-current": {
       name: "only-show-current",
       title: "\u8FDB\u5165\u5F53\u524D\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        onlyShowCurrent((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        onlyShowCurrent(node == null ? void 0 : node.id);
       }
     },
     "back-parent": {
       name: "back-parent",
       title: "\u8FD4\u56DE\u4E0A\u4E00\u7EA7\u8282\u70B9",
       click: (node) => {
-        var _a, _b;
-        backParent((_b = (_a = node == null ? void 0 : node._cfg) == null ? void 0 : _a.model) == null ? void 0 : _b.id);
+        backParent(node == null ? void 0 : node.id);
       }
     }
   };
