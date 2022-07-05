@@ -19,21 +19,21 @@ const nodeMenuMap = {
     name: 'add',
     title: '添加子节点',
     click: (node: NodeData) => {
-      addData(node?.id as string, '')
+      addData(node?.id as string, '请输入节点内容', false)
     }
   },
   'add-parent': {
     name: 'add-parent',
     title: '添加父级节点',
     click: (node: NodeData) => {
-      addParent(node?.id as string, '')
+      addParent(node?.id as string, '请输入节点内容', false)
     }
   },
   'add-sibling': {
     name: 'add-sibling',
     title: '添加兄弟节点',
     click: (node: NodeData) => {
-      addSibling(node?.id as string, '')
+      addSibling(node?.id as string, '请输入节点内容',false)
     }
   },
   'edit': {
@@ -46,35 +46,35 @@ const nodeMenuMap = {
   'delete': {
     name: 'delete',
     title: '删除当前节点',
-    click: (node:NodeData) => {
+    click: (node: NodeData) => {
       deleteNode(node?.id as string)
     }
   },
   'collapse': {
     name: 'collapse',
     title: '收起当前节点',
-    click: (node:NodeData) => {
+    click: (node: NodeData) => {
       collapse(node?.id as string)
     }
   },
   'expand': {
     name: 'expand',
     title: '展开当前节点',
-    click: (node:NodeData) => {
+    click: (node: NodeData) => {
       expand(node?.id as string)
     }
   },
   'only-show-current': {
     name: 'only-show-current',
     title: '进入当前节点',
-    click: (node:NodeData) => {
+    click: (node: NodeData) => {
       onlyShowCurrent(node?.id as string)
     }
   },
   'back-parent': {
     name: 'back-parent',
     title: '返回上一级节点',
-    click: (node:NodeData) => {
+    click: (node: NodeData) => {
       backParent(node?.id as string)
     }
   }

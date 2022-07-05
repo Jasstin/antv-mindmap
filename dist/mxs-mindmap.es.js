@@ -446,12 +446,16 @@ class EditInput {
   }
   init(id) {
     this._input = document.getElementById(id);
+    this._id = id;
     this.bindEvent();
   }
   showInput(x, y, width, height, name, fontSize, type, radius2, ratio) {
     let NodeInput = this._input;
-    if (!NodeInput)
-      return;
+    if (!NodeInput) {
+      this.init(this._id);
+      if (!this._input)
+        return;
+    }
     this._fontSize = fontSize;
     this._height = height;
     NodeInput.style.display = "block";
@@ -836,21 +840,21 @@ const nodeMenuMap = {
     name: "add",
     title: "\u6DFB\u52A0\u5B50\u8282\u70B9",
     click: (node) => {
-      addData(node == null ? void 0 : node.id, "");
+      addData(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
     }
   },
   "add-parent": {
     name: "add-parent",
     title: "\u6DFB\u52A0\u7236\u7EA7\u8282\u70B9",
     click: (node) => {
-      addParent(node == null ? void 0 : node.id, "");
+      addParent(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
     }
   },
   "add-sibling": {
     name: "add-sibling",
     title: "\u6DFB\u52A0\u5144\u5F1F\u8282\u70B9",
     click: (node) => {
-      addSibling(node == null ? void 0 : node.id, "");
+      addSibling(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
     }
   },
   "edit": {
