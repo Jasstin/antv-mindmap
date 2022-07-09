@@ -346,6 +346,7 @@ G6.registerBehavior('edit-mindmap', {
         // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
         if (isCurrentEdit.value) return;
         const {key, shiftKey, ctrlKey, altKey, metaKey} = evt;
+        console.log(evt)
         let handler = hotkeys.filter(item => item.key === key)
         if (!handler.length) return;
         if (shiftKey || ctrlKey || altKey || metaKey) {

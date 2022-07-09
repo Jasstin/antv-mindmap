@@ -1,7 +1,7 @@
 <template>
   <div>
     <div id="mxs-mindmap_container" class="mindmap-container"/>
-    <textarea id="node-input" />
+    <div id="node-input" contenteditable="true"/>
   </div>
 </template>
 <script lang="ts">

@@ -36,7 +36,7 @@ live demo: https://jasstin.github.io/antv-mindmap/
 | onAdd          | 新建节点时 | 新增节点数据                  |
 | onExpand       | 点击展开时 | 展开节点的数据                 |
 | onCollapse     | 点击收起时 | 收起节点的数据                 |
-| onSelectedNode | 选中节点时 | null(老版本占位符),选中节点数据                  |
+| onSelectedNode | 选中节点时 | 选中节点数据                  |
 | onAfterEdit    | 完成编辑时 | 用户输入的文本内容               |
 | onDragEnd      | 拖拽结束时 | 被拖拽节点、即将被放入的父级、即将被放入的位置 |
 

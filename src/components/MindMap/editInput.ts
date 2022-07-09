@@ -4,6 +4,9 @@ class EditInput {
   _input: HTMLInputElement | null = null
   _fontSize: number = 0
   _height: number = 0
+  _ratio: number = 1
+  _lineHeight = 12
+  _width = 0
   _id: string
 
   init(id: string) {
@@ -13,22 +16,25 @@ class EditInput {
   }
 
   showInput(x: number, y: number, width: number, height: number, name: string, fontSize: number, type: string, radius: number, ratio: number) {
-    let NodeInput = this._input;
-    if (!NodeInput) {
+    if (!this._input) {
       this.init(this._id)
       if (!this._input) return
     };
+    let NodeInput = this._input;
     this._fontSize = fontSize
     this._height = height
+    this._ratio = ratio;
+    this._width = width + 4 * ratio;
+    this._lineHeight = fontSize + paddingV * ratio * 2;
     NodeInput.style.display = 'block'
     NodeInput.style.position = 'fixed';
     NodeInput.style.top = y + 'px';
     NodeInput.style.left = x + 'px';
-    NodeInput.style.width = width + 'px';
-    NodeInput.style.height = height + 'px';
-    NodeInput.style.border = 'none';
+    NodeInput.style.width = width + 4 * ratio + 'px';
+    NodeInput.style.height = height + 4 * ratio + 'px';
+    NodeInput.style.border = `${2 * ratio}px solid`;
     NodeInput.style.boxSizing = 'border-box';
-    NodeInput.value = name
+    NodeInput.innerText = name
     NodeInput.style.fontSize = fontSize + 'px'
     NodeInput.style.textAlign = 'left'
     NodeInput.style.paddingTop = paddingV / 2 * ratio + 'px'
@@ -36,7 +42,9 @@ class EditInput {
     NodeInput.style.lineHeight = fontSize + paddingV * ratio + 'px'
     NodeInput.style.borderRadius = radius + 'px'
     NodeInput.style.zIndex = '1'
+    NodeInput.style.overflow = 'hidden'
     NodeInput.style.resize = 'none'
+    NodeInput.style.outline = 'none';
     NodeInput.placeholder = '请输入内容'
     if (name === '') {
       NodeInput.style.width = '120px';
@@ -44,14 +52,15 @@ class EditInput {
     if (type === 'dice-mind-map-root') {
       NodeInput.style.color = fontColor_root.value
       NodeInput.style.background = themeColor.value
+      NodeInput.style.borderColor = themeColor.value;
     } else if (type === 'dice-mind-map-sub') {
       NodeInput.style.color = fontColor_sub.value
       NodeInput.style.background = themeColor_sub.value
+      NodeInput.style.borderColor = themeColor_sub.value;
     } else if (type === 'dice-mind-map-leaf') {
       NodeInput.style.color = fontColor_sub.value
       NodeInput.style.background = '#fff'
-      NodeInput.style.borderRadius = '0px'
-      NodeInput.style.borderBottom = `1px solid ${themeColor.value}`
+      NodeInput.style.borderColor = themeColor.value;
     }
     let timer = setTimeout(() => {
       NodeInput.focus()
@@ -61,24 +70,25 @@ class EditInput {
 
   changeLength(ev: Event) {
     let input = ev.target as HTMLInputElement
-    let width = input.value.replace(/[^\x00-\xff]/g, "00").length * this._fontSize / 2 + paddingH * 2;
-    const size = this._fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-    if (width > size) width = size + paddingH * 3
-    input.style.height = '0px'
-    input.style.width = `${Math.max(width, 120)}px`
-    input.style.height = Math.max(input.scrollHeight, this._height) + 'px'
+    let row = input.innerText.split('\n').sort((a, b) => b.length - a.length);
+    let lineWidth = row[0].replace(/[^\x00-\xff]/g, "00").length;
+    if (lineWidth > 30) lineWidth = 30;
+    let width = lineWidth * this._fontSize / 2 + paddingH * 2;
+    width = width + 4 * this._ratio;
+    input.style.width = `${Math.max(width, this._width)}px`
+    input.style.height = `${Math.max(input.scrollHeight, this._height + 5)}px`
   }
 
   bindEvent() {
     if (!this._input) return
     this._input.addEventListener('input', this.changeLength.bind(this))
     this._input.addEventListener('blur', () => {
-      this.handleInputBlur(this._input.value)
+      this.handleInputBlur(this._input.innerText)
     })
     this._input.addEventListener('keydown', (ev) => {
-      if (ev.key === 'Enter') {
+      if (ev.key === 'Enter' && !ev.shiftKey) {
         let input = ev.target as HTMLInputElement
-        this.handleInputBlur.call(this, input.value)
+        this.handleInputBlur.call(this, input.innerText)
       }
     })
   }

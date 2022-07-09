@@ -449,6 +449,9 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       this._input = null;
       this._fontSize = 0;
       this._height = 0;
+      this._ratio = 1;
+      this._lineHeight = 12;
+      this._width = 0;
     }
     init(id) {
       this._input = document.getElementById(id);
@@ -456,23 +459,26 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       this.bindEvent();
     }
     showInput(x, y, width, height, name2, fontSize, type, radius2, ratio) {
-      let NodeInput = this._input;
-      if (!NodeInput) {
+      if (!this._input) {
         this.init(this._id);
         if (!this._input)
           return;
       }
+      let NodeInput = this._input;
       this._fontSize = fontSize;
       this._height = height;
+      this._ratio = ratio;
+      this._width = width + 4 * ratio;
+      this._lineHeight = fontSize + paddingV * ratio * 2;
       NodeInput.style.display = "block";
       NodeInput.style.position = "fixed";
       NodeInput.style.top = y + "px";
       NodeInput.style.left = x + "px";
-      NodeInput.style.width = width + "px";
-      NodeInput.style.height = height + "px";
-      NodeInput.style.border = "none";
+      NodeInput.style.width = width + 4 * ratio + "px";
+      NodeInput.style.height = height + 4 * ratio + "px";
+      NodeInput.style.border = `${2 * ratio}px solid`;
       NodeInput.style.boxSizing = "border-box";
-      NodeInput.value = name2;
+      NodeInput.innerText = name2;
       NodeInput.style.fontSize = fontSize + "px";
       NodeInput.style.textAlign = "left";
       NodeInput.style.paddingTop = paddingV / 2 * ratio + "px";
@@ -480,7 +486,9 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       NodeInput.style.lineHeight = fontSize + paddingV * ratio + "px";
       NodeInput.style.borderRadius = radius2 + "px";
       NodeInput.style.zIndex = "1";
+      NodeInput.style.overflow = "hidden";
       NodeInput.style.resize = "none";
+      NodeInput.style.outline = "none";
       NodeInput.placeholder = "\u8BF7\u8F93\u5165\u5185\u5BB9";
       if (name2 === "") {
         NodeInput.style.width = "120px";
@@ -488,14 +496,15 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       if (type === "dice-mind-map-root") {
         NodeInput.style.color = fontColor_root.value;
         NodeInput.style.background = themeColor.value;
+        NodeInput.style.borderColor = themeColor.value;
       } else if (type === "dice-mind-map-sub") {
         NodeInput.style.color = fontColor_sub.value;
         NodeInput.style.background = themeColor_sub.value;
+        NodeInput.style.borderColor = themeColor_sub.value;
       } else if (type === "dice-mind-map-leaf") {
         NodeInput.style.color = fontColor_sub.value;
         NodeInput.style.background = "#fff";
-        NodeInput.style.borderRadius = "0px";
-        NodeInput.style.borderBottom = `1px solid ${themeColor.value}`;
+        NodeInput.style.borderColor = themeColor.value;
       }
       let timer = setTimeout(() => {
         NodeInput.focus();
@@ -504,25 +513,26 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     }
     changeLength(ev) {
       let input = ev.target;
-      let width = input.value.replace(/[^\x00-\xff]/g, "00").length * this._fontSize / 2 + paddingH * 2;
-      const size = this._fontSize * maxFontCount + paddingH * 2;
-      if (width > size)
-        width = size + paddingH * 3;
-      input.style.height = "0px";
-      input.style.width = `${Math.max(width, 120)}px`;
-      input.style.height = Math.max(input.scrollHeight, this._height) + "px";
+      let row = input.innerText.split("\n").sort((a, b) => b.length - a.length);
+      let lineWidth = row[0].replace(/[^\x00-\xff]/g, "00").length;
+      if (lineWidth > 30)
+        lineWidth = 30;
+      let width = lineWidth * this._fontSize / 2 + paddingH * 2;
+      width = width + 4 * this._ratio;
+      input.style.width = `${Math.max(width, this._width)}px`;
+      input.style.height = `${Math.max(input.scrollHeight, this._height + 5)}px`;
     }
     bindEvent() {
       if (!this._input)
         return;
       this._input.addEventListener("input", this.changeLength.bind(this));
       this._input.addEventListener("blur", () => {
-        this.handleInputBlur(this._input.value);
+        this.handleInputBlur(this._input.innerText);
       });
       this._input.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") {
+        if (ev.key === "Enter" && !ev.shiftKey) {
           let input = ev.target;
-          this.handleInputBlur.call(this, input.value);
+          this.handleInputBlur.call(this, input.innerText);
         }
       });
     }
@@ -836,6 +846,18 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           return;
         selectedNodes.forEach((item) => {
           deleteNode(item.id);
+        });
+      },
+      name: "delete"
+    },
+    {
+      key: " ",
+      label: "\u7F16\u8F91",
+      Event: function(selectedNodes) {
+        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
+          return;
+        selectedNodes.forEach((item) => {
+          edit(item.id);
         });
       },
       name: "delete"
@@ -3185,6 +3207,7 @@ ${timetravel.value ? `
       if (isCurrentEdit.value)
         return;
       const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
+      console.log(evt);
       let handler = hotkeys.filter((item) => item.key === key);
       if (!handler.length)
         return;
@@ -3595,7 +3618,10 @@ ${timetravel.value ? `
     id: "mxs-mindmap_container",
     class: "mindmap-container"
   }, null, -1);
-  const _hoisted_2 = /* @__PURE__ */ vue.createElementVNode("textarea", { id: "node-input" }, null, -1);
+  const _hoisted_2 = /* @__PURE__ */ vue.createElementVNode("div", {
+    id: "node-input",
+    contenteditable: "true"
+  }, null, -1);
   const _hoisted_3 = [
     _hoisted_1,
     _hoisted_2
