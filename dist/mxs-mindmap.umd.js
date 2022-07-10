@@ -3506,6 +3506,15 @@ ${timetravel.value ? `
       this.changeCanvasSize();
       window.addEventListener("resize", this.changeCanvasSize);
     },
+    beforeUnmount() {
+      this.$props.onAdd && emitter.off("onAdd", this.$props.onAdd);
+      this.$props.onExpand && emitter.off("onExpand", this.$props.onExpand);
+      this.$props.onCollapse && emitter.off("onCollapse", this.$props.onCollapse);
+      this.$props.onSelectedNode && emitter.off("onSelectedNode", this.$props.onSelectedNode);
+      this.$props.onAfterEdit && emitter.off("onAfterEdit", this.$props.onAfterEdit);
+      this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
+      window.removeEventListener("resize", this.changeCanvasSize);
+    },
     methods: {
       changeCanvasSize() {
         this.$nextTick(() => {
