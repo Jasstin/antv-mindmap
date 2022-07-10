@@ -53,12 +53,9 @@ export const edit = (id: string) => {
   setIsCurrentEdit(true)
   EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
   EditInput.handleInputBlur = (name: string) => {
-    if (name.trim().length) {
-      emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
-      update(id, name.replace(/\s/g, ''))
-    } else if (name === '') {
-      deleteOneNode(id)
-    }
+    emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
+    let _name = name.replace(/\s/g, '');
+    update(id, _name === '' ? NodeData.get('model').name : _name)
     Tree.off('wheelzoom')
     EditInput.hideInput()
     let timer = setTimeout(() => {

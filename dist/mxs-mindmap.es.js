@@ -609,12 +609,9 @@ const edit = (id) => {
   setIsCurrentEdit(true);
   EditInput$1.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio);
   EditInput$1.handleInputBlur = (name2) => {
-    if (name2.trim().length) {
-      emitter.emit("onAfterEdit", name2.replace(/\s/g, ""));
-      update(id, name2.replace(/\s/g, ""));
-    } else if (name2 === "") {
-      deleteOneNode(id);
-    }
+    emitter.emit("onAfterEdit", name2.replace(/\s/g, ""));
+    let _name = name2.replace(/\s/g, "");
+    update(id, _name === "" ? NodeData2.get("model").name : _name);
     Tree2.off("wheelzoom");
     EditInput$1.hideInput();
     let timer = setTimeout(() => {
