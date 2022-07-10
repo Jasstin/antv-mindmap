@@ -91,7 +91,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       this._data = [];
       this._selectNode = null;
     }
-    createMdataFromData(rawData, id, parent = null) {
+    createMdataFromData(rawData, id, parent = null, isInit = false) {
       var _a;
       const {
         label,
@@ -124,25 +124,29 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
         children: [],
-        _children: [],
-        rawData
+        _children: []
       };
+      if (isInit) {
+        data.rawData = rawData;
+      } else {
+        data.rawData = rawData == null ? void 0 : rawData.rawData;
+      }
       if (rawChildren) {
         rawChildren.filter((t) => !t.destroyed).forEach((c, j) => {
           var _a2;
-          (_a2 = data == null ? void 0 : data.children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data));
+          (_a2 = data == null ? void 0 : data.children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit));
         });
       }
       if (_rawChildren) {
         _rawChildren.filter((t) => !t.destroyed).forEach((c, j) => {
           var _a2;
-          (_a2 = data == null ? void 0 : data._children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data));
+          (_a2 = data == null ? void 0 : data._children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit));
         });
       }
       return data;
     }
-    init(d) {
-      this.data = this.createMdataFromData(d, "0");
+    init(d, isInit = false) {
+      this.data = this.createMdataFromData(d, "0", null, isInit);
       return this.data;
     }
     find(id) {
@@ -3101,7 +3105,7 @@ ${timetravel.value ? `
             break;
           }
         }
-        emitter.emit("onDragEnd", [this.dragNodeId, this.selectNodeId, index]);
+        emitter.emit("onDragEnd", [findData(this.dragNodeId), findData(this.selectNodeId), index]);
         moveData(this.selectNodeId, this.dragNodeId, index);
       }
       tree2.getNodes().forEach((node) => {
@@ -3245,7 +3249,7 @@ ${timetravel.value ? `
   class Tree {
     constructor(containerId, data) {
       this.container = document.getElementById(containerId);
-      this.data = IMData$1.init(data instanceof Array ? data[0] : data);
+      this.data = IMData$1.init(data instanceof Array ? data[0] : data, true);
       this.tree = null;
     }
     createLayoutConfig(layoutConfig) {
@@ -3330,6 +3334,7 @@ ${timetravel.value ? `
     init(layoutConfig) {
       if (!this.container)
         return;
+      console.log(layoutConfig, "\u6811\u521D\u59CB\u5316\u53C2\u6570");
       const config = this.createLayoutConfig(layoutConfig);
       const tree2 = new G6__default["default"].TreeGraph(__spreadProps(__spreadValues({}, config), {
         container: this.container,

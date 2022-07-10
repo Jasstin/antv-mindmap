@@ -7,7 +7,7 @@ class IMData {
   _data: NodeData | any[] = []
   _selectNode: NodeData | null = null
 
-  private createMdataFromData(rawData: InputData | NodeData, id: string, parent: NodeData | null = null): NodeData {
+  private createMdataFromData(rawData: InputData | NodeData, id: string, parent: NodeData | null = null, isInit = false): NodeData {
     const {
       label,
       name,
@@ -40,23 +40,27 @@ class IMData {
       isCurrentSelected: false,
       children: [],
       _children: [],
-      rawData
+    }
+    if (isInit) {
+      data.rawData = rawData
+    }else{
+      data.rawData = rawData?.rawData
     }
     if (rawChildren) {
       rawChildren.filter(t => !t.destroyed).forEach((c, j) => {
-        data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+        data?.children?.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit))
       })
     }
     if (_rawChildren) {
       _rawChildren.filter(t => !t.destroyed).forEach((c, j) => {
-        data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data))
+        data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit))
       })
     }
     return data
   }
 
-  init(d: InputData) {
-    this.data = this.createMdataFromData(d, '0')
+  init(d: InputData,isInit=false) {
+    this.data = this.createMdataFromData(d, '0', null, isInit)
     return this.data
   }
 

@@ -73,7 +73,7 @@ class Tree {
 
   constructor(containerId: string, data: InputData | InputData[]) {
     this.container = document.getElementById(containerId)
-    this.data = IMData.init(data instanceof Array ? data[0] : data);
+    this.data = IMData.init(data instanceof Array ? data[0] : data, true);
     this.tree = null
   }
 
@@ -158,6 +158,7 @@ class Tree {
 
   init(layoutConfig?: layoutConfig) {
     if (!this.container) return
+    console.log(layoutConfig,'树初始化参数')
     const config = this.createLayoutConfig(layoutConfig)
     const tree = new G6.TreeGraph({
       ...config,

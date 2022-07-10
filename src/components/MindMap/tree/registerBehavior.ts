@@ -239,7 +239,7 @@ G6.registerBehavior('edit-mindmap', {
                     break;
                 }
             }
-            emitter.emit('onDragEnd', [this.dragNodeId, this.selectNodeId, index]);
+            emitter.emit('onDragEnd', [findData(this.dragNodeId), findData(this.selectNodeId), index]);
             moveData(this.selectNodeId, this.dragNodeId, index)
         }
         //    还原
