@@ -10,7 +10,7 @@ export default [
     label: '插入同级节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addSibling(selectedNodes[0].id, '新兄弟节点', false)
+      addSibling(selectedNodes[0].id, '新建模型', true)
     },
     name: 'add-sibling', // 右键菜单匹配值
   },
@@ -19,7 +19,7 @@ export default [
     label: '插入子节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addData(selectedNodes[0].id, '新子节点', false)
+      addData(selectedNodes[0].id, '新建模型', true)
     },
     name: 'add', // 右键菜单匹配值
   },
@@ -29,7 +29,7 @@ export default [
     label: '插入父节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addParent(selectedNodes[0].id, '新父节点', false)
+      addParent(selectedNodes[0].id, '新建模型', true)
     },
     name: 'add-parent', // 右键菜单匹配值
   },

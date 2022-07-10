@@ -121,7 +121,7 @@ class IMData {
       const depth = p ? p.depth + 1 : 0
       const fontSize = globalFontSize[depth] || 12;
       const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-      const wrapContent = wrapString(name === '' ? '请输入文本内容' : name, size, fontSize)
+      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
       const data: NodeData = {
         id: `${id}-${p.children.length}`,
         fullName: name,
@@ -172,7 +172,7 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      const wrapContent = wrapString(name === '' ? '请输入文本内容' : name, size, fontSize)
+      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
       const sibling: NodeData = {
         id: `${d.parentId}-${start}`,
         fullName: name,
@@ -218,7 +218,7 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      const wrapContent = wrapString(name === '' ? '请输入文本内容' : name, size, fontSize)
+      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
       const parent: NodeData = {
         id,
         fullName: name,

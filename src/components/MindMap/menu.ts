@@ -19,21 +19,21 @@ const nodeMenuMap = {
     name: 'add',
     title: '添加子节点',
     click: (node: NodeData) => {
-      addData(node?.id as string, '请输入节点内容', false)
+      addData(node?.id as string, '新建模型', true)
     }
   },
   'add-parent': {
     name: 'add-parent',
     title: '添加父级节点',
     click: (node: NodeData) => {
-      addParent(node?.id as string, '请输入节点内容', false)
+      addParent(node?.id as string, '新建模型', true)
     }
   },
   'add-sibling': {
     name: 'add-sibling',
     title: '添加兄弟节点',
     click: (node: NodeData) => {
-      addSibling(node?.id as string, '请输入节点内容',false)
+      addSibling(node?.id as string, '新建模型',true)
     }
   },
   'edit': {

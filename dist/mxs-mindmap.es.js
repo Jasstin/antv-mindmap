@@ -191,7 +191,7 @@ class IMData {
       const depth = p ? p.depth + 1 : 0;
       const fontSize = globalFontSize[depth] || 12;
       const size = fontSize * maxFontCount + paddingH * 2;
-      const wrapContent = wrapString(name === "" ? "\u8BF7\u8F93\u5165\u6587\u672C\u5185\u5BB9" : name, size, fontSize);
+      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
       const data = {
         id: `${id}-${p.children.length}`,
         fullName: name,
@@ -243,7 +243,7 @@ class IMData {
         desc = rawData.desc;
         content = rawData.content;
       }
-      const wrapContent = wrapString(name === "" ? "\u8BF7\u8F93\u5165\u6587\u672C\u5185\u5BB9" : name, size, fontSize);
+      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
       const sibling = {
         id: `${d.parentId}-${start}`,
         fullName: name,
@@ -288,7 +288,7 @@ class IMData {
         desc = rawData.desc;
         content = rawData.content;
       }
-      const wrapContent = wrapString(name === "" ? "\u8BF7\u8F93\u5165\u6587\u672C\u5185\u5BB9" : name, size, fontSize);
+      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
       const parent = {
         id,
         fullName: name,
@@ -743,7 +743,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addSibling(selectedNodes[0].id, "\u65B0\u5144\u5F1F\u8282\u70B9", false);
+      addSibling(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
     },
     name: "add-sibling"
   },
@@ -753,7 +753,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addData(selectedNodes[0].id, "\u65B0\u5B50\u8282\u70B9", false);
+      addData(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
     },
     name: "add"
   },
@@ -764,7 +764,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addParent(selectedNodes[0].id, "\u65B0\u7236\u8282\u70B9", false);
+      addParent(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
     },
     name: "add-parent"
   },
@@ -862,21 +862,21 @@ const nodeMenuMap = {
     name: "add",
     title: "\u6DFB\u52A0\u5B50\u8282\u70B9",
     click: (node) => {
-      addData(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
+      addData(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
     }
   },
   "add-parent": {
     name: "add-parent",
     title: "\u6DFB\u52A0\u7236\u7EA7\u8282\u70B9",
     click: (node) => {
-      addParent(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
+      addParent(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
     }
   },
   "add-sibling": {
     name: "add-sibling",
     title: "\u6DFB\u52A0\u5144\u5F1F\u8282\u70B9",
     click: (node) => {
-      addSibling(node == null ? void 0 : node.id, "\u8BF7\u8F93\u5165\u8282\u70B9\u5185\u5BB9", false);
+      addSibling(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
     }
   },
   "edit": {
