@@ -1017,12 +1017,12 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       }
     }
   }
-  const mindmap = new G6__default["default"].Minimap({
+  const mindmap = () => new G6__default["default"].Minimap({
     size: [100, 100],
     className: "mindmap-miniGap",
     type: "delegate"
   });
-  const toolbar = new G6__default["default"].ToolBar({
+  const toolbar = () => new G6__default["default"].ToolBar({
     className: "mindmap-toolbar",
     getContent: () => {
       return `
@@ -3321,9 +3321,9 @@ ${timetravel.value ? `
         groupByTypes: false
       };
       const plugins = [];
-      plugins.push(toolbar);
+      plugins.push(toolbar());
       if (layoutConfig == null ? void 0 : layoutConfig.mindmap) {
-        plugins.push(mindmap);
+        plugins.push(mindmap());
       }
       if (layoutConfig == null ? void 0 : layoutConfig.edit) {
         plugins.push(contextMenu);
@@ -3441,7 +3441,9 @@ ${timetravel.value ? `
     }
     destroy() {
       var _a;
+      console.log("\u7EC4\u4EF6\u9500\u6BC1");
       (_a = this.tree) == null ? void 0 : _a.destroy();
+      console.log("\u7EC4\u4EF6\u9500\u6BC1\u5B8C\u6210");
     }
   }
   var _export_sfc = (sfc, props) => {
@@ -3519,6 +3521,8 @@ ${timetravel.value ? `
       this.$props.onAfterEdit && emitter.off("onAfterEdit", this.$props.onAfterEdit);
       this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
       window.removeEventListener("resize", this.changeCanvasSize);
+      tree.destroy();
+      tree = null;
     },
     methods: {
       changeCanvasSize() {

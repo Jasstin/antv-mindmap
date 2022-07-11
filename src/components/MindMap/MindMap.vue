@@ -1,15 +1,15 @@
 <template>
   <div>
-    <div id="mxs-mindmap_container" class="mindmap-container"/>
-    <div id="node-input" contenteditable="true"/>
+    <div id="mxs-mindmap_container" class="mindmap-container" />
+    <div id="node-input" contenteditable="true" />
   </div>
 </template>
 <script lang="ts">
 import './css/Mindmap.scss'
-import {PropType} from 'vue'
+import { PropType } from 'vue'
 import Tree from './tree/tree'
-import {tooltip} from "./plugins";
-import {changeNodeMenuList, setGlobalTree} from "./variable";
+import { tooltip } from "./plugins";
+import { changeNodeMenuList, setGlobalTree } from "./variable";
 import EditInput from './editInput'
 import {
   addData,
@@ -23,16 +23,16 @@ import {
   findData
 } from './tree/methods'
 import emitter from "./mitt";
-const isArray = (arg)=>Object.prototype.toString.call(arg).toLowerCase().indexOf('array')>5;
-const isObject = (arg)=>Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
+const isArray = (arg) => Object.prototype.toString.call(arg).toLowerCase().indexOf('array') > 5;
+const isObject = (arg) => Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
 let tree;
 export default {
   props: {
     // 脑图数据
-    modelValue: {required: true},
+    modelValue: { required: true },
     // 绘制所需的变量
-    xGap: {type: Number, default: 18},
-    yGap: {type: Number, default: 84},
+    xGap: { type: Number, default: 18 },
+    yGap: { type: Number, default: 84 },
     branch: {
       type: Number,
       default: 1,
@@ -41,17 +41,17 @@ export default {
     branchColor: {
       type: String,
     },
-    themeColor: {type: String, default: 'rgb(19,128,255)'},
-    rootFontColor: {type: String, default: '#fff'},
-    subThemeColor: {type: String, default: 'rgba(245,245,245,1)'},
-    subFontColor: {type: String, default: '#333'},
-    direction: {type: String, default: 'LR'},
+    themeColor: { type: String, default: 'rgb(19,128,255)' },
+    rootFontColor: { type: String, default: '#fff' },
+    subThemeColor: { type: String, default: 'rgba(245,245,245,1)' },
+    subFontColor: { type: String, default: '#333' },
+    direction: { type: String, default: 'LR' },
     sharpCorner: Boolean,
     scaleExtent: {
       type: Object as PropType<[number, number]>,
       default: [0.1, 8]
     },
-    scaleRatio: {type: Number, default: 1},
+    scaleRatio: { type: Number, default: 1 },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -85,32 +85,34 @@ export default {
     this.$props.onAfterEdit && emitter.on('onAfterEdit', this.$props.onAfterEdit)
     this.$props.onDragEnd && emitter.on('onDragEnd', this.$props.onDragEnd)
     this.changeCanvasSize()
-    window.addEventListener("resize",this.changeCanvasSize)
+    window.addEventListener("resize", this.changeCanvasSize)
   },
-  beforeUnmount(){
+  beforeUnmount() {
     this.$props.onAdd && emitter.off('onAdd', this.$props.onAdd)
     this.$props.onExpand && emitter.off('onExpand', this.$props.onExpand)
     this.$props.onCollapse && emitter.off('onCollapse', this.$props.onCollapse)
     this.$props.onSelectedNode && emitter.off('onSelectedNode', this.$props.onSelectedNode)
     this.$props.onAfterEdit && emitter.off('onAfterEdit', this.$props.onAfterEdit)
     this.$props.onDragEnd && emitter.off('onDragEnd', this.$props.onDragEnd)
-    window.removeEventListener("resize",this.changeCanvasSize)
+    window.removeEventListener("resize", this.changeCanvasSize)
+    tree.destroy()
+    tree = null
   },
   methods: {
-    changeCanvasSize(){
-      this.$nextTick(()=>{
-      const height = this.$el.parentNode.offsetHeight;
-      const width = this.$el.offsetWidth;
-      this.$el.style.height = height+'px';
-      if(tree){
-        tree.changeSize(width,height);
-        console.log("重新调整画布大小",width,height);
-      }
-    })
+    changeCanvasSize() {
+      this.$nextTick(() => {
+        const height = this.$el.parentNode.offsetHeight;
+        const width = this.$el.offsetWidth;
+        this.$el.style.height = height + 'px';
+        if (tree) {
+          tree.changeSize(width, height);
+          console.log("重新调整画布大小", width, height);
+        }
+      })
     },
     treeInit() {
-      const {modelValue} = this.$props
-      this.$nextTick(()=>{
+      const { modelValue } = this.$props
+      this.$nextTick(() => {
         tree = new Tree('mxs-mindmap_container', modelValue)
         tree.init(this.$props)
         console.log("树初始化完毕");
@@ -130,16 +132,16 @@ export default {
     find: findData
   },
   watch: {
-    '$props.modelValue':{
-      handler(val){
-        console.log("接收到数据",val)
-        if(isArray(val)&& !val.length) return;
-        if(isObject(val)&& !Object.keys(val).length) return;
+    '$props.modelValue': {
+      handler(val) {
+        console.log("接收到数据", val)
+        if (isArray(val) && !val.length) return;
+        if (isObject(val) && !Object.keys(val).length) return;
         console.log("准备树初始化")
         this.treeInit()
         this.inputInit()
       },
-      immediate:true
+      immediate: true
     },
     '$props.tooltip': {
       handler(val) {

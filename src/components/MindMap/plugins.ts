@@ -1,13 +1,13 @@
 import G6 from "@antv/g6";
 import {timetravel, centerBtn, fitBtn, downloadBtn, scaleR, scaleRatio} from "./variable";
 // 小地图
-export const mindmap = new G6.Minimap({
+export const mindmap = ()=>new G6.Minimap({
     size: [100, 100],
     className: 'mindmap-miniGap',
     type: 'delegate'
 })
 // 工具栏
-export const toolbar = new G6.ToolBar({
+export const toolbar = ()=>new G6.ToolBar({
     className: 'mindmap-toolbar',
     getContent: () => {
         return `

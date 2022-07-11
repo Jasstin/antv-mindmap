@@ -145,9 +145,9 @@ class Tree {
       groupByTypes: false,
     }
     const plugins = [];
-    plugins.push(toolbar)
+    plugins.push(toolbar())
     if (layoutConfig?.mindmap) {
-      plugins.push(mindmap)
+      plugins.push(mindmap())
     }
     if (layoutConfig?.edit) {
       plugins.push(contextMenu)
@@ -272,7 +272,9 @@ class Tree {
   }
 
   destroy() {
+    console.log("组件销毁")
     this.tree?.destroy()
+    console.log("组件销毁完成")
   }
 }
 
