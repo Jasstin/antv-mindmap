@@ -43,7 +43,7 @@ class IMData {
     }
     if (isInit) {
       data.rawData = rawData
-    }else{
+    } else {
       data.rawData = rawData?.rawData
     }
     if (rawChildren) {
@@ -59,7 +59,7 @@ class IMData {
     return data
   }
 
-  init(d: InputData,isInit=false) {
+  init(d: InputData, isInit = false) {
     this.data = this.createMdataFromData(d, '0', null, isInit)
     return this.data
   }
@@ -138,7 +138,7 @@ class IMData {
         parentId: id,
         collapse: false,
         isSubView: false,
-        rawData: typeof rawData === 'string' ? {} : rawData,
+        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
         height: (fontSize + paddingV) * wrapContent.line + paddingV,
         type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
@@ -189,7 +189,7 @@ class IMData {
         collapse: false,
         isSubView: false,
         parentId: d.parentId,
-        rawData: typeof rawData === 'string' ? {} : rawData,
+        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
         height: (fontSize + paddingV) * wrapContent.line + paddingV,
         type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
@@ -235,7 +235,7 @@ class IMData {
         parentId,
         collapse: false,
         isSubView: false,
-        rawData: typeof rawData === 'string' ? {} : rawData,
+        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
         height: (fontSize + paddingV) * wrapContent.line + paddingV,
         type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
