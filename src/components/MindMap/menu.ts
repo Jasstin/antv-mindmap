@@ -80,7 +80,7 @@ const nodeMenuMap = {
   }
 }
 const nodeMenuClickList = {}
-const contextMenu = new G6.Menu({
+const contextMenu = ()=>new G6.Menu({
   getContent(evt) {
     if (!evt) return `div`;
     const isCanvasTarget = evt.target && evt.target.isCanvas && evt.target.isCanvas()

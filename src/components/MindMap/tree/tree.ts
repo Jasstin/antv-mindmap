@@ -150,7 +150,7 @@ class Tree {
       plugins.push(mindmap())
     }
     if (layoutConfig?.edit) {
-      plugins.push(contextMenu)
+      plugins.push(contextMenu())
     }
     config.plugins = plugins
     return config
