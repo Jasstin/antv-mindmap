@@ -214,7 +214,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           parentId: id,
           collapse: false,
           isSubView: false,
-          rawData: typeof rawData === "string" ? {} : rawData,
+          rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -266,7 +266,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           collapse: false,
           isSubView: false,
           parentId: d.parentId,
-          rawData: typeof rawData === "string" ? {} : rawData,
+          rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -311,7 +311,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           parentId,
           collapse: false,
           isSubView: false,
-          rawData: typeof rawData === "string" ? {} : rawData,
+          rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
           height: (fontSize + paddingV) * wrapContent.line + paddingV,
           type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
@@ -930,7 +930,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     }
   };
   const nodeMenuClickList = {};
-  const contextMenu = new G6__default["default"].Menu({
+  const contextMenu = () => new G6__default["default"].Menu({
     getContent(evt) {
       if (!evt)
         return `div`;
@@ -3326,7 +3326,7 @@ ${timetravel.value ? `
         plugins.push(mindmap());
       }
       if (layoutConfig == null ? void 0 : layoutConfig.edit) {
-        plugins.push(contextMenu);
+        plugins.push(contextMenu());
       }
       config.plugins = plugins;
       return config;
