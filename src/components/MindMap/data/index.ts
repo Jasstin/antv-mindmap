@@ -56,6 +56,9 @@ class IMData {
         data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit))
       })
     }
+    if (collapse) {
+      [data._children, data.children] = [data.children, data._children]
+    }
     return data
   }
 
@@ -86,8 +89,8 @@ class IMData {
   eoc(id: string, collapse: boolean): NodeData | null {
     const d = this.find(id)
     if (d) {
-      d.collapse = collapse
-        ;[d._children, d.children] = [d.children, d._children]
+      d.collapse = collapse;
+      [d._children, d.children] = [d.children, d._children]
     }
     return d
   }

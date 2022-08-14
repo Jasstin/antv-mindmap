@@ -143,6 +143,9 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           (_a2 = data == null ? void 0 : data._children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit));
         });
       }
+      if (collapse2) {
+        [data._children, data.children] = [data.children, data._children];
+      }
       return data;
     }
     init(d, isInit = false) {

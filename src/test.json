@@ -92,7 +92,8 @@
       "name": "6",
       "parentId": "6290dfaf7d40192ad9defd54",
       "lineColor": "#1380FF",
-      "hasChildren": false
+      "hasChildren": false,
+      "collapse": true
     },
     {
       "info": {
@@ -174,5 +175,6 @@
   "name": "9",
   "parentId": null,
   "lineColor": "#1380FF",
-  "hasChildren": false
+  "hasChildren": false,
+  "collapse": false
 }
