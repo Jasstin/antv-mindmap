@@ -25,7 +25,6 @@ import {
 import emitter from "./mitt";
 const isArray = (arg) => Object.prototype.toString.call(arg).toLowerCase().indexOf('array') > 5;
 const isObject = (arg) => Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
-import log from "./log"
 let tree;
 export default {
   props: {
