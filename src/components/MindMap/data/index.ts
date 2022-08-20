@@ -1,6 +1,6 @@
 import { InputData, NodeData } from "../interface";
 import { fittingString, wrapString } from "../utils";
-import { globalFontSize, maxFontCount, paddingH, paddingV, themeColor_sub, themeColor, themeColor_leaf, fontColor_sub, fontColor_leaf, fontColor_root } from "../variable";
+import { globalFontSize, maxFontCount, paddingH, paddingV, themeColor_sub, themeColor, themeColor_leaf, fontColor_sub, fontColor_leaf, fontColor_root, placeholderText } from "../variable";
 const buildNodeStyle = (name, desc = "", content = "", depth) => {
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
@@ -14,6 +14,7 @@ const buildNodeStyle = (name, desc = "", content = "", depth) => {
   const obj = {
     label: wrapName,
     name: wrapName,
+    fullName: name,
     fontSize,
     desc: wrapDesc,
     descFontSize: fontSize - 2,
@@ -47,7 +48,6 @@ class IMData {
     const depth = parent ? parent.depth + 1 : 0
     const data: NodeData = {
       id,
-      fullName: name,
       depth,
       desc,
       content,
@@ -145,10 +145,9 @@ class IMData {
         _children = rawData._children
       }
       const depth = p ? p.depth + 1 : 0
-      name = name === '' ? '新建模型' : name;
+      name = name === '' ? placeholderText : name;
       const data: NodeData = {
         id: `${id}-${p.children.length}`,
-        fullName: name,
         depth,
         desc,
         content,
@@ -189,10 +188,9 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      name = name === '' ? '新建模型' : name;
+      name = name === '' ? placeholderText : name;
       const sibling: NodeData = {
         id: `${d.parentId}-${start}`,
-        fullName: name,
         depth,
         desc,
         content,
@@ -230,10 +228,9 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      name = name === '' ? '新建模型' : name;
+      name = name === '' ? placeholderText : name;
       const parent: NodeData = {
         id,
-        fullName: name,
         depth,
         desc,
         content,
@@ -303,7 +300,7 @@ class IMData {
   }
 
   update(id: string, data: string | { name?: string, desc?: string, isCurrentSelected?: boolean }) {
-    const d = this.find(id)
+    let d = this.find(id)
     if (!d) return
     let name, desc, isCurrentSelect;
     if (typeof data !== 'string') {
@@ -318,6 +315,7 @@ class IMData {
       name = data;
     }
     Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect })
+    console.log(this.data, "dData")
   }
 
   backParent() {

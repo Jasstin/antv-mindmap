@@ -4,39 +4,23 @@
       <a href="https://github.com/hellowuxin/vue3-mindmap" target="_blank">GitHub</a>
     </div>
     <div class="right-top"><span>Props</span></div>
-    <mindmap
-        ref="mindMapRef"
-        class="left-bottom"
-        v-model="data"
-        :branch="themeList['branch'].value"
-        :branchColor="themeList['branchColor'].value"
-        :xGap="themeList['xGap'].value"
-        :yGap="themeList['yGap'].value"
-        :themeColor="themeList['themeColor'].value"
-        :rootFontColor="themeList['rootFontColor'].value"
-        :subThemeColor="themeList['subThemeColor'].value"
-        :subFontColor="themeList['subFontColor'].value"
-        :sharp-corner="themeList['sharp-corner'].value"
-        :scale-ratio="themeList['scale-ratio'].value"
-        :tooltip="featureList['tooltip'].value"
-        :edit="featureList['edit'].value"
-        :drag="featureList['drag'].value"
-        :zoom="featureList['zoom'].value"
-        :centerBtn="featureList['centerBtn'].value"
-        :fitBtn="featureList['fitBtn'].value"
-        :downloadBtn="featureList['downloadBtn'].value"
-        :timetravel="featureList['timetravel'].value"
-        :mindmap="featureList['mindmap'].value"
-        :watchResize="featureList['watchResize'].value"
-        :nodeMenu="nodeMenuList"
-        :onDragEnd="onDragEnd"
-    ></mindmap>
+    <mindmap ref="mindMapRef" class="left-bottom" v-model="data" :branch="themeList['branch'].value"
+      :branchColor="themeList['branchColor'].value" :xGap="themeList['xGap'].value" :yGap="themeList['yGap'].value"
+      :themeColor="themeList['themeColor'].value" :rootFontColor="themeList['rootFontColor'].value"
+      :subThemeColor="themeList['subThemeColor'].value" :subFontColor="themeList['subFontColor'].value"
+      :leafThemeColor="themeList['leafThemeColor'].value" :leafFontColor="themeList['leafFontColor'].value"
+      :sharp-corner="themeList['sharp-corner'].value" :scale-ratio="themeList['scale-ratio'].value"
+      :tooltip="featureList['tooltip'].value" :edit="featureList['edit'].value" :drag="featureList['drag'].value"
+      :zoom="featureList['zoom'].value" :centerBtn="featureList['centerBtn'].value"
+      :fitBtn="featureList['fitBtn'].value" :downloadBtn="featureList['downloadBtn'].value"
+      :timetravel="featureList['timetravel'].value" :mindmap="featureList['mindmap'].value"
+      :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :onDragEnd="onDragEnd"></mindmap>
     <div class="right-bottom">
       <div style="font-weight: bold;font-size: 16px">样式设置</div>
       <div v-for="(item, key) in themeList" :key="key">
         <label :for="key.toString()" style="width:130px" :title="item.desc">{{ key }}</label>
         <input type="range" :name="key" v-model.number="item.value" :min="item.min" :max="item.max" :step="item.step"
-               v-if="item.type==='range'" disabled>
+          v-if="item.type === 'range'" disabled>
         <input :type="item.type" :name="key.toString()" v-model="item.value" disabled v-else>
         <span class="value">{{ item.value }}</span>
       </div>
@@ -44,7 +28,7 @@
       <div v-for="(item, key) in featureList" :key="key">
         <label :for="key.toString()" style="width:130px" :title="item.desc">{{ key }}</label>
         <input type="range" :name="key" v-model.number="item.value" :min="item.min" :max="item.max" :step="item.step"
-               v-if="item.type==='range'" :disabled="item.disabled">
+          v-if="item.type === 'range'" :disabled="item.disabled">
         <input :type="item.type" :name="key.toString()" v-model="item.value" :disabled="item.disabled" v-else>
         <span class="value">{{ item.value }}</span>
       </div>
@@ -53,7 +37,7 @@
 </template>
 <script lang="ts">
 import learn from './test.json'
-import {defineComponent, reactive, ref} from 'vue'
+import { defineComponent, reactive, ref } from 'vue'
 import Mindmap from "./components/MindMap"
 // import "../dist/style.css"
 type input = { [key: string]: { type: string, value: boolean | string | number, desc?: string, min?: number, max?: number, step?: number, disabled?: boolean } }
@@ -65,28 +49,30 @@ export default defineComponent({
   },
   setup(props, context) {
     const themeList = reactive<input>({
-      'branch': {type: 'range', value: 1, desc: '线条宽度', min: 1, max: 6, step: 1},
-      'branchColor': {type: 'color', value: '#1380ff', desc: '线条颜色'},
-      'xGap': {type: 'range', value: 50, desc: '节点横向间距', min: 30, max: 100, step: 1},
-      'yGap': {type: 'range', value: 10, desc: '节点纵向间距', min: 10, max: 100, step: 1},
-      'themeColor': {type: 'color', value: '#1380ff', desc: '根节点背景色'},
-      'rootFontColor': {type: 'color', value: '#ffffff', desc: '根节点文字颜色'},
-      'subThemeColor': {type: 'color', value: '#f5f5f5', desc: '二级节点背景色'},
-      'subFontColor': {type: 'color', value: '#333333', desc: '二级节点文字颜色'},
-      'sharp-corner': {type: 'checkbox', value: true, desc: '直线链接'},
-      'scale-ratio': {type: 'range', value: 1, desc: '初始化缩放比例', min: 0, max: 10, step: 0.1}
+      'branch': { type: 'range', value: 1, desc: '线条宽度', min: 1, max: 6, step: 1 },
+      'branchColor': { type: 'color', value: '#ff0f00', desc: '线条颜色' },
+      'xGap': { type: 'range', value: 50, desc: '节点横向间距', min: 30, max: 100, step: 1 },
+      'yGap': { type: 'range', value: 10, desc: '节点纵向间距', min: 10, max: 100, step: 1 },
+      'themeColor': { type: 'color', value: '#ff4444', desc: '根节点背景色' },
+      'rootFontColor': { type: 'color', value: '#f5f5f5', desc: '根节点文字颜色' },
+      'subThemeColor': { type: 'color', value: '#000000', desc: '二级节点背景色' },
+      'subFontColor': { type: 'color', value: '#ffffff', desc: '二级节点文字颜色' },
+      'leafThemeColor': { type: 'color', value: '#48ff38', desc: '二级以下节点背景色' },
+      'leafFontColor': { type: 'color', value: '#9b9b9b', desc: '二级以下节点文字颜色' },
+      'sharp-corner': { type: 'checkbox', value: true, desc: '直线链接' },
+      'scale-ratio': { type: 'range', value: 1, desc: '初始化缩放比例', min: 0, max: 10, step: 0.1 }
     })
     const featureList = reactive<input>({
-      'tooltip': {type: 'checkbox', value: false, desc: '显示tooltip更多内容'},
-      'edit': {type: 'checkbox', value: true, desc: '可以对节点进行增删改查操作', disabled: true},
-      'drag': {type: 'checkbox', value: true, desc: '可以对画布进行拖拽'},
-      'zoom': {type: 'checkbox', value: true, desc: '可以对画布进行缩放'},
-      'centerBtn': {type: 'checkbox', value: true, desc: '把脑图对准画布中心'},
-      'fitBtn': {type: 'checkbox', value: true, desc: '缩放脑图到合适大小'},
-      'downloadBtn': {type: 'checkbox', value: true, desc: '下载脑图'},
-      'timetravel': {type: 'checkbox', value: true, desc: 'redo/undo'},
-      'mindmap': {type: 'checkbox', value: true, desc: '脑图缩略图', disabled: true},
-      'watchResize': {type: 'checkbox', value: true, desc: '监听屏幕变化时重置脑图大小', disabled: true},
+      'tooltip': { type: 'checkbox', value: false, desc: '显示tooltip更多内容' },
+      'edit': { type: 'checkbox', value: true, desc: '可以对节点进行增删改查操作', disabled: true },
+      'drag': { type: 'checkbox', value: true, desc: '可以对画布进行拖拽' },
+      'zoom': { type: 'checkbox', value: true, desc: '可以对画布进行缩放' },
+      'centerBtn': { type: 'checkbox', value: true, desc: '把脑图对准画布中心' },
+      'fitBtn': { type: 'checkbox', value: true, desc: '缩放脑图到合适大小' },
+      'downloadBtn': { type: 'checkbox', value: true, desc: '下载脑图' },
+      'timetravel': { type: 'checkbox', value: true, desc: 'redo/undo' },
+      'mindmap': { type: 'checkbox', value: true, desc: '脑图缩略图', disabled: true },
+      'watchResize': { type: 'checkbox', value: true, desc: '监听屏幕变化时重置脑图大小', disabled: true },
     })
     const data = ref({})
     const nodeMenuList = [
@@ -111,7 +97,7 @@ export default defineComponent({
   },
   mounted() {
     console.log(this.$refs.mindMapRef)
-    let timer = setTimeout(()=>{
+    let timer = setTimeout(() => {
       this.data = learn;
       clearTimeout(timer)
     });
@@ -124,7 +110,8 @@ export default defineComponent({
 })
 </script>
 <style lang="scss">
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
   margin: 0;

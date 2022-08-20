@@ -25,6 +25,7 @@ const wrapString = (str, maxWidth, fontSize) => {
   const pattern = new RegExp("[\u4E00-\u9FA5]+");
   const lineGroup = [];
   let firstIndex = 0;
+  let rowWidth = 0;
   str = str.replace(/\s/g, "");
   str.split("").forEach((letter, i, array) => {
     if (pattern.test(letter)) {
@@ -33,24 +34,34 @@ const wrapString = (str, maxWidth, fontSize) => {
       currentWidth += G6.Util.getLetterWidth(letter, fontSize);
     }
     if (currentWidth > maxWidth) {
+      if (currentWidth > rowWidth) {
+        rowWidth = currentWidth;
+      }
       lineGroup.push(str.slice(firstIndex, i));
       currentWidth = 0;
       firstIndex = i;
     } else if (i === array.length - 1) {
+      if (currentWidth > rowWidth) {
+        rowWidth = currentWidth;
+      }
       lineGroup.push(str.slice(firstIndex, i + 1));
     }
   });
-  return { line: lineGroup.length, text: lineGroup.join("\n") };
+  return { line: lineGroup.length, text: lineGroup.join("\n"), width: rowWidth };
 };
 window.wrapString = wrapString;
 const themeColor = ref("rgb(19, 128, 255)");
 const changeThemeColor = (val) => themeColor.value = val;
 const themeColor_sub = ref("rgb(245,245,245)");
 const changeSubThemeColor = (val) => themeColor_sub.value = val;
+const themeColor_leaf = ref("transparent");
+const changeLeafThemeColor = (val) => themeColor_leaf.value = val;
 const fontColor_root = ref("#ffffff");
 const changeRootFontColor = (val) => fontColor_root.value = val;
 const fontColor_sub = ref("#333");
 const changeSubFontColor = (val) => fontColor_sub.value = val;
+const fontColor_leaf = ref("#333");
+const changeLeafFontColor = (val) => fontColor_leaf.value = val;
 const branch = ref(2);
 const changeBranch = (val) => branch.value = val;
 const branchColor = ref("rgb(19, 128, 255)");
@@ -68,7 +79,7 @@ const changeScaleRatio = (val) => scaleRatio.value = val;
 const radius = 4;
 const paddingH = 10;
 const paddingV = 10;
-const maxFontCount = 12;
+const maxFontCount = 30;
 const globalFontSize = [16, 14, 12];
 const nodeMenuList = ref([]);
 const changeNodeMenuList = (val) => nodeMenuList.value = val;
@@ -79,6 +90,35 @@ const lineType = ref("cubic-horizontal");
 const setLineType = (val) => lineType.value = val;
 const isCurrentEdit = ref(false);
 const setIsCurrentEdit = (val) => isCurrentEdit.value = val;
+const placeholderText = "\u65B0\u5EFA\u6A21\u578B";
+const buildNodeStyle = (name, desc = "", content = "", depth) => {
+  const fontSize = globalFontSize[depth] || 12;
+  const size = fontSize * maxFontCount + paddingH * 2;
+  const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize);
+  const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2);
+  const nameHeight = (fontSize + paddingV) * nameLine + paddingV;
+  const descHeight = (fontSize - 2 + paddingV) * descLine + paddingV;
+  const height = nameHeight + (desc ? descHeight : 0);
+  const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value;
+  const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value;
+  const obj = {
+    label: wrapName,
+    name: wrapName,
+    fullName: name,
+    fontSize,
+    desc: wrapDesc,
+    descFontSize: fontSize - 2,
+    descHeight,
+    content,
+    width: Math.max(nameWidth, descWidth) + paddingV * 2,
+    height,
+    nameHeight,
+    FillColor,
+    FontColor,
+    type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf"
+  };
+  return obj;
+};
 class IMData {
   constructor() {
     this.data = null;
@@ -98,20 +138,11 @@ class IMData {
       isSubView
     } = rawData;
     const depth = parent ? parent.depth + 1 : 0;
-    const fontSize = globalFontSize[depth] || 12;
-    const size = fontSize * maxFontCount + paddingH * 2;
-    const wrapContent = wrapString(name || label, size, fontSize);
-    const data = {
+    const data = __spreadValues({
       id,
-      fullName: name,
-      label: wrapContent.text,
-      name: wrapContent.text,
       depth,
-      fontSize,
       desc,
       content,
-      width: Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3),
-      height: (fontSize + paddingV) * wrapContent.line + paddingV,
       isSubView: isSubView || false,
       collapse: collapse2 || false,
       parentId: (_a = parent == null ? void 0 : parent.id) != null ? _a : "0",
@@ -119,7 +150,7 @@ class IMData {
       isCurrentSelected: false,
       children: [],
       _children: []
-    };
+    }, buildNodeStyle(name, desc, content, depth));
     if (isInit) {
       data.rawData = rawData;
     } else {
@@ -196,29 +227,20 @@ class IMData {
         _children = rawData._children;
       }
       const depth = p ? p.depth + 1 : 0;
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2;
-      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
-      const data = {
+      name = name === "" ? placeholderText : name;
+      const data = __spreadValues({
         id: `${id}-${p.children.length}`,
-        fullName: name,
-        name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         parentId: id,
         collapse: false,
         isSubView: false,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
         children: [],
         _children: []
-      };
+      }, buildNodeStyle(name, desc, content, depth));
       if (children || _children) {
         children.forEach((item, i) => {
           var _a;
@@ -240,8 +262,6 @@ class IMData {
       const index = parseInt(id.split("-").pop(), 10);
       const start = before ? index : index + 1;
       const depth = d ? d.depth : 1;
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2;
       let name, desc, content;
       if (typeof rawData === "string") {
         name = rawData;
@@ -250,27 +270,20 @@ class IMData {
         desc = rawData.desc;
         content = rawData.content;
       }
-      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
-      const sibling = {
+      name = name === "" ? placeholderText : name;
+      const sibling = __spreadValues({
         id: `${d.parentId}-${start}`,
-        fullName: name,
-        name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         collapse: false,
         isSubView: false,
         parentId: d.parentId,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
         children: [],
         _children: []
-      };
+      }, buildNodeStyle(name, desc, content, depth));
       const parent = this.find(d.parentId);
       parent == null ? void 0 : parent.children.splice(start, 0, sibling);
       parent == null ? void 0 : parent.children.forEach((item, index2) => item.id = `${parent.id}-${index2}`);
@@ -284,8 +297,6 @@ class IMData {
       const p = this.find(d.parentId);
       const index = parseInt(id.split("-").pop(), 10);
       const depth = d ? d.depth : 1;
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2;
       let name, desc, content;
       const parentId = d.parentId;
       if (typeof rawData === "string") {
@@ -295,27 +306,20 @@ class IMData {
         desc = rawData.desc;
         content = rawData.content;
       }
-      const wrapContent = wrapString(name === "" ? "\u65B0\u5EFA\u6A21\u578B" : name, size, fontSize);
-      const parent = {
+      name = name === "" ? placeholderText : name;
+      const parent = __spreadValues({
         id,
-        fullName: name,
-        name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         parentId,
         collapse: false,
         isSubView: false,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
         children: [],
         _children: []
-      };
+      }, buildNodeStyle(name, desc, content, depth));
       p == null ? void 0 : p.children.splice(index, 1, parent);
       parent.children.push(this.createMdataFromData(d, id + "-0", parent));
       return parent;
@@ -366,30 +370,24 @@ class IMData {
     }
   }
   update(id, data) {
-    var _a, _b;
-    const d = this.find(id);
+    var _a, _b, _c;
+    let d = this.find(id);
     if (!d)
       return;
-    const fontSize = globalFontSize[d.depth] || 12;
-    const size = fontSize * maxFontCount + paddingH * 2;
-    let name, isCurrentSelect;
+    let name, desc, isCurrentSelect;
     if (typeof data !== "string") {
       if (data.isCurrentSelected) {
         this._selectNode && (this._selectNode.isCurrentSelected = false);
         this._selectNode = d;
       }
       name = (_a = data == null ? void 0 : data.name) != null ? _a : d.fullName;
-      isCurrentSelect = (_b = data == null ? void 0 : data.isCurrentSelected) != null ? _b : d.isCurrentSelected;
+      desc = (_b = data == null ? void 0 : data.desc) != null ? _b : d.desc;
+      isCurrentSelect = (_c = data == null ? void 0 : data.isCurrentSelected) != null ? _c : d.isCurrentSelected;
     } else {
       name = data;
     }
-    const wrapContent = wrapString(name, size, fontSize);
-    d.fullName = name;
-    d.name = wrapContent.text;
-    d.label = wrapContent.text;
-    d.width = Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3);
-    d.height = (fontSize + paddingV) * wrapContent.line + paddingV;
-    d.isCurrentSelected = isCurrentSelect;
+    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect });
+    console.log(this.data, "dData");
   }
   backParent() {
     let _data = this._data.pop();
@@ -479,7 +477,7 @@ class EditInput {
     NodeInput.style.height = height + 4 * ratio + "px";
     NodeInput.style.border = `${2 * ratio}px solid`;
     NodeInput.style.boxSizing = "border-box";
-    NodeInput.innerText = name;
+    NodeInput.innerText = placeholderText === name ? "" : name;
     NodeInput.style.fontSize = fontSize + "px";
     NodeInput.style.textAlign = "left";
     NodeInput.style.paddingTop = paddingV / 2 * ratio + "px";
@@ -490,7 +488,10 @@ class EditInput {
     NodeInput.style.overflow = "hidden";
     NodeInput.style.resize = "none";
     NodeInput.style.outline = "none";
-    NodeInput.placeholder = "\u8BF7\u8F93\u5165\u5185\u5BB9";
+    document.body.style["--placeholderText"] = placeholderText;
+    if (name === placeholderText) {
+      NodeInput.classList.add("empty");
+    }
     if (name === "") {
       NodeInput.style.width = "120px";
     }
@@ -503,8 +504,8 @@ class EditInput {
       NodeInput.style.background = themeColor_sub.value;
       NodeInput.style.borderColor = themeColor_sub.value;
     } else if (type === "dice-mind-map-leaf") {
-      NodeInput.style.color = fontColor_sub.value;
-      NodeInput.style.background = "#fff";
+      NodeInput.style.color = fontColor_leaf.value;
+      NodeInput.style.background = themeColor_leaf.value;
       NodeInput.style.borderColor = themeColor.value;
     }
     let timer = setTimeout(() => {
@@ -522,6 +523,11 @@ class EditInput {
     width = width + 4 * this._ratio;
     input.style.width = `${Math.max(width, this._width)}px`;
     input.style.height = `${Math.max(input.scrollHeight, this._height + 5)}px`;
+    if (input.innerText.length > 0) {
+      input.classList.remove("empty");
+    } else {
+      input.classList.add("empty");
+    }
   }
   bindEvent() {
     if (!this._input)
@@ -616,6 +622,7 @@ const edit = (id) => {
   setIsCurrentEdit(true);
   EditInput$1.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio);
   EditInput$1.handleInputBlur = (name2) => {
+    console.log(name2);
     emitter.emit("onAfterEdit", name2.replace(/\s/g, ""));
     let _name = name2.replace(/\s/g, "");
     update(id, _name === "" ? NodeData2.get("model").name : _name);
@@ -633,7 +640,7 @@ const edit = (id) => {
   });
 };
 const update = (id, name) => {
-  IMData$1.update(id, name);
+  IMData$1.update(id, { name });
   selectNode(id, true);
 };
 const selectNode = (id, selected) => {
@@ -747,7 +754,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addSibling(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addSibling(selectedNodes[0].id, placeholderText, true);
     },
     name: "add-sibling"
   },
@@ -757,7 +764,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addData(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addData(selectedNodes[0].id, placeholderText, true);
     },
     name: "add"
   },
@@ -768,7 +775,7 @@ var hotkeys = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addParent(selectedNodes[0].id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addParent(selectedNodes[0].id, placeholderText, true);
     },
     name: "add-parent"
   },
@@ -866,21 +873,21 @@ const nodeMenuMap = {
     name: "add",
     title: "\u6DFB\u52A0\u5B50\u8282\u70B9",
     click: (node) => {
-      addData(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addData(node == null ? void 0 : node.id, placeholderText, true);
     }
   },
   "add-parent": {
     name: "add-parent",
     title: "\u6DFB\u52A0\u7236\u7EA7\u8282\u70B9",
     click: (node) => {
-      addParent(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addParent(node == null ? void 0 : node.id, placeholderText, true);
     }
   },
   "add-sibling": {
     name: "add-sibling",
     title: "\u6DFB\u52A0\u5144\u5F1F\u8282\u70B9",
     click: (node) => {
-      addSibling(node == null ? void 0 : node.id, "\u65B0\u5EFA\u6A21\u578B", true);
+      addSibling(node == null ? void 0 : node.id, placeholderText, true);
     }
   },
   "edit": {
@@ -2591,6 +2598,14 @@ const {
   Util
 } = G6;
 function drawAddBtn(group, params) {
+  if (!params) {
+    params = {};
+  }
+  params.width = 30;
+  params.height = 30;
+  params.fontSize = 14;
+  params.fillColor = themeColor.value;
+  params.fontColor = themeColor.value;
   const r = params.height / 5;
   ({ x: params.width + r, y: params.height / 2, r, fill: params.fillColor });
   ({
@@ -2606,6 +2621,8 @@ function drawAddBtn(group, params) {
 }
 function drawCollapse(group, params) {
   const fontSize = 14;
+  params.width = 30;
+  params.height = 30;
   if (params.collapseNum === 0)
     return;
   if (params.collapseNum > 99)
@@ -2643,58 +2660,91 @@ function drawCollapse(group, params) {
   container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, action: "expand" });
   container == null ? void 0 : container.addShape("text", { attrs: textStyle, action: "expand" });
 }
+function getAttribute(cfg) {
+  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor } = cfg;
+  const RectStyle = {
+    x: 0,
+    y: 0,
+    width,
+    height,
+    radius,
+    fill: FillColor,
+    cursor: "pointer",
+    stroke: isCurrentSelected ? activeStrokeColor : "transparent",
+    lineWidth: 2
+  };
+  const TextStyle = {
+    x: paddingV,
+    y: paddingH,
+    text: cfg == null ? void 0 : cfg.label,
+    fill: FontColor,
+    fontSize,
+    textBaseline: "top",
+    cursor: "pointer",
+    fontWeight: 600
+  };
+  const DescWrapper = {
+    x: 0,
+    y: nameHeight,
+    width,
+    height: descHeight,
+    radius: [0, 0, radius, radius],
+    fill: "rgba(255,255,255,0.3)",
+    cursor: "pointer",
+    stroke: "transparent",
+    lineWidth: 2
+  };
+  const DescText = {
+    x: paddingV,
+    y: paddingV + nameHeight,
+    text: cfg == null ? void 0 : cfg.desc,
+    fill: FontColor,
+    fontSize: descFontSize,
+    textBaseline: "top",
+    cursor: "pointer",
+    lineHeight: paddingV + descFontSize
+  };
+  return { RectStyle, TextStyle, DescWrapper, DescText };
+}
+function buildNode(cfg, group) {
+  const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
+  const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0 });
+  group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1 });
+  if (cfg.desc) {
+    group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 });
+    group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1 });
+  }
+  return container;
+}
+function setState(name, state, node) {
+  const group = node.getContainer();
+  let wrapper = group.get("children").filter((t) => t.get("name") === "wrapper")[0];
+  if (name === "hover") {
+    let hoverColor = Color$1(themeColor.value).fade(0.5).string();
+    if (state) {
+      wrapper == null ? void 0 : wrapper.attr("stroke", hoverColor);
+    } else {
+      if (node.get("model").isCurrentSelected) {
+        wrapper == null ? void 0 : wrapper.attr("stroke", activeStrokeColor);
+      } else {
+        wrapper == null ? void 0 : wrapper.attr("stroke", "transparent");
+      }
+    }
+  } else if (name === "selected") {
+    wrapper == null ? void 0 : wrapper.attr("stroke", state ? activeStrokeColor : "transparent");
+  }
+}
 G6.registerNode("dice-mind-map-root", {
   draw(cfg, group) {
-    const fontSize = cfg == null ? void 0 : cfg.fontSize;
-    const FillColor = themeColor.value;
-    const FontColor = fontColor_root.value;
-    const { width, height, _children, isCurrentSelected } = cfg;
-    const RectStyle = {
-      x: 0,
-      y: 0,
-      width,
-      height,
-      radius,
-      fill: FillColor,
-      cursor: "pointer",
-      stroke: isCurrentSelected ? activeStrokeColor : "transparent",
-      lineWidth: 2
-    };
-    const TextStyle = {
-      x: paddingV,
-      y: paddingH - 1,
-      text: cfg == null ? void 0 : cfg.label,
-      fill: FontColor,
-      fontSize,
-      textBaseline: "top",
-      cursor: "pointer"
-    };
-    const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: "big-rect-shape", zIndex: 0 });
-    group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: "text-shape", zIndex: 1 });
-    drawAddBtn(group, { width, height, fillColor: FillColor, fontColor: FontColor, fontSize });
+    var _a;
+    const container = buildNode(cfg, group);
+    drawAddBtn();
     if (cfg.collapse) {
-      drawCollapse(group, { width, height, collapseNum: _children.length });
+      drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
     }
     return container;
   },
-  setState: function(name, state, node) {
-    const group = node.getContainer();
-    let wrapper = group.get("children").filter((t) => t.get("name") === "big-rect-shape")[0];
-    if (name === "hover") {
-      let hoverColor = Color$1(themeColor.value).fade(0.5).string();
-      if (state) {
-        wrapper == null ? void 0 : wrapper.attr("stroke", hoverColor);
-      } else {
-        if (node.get("model").isCurrentSelected) {
-          wrapper == null ? void 0 : wrapper.attr("stroke", activeStrokeColor);
-        } else {
-          wrapper == null ? void 0 : wrapper.attr("stroke", "transparent");
-        }
-      }
-    } else if (name === "selected") {
-      wrapper == null ? void 0 : wrapper.attr("stroke", state ? activeStrokeColor : "transparent");
-    }
-  },
+  setState,
   getAnchorPoints() {
     return [
       [0, 0.5],
@@ -2704,74 +2754,15 @@ G6.registerNode("dice-mind-map-root", {
 });
 G6.registerNode("dice-mind-map-sub", {
   drawShape: function drawShape(cfg, group) {
-    if (!cfg)
-      return;
-    const fontSize = cfg.fontSize;
-    const {
-      width,
-      height,
-      _children,
-      style,
-      isCurrentSelected
-    } = cfg;
-    const RectStyle = Object.assign({}, {
-      x: 0,
-      y: 0,
-      width,
-      height,
-      radius,
-      fill: themeColor_sub.value,
-      cursor: "pointer",
-      stroke: isCurrentSelected ? activeStrokeColor : "transparent",
-      lineWidth: 2
-    }, style);
-    const TextStyle = Object.assign({}, {
-      x: paddingV,
-      y: paddingH - 1,
-      text: cfg.label,
-      fill: fontColor_sub.value,
-      fontSize,
-      textBaseline: "top",
-      lineHeight: fontSize + paddingH,
-      cursor: "pointer"
-    }, style);
-    const container = group == null ? void 0 : group.addShape("rect", {
-      attrs: RectStyle,
-      name: "big-rect-shape",
-      zIndex: 0,
-      draggable: true
-    });
-    group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: "text", zIndex: 1, draggable: true });
-    drawAddBtn(group, {
-      width,
-      height,
-      fillColor: themeColor_sub.value,
-      fontColor: fontColor_sub.value,
-      fontSize
-    });
+    var _a;
+    const container = buildNode(cfg, group);
+    drawAddBtn();
     if (cfg.collapse) {
-      drawCollapse(group, { width, height, collapseNum: _children.length });
+      drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
     }
     return container;
   },
-  setState: function(name, state, node) {
-    const group = node.getContainer();
-    let wrapper = group.get("children").filter((t) => t.get("name") === "big-rect-shape")[0];
-    if (name === "hover") {
-      let hoverColor = Color$1(themeColor.value).fade(0.5).string();
-      if (state) {
-        wrapper == null ? void 0 : wrapper.attr("stroke", hoverColor);
-      } else {
-        if (node.get("model").isCurrentSelected) {
-          wrapper == null ? void 0 : wrapper.attr("stroke", activeStrokeColor);
-        } else {
-          wrapper == null ? void 0 : wrapper.attr("stroke", "transparent");
-        }
-      }
-    } else if (name === "selected") {
-      wrapper == null ? void 0 : wrapper.attr("stroke", state ? activeStrokeColor : "transparent");
-    }
-  },
+  setState,
   getAnchorPoints() {
     return [
       [0, 0.5],
@@ -2781,54 +2772,11 @@ G6.registerNode("dice-mind-map-sub", {
 });
 G6.registerNode("dice-mind-map-leaf", {
   draw(cfg, group) {
-    if (!cfg)
-      return;
-    const fontSize = cfg.fontSize;
-    const {
-      width,
-      height,
-      _children,
-      style,
-      isCurrentSelected
-    } = cfg;
-    const RectStyle = Object.assign({}, {
-      x: 0,
-      y: 0,
-      width,
-      height,
-      cursor: "pointer",
-      radius,
-      stroke: isCurrentSelected ? activeStrokeColor : "transparent",
-      lineWidth: 2,
-      fill: "transparent"
-    }, style);
-    const TextStyle = Object.assign({}, {
-      x: paddingV,
-      y: paddingH,
-      text: cfg.label,
-      fill: fontColor_sub.value,
-      fontSize,
-      textBaseline: "top",
-      lineHeight: fontSize + paddingH,
-      cursor: "pointer"
-    }, style);
-    _children.length ? 80 : 30;
-    const container = group == null ? void 0 : group.addShape("rect", {
-      attrs: RectStyle,
-      name: "big-rect-shape",
-      zIndex: 0,
-      draggable: true
-    });
-    group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: "text", zIndex: 1, draggable: true });
-    drawAddBtn(group, {
-      width,
-      height,
-      fillColor: themeColor.value,
-      fontColor: fontColor_root.value,
-      fontSize: fontSize + 1
-    });
+    var _a;
+    const container = buildNode(cfg, group);
+    drawAddBtn();
     if (cfg.collapse) {
-      drawCollapse(group, { width, height, collapseNum: _children.length });
+      drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
     }
     return container;
   },
@@ -2838,24 +2786,7 @@ G6.registerNode("dice-mind-map-leaf", {
       [1, 0.5]
     ];
   },
-  setState: function(name, state, node) {
-    const group = node.getContainer();
-    let wrapper = group.get("children").filter((t) => t.get("name") === "big-rect-shape")[0];
-    if (name === "hover") {
-      let hoverColor = Color$1(themeColor.value).fade(0.5).string();
-      if (state) {
-        wrapper == null ? void 0 : wrapper.attr("stroke", hoverColor);
-      } else {
-        if (node.get("model").isCurrentSelected) {
-          wrapper == null ? void 0 : wrapper.attr("stroke", activeStrokeColor);
-        } else {
-          wrapper == null ? void 0 : wrapper.attr("stroke", "transparent");
-        }
-      }
-    } else if (name === "selected") {
-      wrapper == null ? void 0 : wrapper.attr("stroke", state ? activeStrokeColor : "transparent");
-    }
-  }
+  setState
 });
 G6.registerEdge("hvh", {
   draw(cfg, group) {
@@ -3205,7 +3136,6 @@ G6.registerBehavior("edit-mindmap", {
     if (isCurrentEdit.value)
       return;
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-    console.log(evt);
     let handler = hotkeys.filter((item) => item.key === key);
     if (!handler.length)
       return;
@@ -3246,7 +3176,7 @@ G6.registerBehavior("edit-mindmap", {
 class Tree {
   constructor(containerId, data) {
     this.container = document.getElementById(containerId);
-    this.data = IMData$1.init(data instanceof Array ? data[0] : data, true);
+    this.data = data;
     this.tree = null;
   }
   createLayoutConfig(layoutConfig) {
@@ -3259,6 +3189,8 @@ class Tree {
         subFontColor,
         subThemeColor,
         themeColor: themeColor2,
+        leafThemeColor,
+        leafFontColor,
         timetravel: timetravel2,
         centerBtn: centerBtn2,
         fitBtn: fitBtn2,
@@ -3277,6 +3209,8 @@ class Tree {
         fitBtn: fitBtn2,
         downloadBtn: downloadBtn2,
         scaleRatio: scaleRatio2,
+        leafThemeColor,
+        leafFontColor,
         lineType: (layoutConfig == null ? void 0 : layoutConfig.sharpCorner) ? "hvh" : "cubic-horizontal"
       });
     }
@@ -3328,17 +3262,17 @@ class Tree {
     config.plugins = plugins;
     return config;
   }
-  init(layoutConfig) {
+  async init(layoutConfig) {
     if (!this.container)
       return;
-    console.log(layoutConfig, "\u6811\u521D\u59CB\u5316\u53C2\u6570");
     const config = this.createLayoutConfig(layoutConfig);
+    const data = IMData$1.init(this.data instanceof Array ? this.data[0] : this.data, true);
     const tree2 = new G6.TreeGraph(__spreadProps(__spreadValues({}, config), {
       container: this.container,
       animate: false,
       renderer: "canvas"
     }));
-    tree2.data(this.data);
+    tree2.data(data);
     this.tree = tree2;
     tree2.layout();
     tree2.fitCenter();
@@ -3385,7 +3319,9 @@ class Tree {
     fitBtn: fitBtn2,
     downloadBtn: downloadBtn2,
     scaleRatio: scaleRatio2,
-    lineType: lineType2
+    lineType: lineType2,
+    leafThemeColor,
+    leafFontColor
   }) {
     branch2 && changeBranch(branch2);
     branchColor2 && changeBranchColor(branchColor2);
@@ -3399,6 +3335,8 @@ class Tree {
     downloadBtn2 && changeDownloadBtn(downloadBtn2);
     scaleRatio2 && changeScaleRatio(scaleRatio2);
     lineType2 && setLineType(lineType2);
+    leafThemeColor && changeLeafThemeColor(leafThemeColor);
+    leafFontColor && changeLeafFontColor(leafFontColor);
   }
   changeLayout(layoutConfig) {
     var _a;
@@ -3438,9 +3376,7 @@ class Tree {
   }
   destroy() {
     var _a;
-    console.log("\u7EC4\u4EF6\u9500\u6BC1");
     (_a = this.tree) == null ? void 0 : _a.destroy();
-    console.log("\u7EC4\u4EF6\u9500\u6BC1\u5B8C\u6210");
   }
 }
 var _export_sfc = (sfc, props) => {
@@ -3470,6 +3406,8 @@ const _sfc_main = {
     rootFontColor: { type: String, default: "#fff" },
     subThemeColor: { type: String, default: "rgba(245,245,245,1)" },
     subFontColor: { type: String, default: "#333" },
+    leafThemeColor: { type: String, default: "transparent" },
+    leafFontColor: { type: String, default: "#333" },
     direction: { type: String, default: "LR" },
     sharpCorner: Boolean,
     scaleExtent: {
@@ -3529,7 +3467,6 @@ const _sfc_main = {
         this.$el.style.height = height + "px";
         if (tree) {
           tree.changeSize(width, height);
-          console.log("\u91CD\u65B0\u8C03\u6574\u753B\u5E03\u5927\u5C0F", width, height);
         }
       });
     },
@@ -3538,7 +3475,6 @@ const _sfc_main = {
       this.$nextTick(() => {
         tree = new Tree("mxs-mindmap_container", modelValue);
         tree.init(this.$props);
-        console.log("\u6811\u521D\u59CB\u5316\u5B8C\u6BD5");
       });
     },
     inputInit() {
@@ -3557,12 +3493,10 @@ const _sfc_main = {
   watch: {
     "$props.modelValue": {
       handler(val) {
-        console.log("\u63A5\u6536\u5230\u6570\u636E", val);
         if (isArray(val) && !val.length)
           return;
         if (isObject(val) && !Object.keys(val).length)
           return;
-        console.log("\u51C6\u5907\u6811\u521D\u59CB\u5316");
         this.treeInit();
         this.inputInit();
       },

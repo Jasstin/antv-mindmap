@@ -8,6 +8,8 @@ import {
   branchColor,
   changeBranch,
   changeBranchColor, changeCenterBtn, changeDownloadBtn, changeFitBtn,
+  changeLeafFontColor,
+  changeLeafThemeColor,
   changeRootFontColor, changeScaleRatio,
   changeSubFontColor,
   changeSubThemeColor,
@@ -36,6 +38,8 @@ interface layoutConfig {
   subThemeColor?: string
   subFontColor?: string
   scaleExtent?: string
+  leafThemeColor?: string
+  leafFontColor?: string
   scaleRatio?: number
   tooltip?: boolean,
   edit?: boolean,
@@ -64,6 +68,8 @@ interface Variable {
   downloadBtn?: boolean
   scaleRatio?: number
   lineType?: string
+  leafThemeColor?: string
+  leafFontColor?: string
 }
 
 class Tree {
@@ -73,7 +79,7 @@ class Tree {
 
   constructor(containerId: string, data: InputData | InputData[]) {
     this.container = document.getElementById(containerId)
-    this.data = IMData.init(data instanceof Array ? data[0] : data, true);
+    this.data = data
     this.tree = null
   }
 
@@ -86,6 +92,8 @@ class Tree {
         subFontColor,
         subThemeColor,
         themeColor,
+        leafThemeColor,
+        leafFontColor,
         timetravel,
         centerBtn,
         fitBtn,
@@ -104,6 +112,8 @@ class Tree {
         fitBtn,
         downloadBtn,
         scaleRatio,
+        leafThemeColor,
+        leafFontColor,
         lineType: layoutConfig?.sharpCorner ? 'hvh' : 'cubic-horizontal'
       })
     }
@@ -156,16 +166,17 @@ class Tree {
     return config
   }
 
-  init(layoutConfig?: layoutConfig) {
+  async init(layoutConfig?: layoutConfig) {
     if (!this.container) return
     const config = this.createLayoutConfig(layoutConfig)
+    const data = IMData.init(this.data instanceof Array ? this.data[0] : this.data, true);
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,
       animate: false,
       renderer: 'canvas'
     });
-    tree.data(this.data);
+    tree.data(data);
     this.tree = tree
     tree.layout()
     tree.fitCenter()
@@ -217,7 +228,9 @@ class Tree {
     fitBtn,
     downloadBtn,
     scaleRatio,
-    lineType
+    lineType,
+    leafThemeColor,
+    leafFontColor,
   }: Variable) {
     branch && changeBranch(branch)
     branchColor && changeBranchColor(branchColor)
@@ -231,7 +244,8 @@ class Tree {
     downloadBtn && changeDownloadBtn(downloadBtn)
     scaleRatio && changeScaleRatio(scaleRatio)
     lineType && setLineType(lineType)
-
+    leafThemeColor && changeLeafThemeColor(leafThemeColor)
+    leafFontColor && changeLeafFontColor(leafFontColor)
   }
 
   changeLayout(layoutConfig?: layoutConfig) {

@@ -1,5 +1,5 @@
 import G6 from "@antv/g6";
-import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, setCurrentNode } from "./variable";
+import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, setCurrentNode, placeholderText } from "./variable";
 import {
   addData,
   addParent,
@@ -19,21 +19,21 @@ const nodeMenuMap = {
     name: 'add',
     title: '添加子节点',
     click: (node: NodeData) => {
-      addData(node?.id as string, '新建模型', true)
+      addData(node?.id as string, placeholderText, true)
     }
   },
   'add-parent': {
     name: 'add-parent',
     title: '添加父级节点',
     click: (node: NodeData) => {
-      addParent(node?.id as string, '新建模型', true)
+      addParent(node?.id as string, placeholderText, true)
     }
   },
   'add-sibling': {
     name: 'add-sibling',
     title: '添加兄弟节点',
     click: (node: NodeData) => {
-      addSibling(node?.id as string, '新建模型',true)
+      addSibling(node?.id as string, placeholderText, true)
     }
   },
   'edit': {
@@ -80,7 +80,7 @@ const nodeMenuMap = {
   }
 }
 const nodeMenuClickList = {}
-const contextMenu = ()=>new G6.Menu({
+const contextMenu = () => new G6.Menu({
   getContent(evt) {
     if (!evt) return `div`;
     const isCanvasTarget = evt.target && evt.target.isCanvas && evt.target.isCanvas()

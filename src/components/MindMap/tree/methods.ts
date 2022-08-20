@@ -53,6 +53,7 @@ export const edit = (id: string) => {
   setIsCurrentEdit(true)
   EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
   EditInput.handleInputBlur = (name: string) => {
+    console.log(name)
     emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
     let _name = name.replace(/\s/g, '');
     update(id, _name === '' ? NodeData.get('model').name : _name)
@@ -70,7 +71,7 @@ export const edit = (id: string) => {
   })
 }
 export const update = (id: string, name: string) => {
-  IMData.update(id, name)
+  IMData.update(id, { name })
   selectNode(id, true)
 }
 export const selectNode = (id: string, selected: boolean) => {

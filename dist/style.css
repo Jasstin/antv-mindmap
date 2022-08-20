@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .mindmap-container {
   width: 100%;
   height: 100%;
@@ -147,7 +148,8 @@
   z-index: 2;
   position: fixed !important;
 }
-.g6-component-contextmenu ul, .g6-component-contextmenu li {
+.g6-component-contextmenu ul,
+.g6-component-contextmenu li {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -174,4 +176,8 @@
 }
 .g6-component-contextmenu li:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+.empty::before {
+  content: "新建模型";
 }

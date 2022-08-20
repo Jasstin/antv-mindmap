@@ -45,6 +45,8 @@ export default {
     rootFontColor: { type: String, default: '#fff' },
     subThemeColor: { type: String, default: 'rgba(245,245,245,1)' },
     subFontColor: { type: String, default: '#333' },
+    leafThemeColor: { type: String, default: 'transparent' },
+    leafFontColor: { type: String, default: '#333' },
     direction: { type: String, default: 'LR' },
     sharpCorner: Boolean,
     scaleExtent: {

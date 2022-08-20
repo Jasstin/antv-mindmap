@@ -148,7 +148,8 @@
   z-index: 2;
   position: fixed !important;
 
-  ul, li {
+  ul,
+  li {
     list-style: none;
     padding: 0;
     margin: 0;
@@ -180,5 +181,11 @@
     &:hover {
       background: rgba(255, 255, 255, 0.1);
     }
+  }
+}
+
+.empty {
+  &::before {
+    content:"新建模型"
   }
 }

@@ -43,3 +43,4 @@ export const lineType = ref<string>('cubic-horizontal')
 export const setLineType = (val: string) => lineType.value = val
 export const isCurrentEdit = ref<boolean>(false)
 export const setIsCurrentEdit = (val: boolean) => isCurrentEdit.value = val
+export const placeholderText = '新建模型'

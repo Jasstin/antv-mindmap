@@ -1,4 +1,4 @@
-import { fontColor_root, fontColor_sub, maxFontCount, paddingH, paddingV, themeColor, themeColor_sub } from "./variable";
+import { fontColor_leaf, fontColor_root, fontColor_sub, maxFontCount, paddingH, paddingV, themeColor, themeColor_leaf, themeColor_sub, placeholderText } from "./variable";
 
 class EditInput {
   _input: HTMLInputElement | null = null
@@ -34,7 +34,7 @@ class EditInput {
     NodeInput.style.height = height + 4 * ratio + 'px';
     NodeInput.style.border = `${2 * ratio}px solid`;
     NodeInput.style.boxSizing = 'border-box';
-    NodeInput.innerText = name
+    NodeInput.innerText = placeholderText === name ? "" : name
     NodeInput.style.fontSize = fontSize + 'px'
     NodeInput.style.textAlign = 'left'
     NodeInput.style.paddingTop = paddingV / 2 * ratio + 'px'
@@ -45,7 +45,10 @@ class EditInput {
     NodeInput.style.overflow = 'hidden'
     NodeInput.style.resize = 'none'
     NodeInput.style.outline = 'none';
-    NodeInput.placeholder = '请输入内容'
+    document.body.style['--placeholderText'] = placeholderText
+    if (name === placeholderText) {
+      NodeInput.classList.add("empty")
+    }
     if (name === '') {
       NodeInput.style.width = '120px';
     }
@@ -58,8 +61,8 @@ class EditInput {
       NodeInput.style.background = themeColor_sub.value
       NodeInput.style.borderColor = themeColor_sub.value;
     } else if (type === 'dice-mind-map-leaf') {
-      NodeInput.style.color = fontColor_sub.value
-      NodeInput.style.background = '#fff'
+      NodeInput.style.color = fontColor_leaf.value
+      NodeInput.style.background = themeColor_leaf.value
       NodeInput.style.borderColor = themeColor.value;
     }
     let timer = setTimeout(() => {
@@ -77,6 +80,11 @@ class EditInput {
     width = width + 4 * this._ratio;
     input.style.width = `${Math.max(width, this._width)}px`
     input.style.height = `${Math.max(input.scrollHeight, this._height + 5)}px`
+    if (input.innerText.length > 0) {
+      input.classList.remove("empty")
+    } else {
+      input.classList.add("empty")
+    }
   }
 
   bindEvent() {
