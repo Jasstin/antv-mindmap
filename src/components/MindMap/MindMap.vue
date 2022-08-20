@@ -25,6 +25,7 @@ import {
 import emitter from "./mitt";
 const isArray = (arg) => Object.prototype.toString.call(arg).toLowerCase().indexOf('array') > 5;
 const isObject = (arg) => Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
+import log from "./log"
 let tree;
 export default {
   props: {
@@ -106,7 +107,6 @@ export default {
         this.$el.style.height = height + 'px';
         if (tree) {
           tree.changeSize(width, height);
-          console.log("重新调整画布大小", width, height);
         }
       })
     },
@@ -115,7 +115,6 @@ export default {
       this.$nextTick(() => {
         tree = new Tree('mxs-mindmap_container', modelValue)
         tree.init(this.$props)
-        console.log("树初始化完毕");
       })
     },
     inputInit() {
@@ -134,10 +133,8 @@ export default {
   watch: {
     '$props.modelValue': {
       handler(val) {
-        console.log("接收到数据", val)
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
-        console.log("准备树初始化")
         this.treeInit()
         this.inputInit()
       },

@@ -1,7 +1,33 @@
 import { InputData, NodeData } from "../interface";
 import { fittingString, wrapString } from "../utils";
-import { globalFontSize, maxFontCount, paddingH, paddingV } from "../variable";
-import { collapse } from "../tree/methods";
+import { globalFontSize, maxFontCount, paddingH, paddingV, themeColor_sub, themeColor, themeColor_leaf, fontColor_sub, fontColor_leaf, fontColor_root } from "../variable";
+const buildNodeStyle = (name, desc = "", content = "", depth) => {
+  const fontSize = globalFontSize[depth] || 12;
+  const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
+  const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize); // 标题换行
+  const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2); // 描述换行
+  const nameHeight = (fontSize + paddingV) * (nameLine) + paddingV; // 标题高度
+  const descHeight = (fontSize - 2 + paddingV) * (descLine) + paddingV; // 描述内容高度
+  const height = nameHeight + (desc ? descHeight : 0) // 节点高度
+  const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value
+  const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value
+  const obj = {
+    label: wrapName,
+    name: wrapName,
+    fontSize,
+    desc: wrapDesc,
+    descFontSize: fontSize - 2,
+    descHeight,
+    content,
+    width: Math.max(nameWidth, descWidth) + paddingV * 2, //  标题宽度与描述宽度取最大值
+    height,
+    nameHeight,
+    FillColor,
+    FontColor,
+    type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+  }
+  return obj
+}
 class IMData {
   data: NodeData | null = null
   _data: NodeData | any[] = []
@@ -19,20 +45,12 @@ class IMData {
       isSubView
     } = rawData
     const depth = parent ? parent.depth + 1 : 0
-    const fontSize = globalFontSize[depth] || 12;
-    const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-    const wrapContent = wrapString(name || label, size, fontSize)
     const data: NodeData = {
       id,
       fullName: name,
-      label: wrapContent.text,
-      name: wrapContent.text,
       depth,
-      fontSize,
       desc,
       content,
-      width: Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3),
-      height: (fontSize + paddingV) * wrapContent.line + paddingV,
       isSubView: isSubView || false,
       collapse: collapse || false,
       parentId: parent?.id ?? '0',
@@ -40,6 +58,7 @@ class IMData {
       isCurrentSelected: false,
       children: [],
       _children: [],
+      ...buildNodeStyle(name, desc, content, depth)
     }
     if (isInit) {
       data.rawData = rawData
@@ -126,28 +145,21 @@ class IMData {
         _children = rawData._children
       }
       const depth = p ? p.depth + 1 : 0
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
+      name = name === '' ? '新建模型' : name;
       const data: NodeData = {
         id: `${id}-${p.children.length}`,
         fullName: name,
-        name: name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         parentId: id,
         collapse: false,
         isSubView: false,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
         isCurrentSelected: false,
         children: [],
-        _children: []
+        _children: [],
+        ...buildNodeStyle(name, desc, content, depth)
       }
       if (children || _children) {
         children.forEach((item, i) => {
@@ -169,8 +181,6 @@ class IMData {
       const index = parseInt(id.split('-').pop() as string, 10)
       const start = before ? index : index + 1
       const depth = d ? d.depth : 1
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
       let name, desc, content;
       if (typeof rawData === 'string') {
         name = rawData;
@@ -179,26 +189,21 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
+      name = name === '' ? '新建模型' : name;
       const sibling: NodeData = {
         id: `${d.parentId}-${start}`,
         fullName: name,
-        name: name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         collapse: false,
         isSubView: false,
         parentId: d.parentId,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
         isCurrentSelected: false,
         children: [],
-        _children: []
+        _children: [],
+        ...buildNodeStyle(name, desc, content, depth)
       }
       const parent: NodeData | null = this.find(d.parentId);
       parent?.children.splice(start, 0, sibling)
@@ -225,26 +230,21 @@ class IMData {
         desc = rawData.desc
         content = rawData.content
       }
-      const wrapContent = wrapString(name === '' ? '新建模型' : name, size, fontSize)
+      name = name === '' ? '新建模型' : name;
       const parent: NodeData = {
         id,
         fullName: name,
-        name: name,
-        label: name,
         depth,
-        fontSize,
         desc,
         content,
         parentId,
         collapse: false,
         isSubView: false,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        width: Math.min(fontSize * wrapContent.text.length + paddingH * 2, size + paddingH * 3),
-        height: (fontSize + paddingV) * wrapContent.line + paddingV,
-        type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
         isCurrentSelected: false,
         children: [],
-        _children: []
+        _children: [],
+        ...buildNodeStyle(name, desc, content, depth)
       }
       p?.children.splice(index, 1, parent)
       parent.children.push(this.createMdataFromData(d, id + '-0', parent))
@@ -302,29 +302,22 @@ class IMData {
     }
   }
 
-  update(id: string, data: string | { name?: string, isCurrentSelected?: boolean }) {
+  update(id: string, data: string | { name?: string, desc?: string, isCurrentSelected?: boolean }) {
     const d = this.find(id)
     if (!d) return
-    const fontSize = globalFontSize[d.depth] || 12;
-    const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-    let name, isCurrentSelect;
+    let name, desc, isCurrentSelect;
     if (typeof data !== 'string') {
       if (data.isCurrentSelected) {
         this._selectNode && (this._selectNode.isCurrentSelected = false)
         this._selectNode = d;
       }
       name = data?.name ?? d.fullName
+      desc = data?.desc ?? d.desc
       isCurrentSelect = data?.isCurrentSelected ?? d.isCurrentSelected
     } else {
       name = data;
     }
-    const wrapContent = wrapString(name, size, fontSize)
-    d.fullName = name;
-    d.name = wrapContent.text;
-    d.label = wrapContent.text;
-    d.width = Math.min(fontSize * name.length + paddingH * 2, size + paddingH * 3);
-    d.height = (fontSize + paddingV) * wrapContent.line + paddingV;
-    d.isCurrentSelected = isCurrentSelect
+    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect })
   }
 
   backParent() {

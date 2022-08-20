@@ -158,7 +158,6 @@ class Tree {
 
   init(layoutConfig?: layoutConfig) {
     if (!this.container) return
-    console.log(layoutConfig, '树初始化参数')
     const config = this.createLayoutConfig(layoutConfig)
     const tree = new G6.TreeGraph({
       ...config,
@@ -272,9 +271,7 @@ class Tree {
   }
 
   destroy() {
-    console.log("组件销毁")
     this.tree?.destroy()
-    console.log("组件销毁完成")
   }
 }
 
