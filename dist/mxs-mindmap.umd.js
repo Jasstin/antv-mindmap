@@ -53,7 +53,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         lineGroup.push(str.slice(firstIndex, i + 1));
       }
     });
-    return { line: lineGroup.length, text: lineGroup.join("\n"), width: rowWidth };
+    return { line: lineGroup.length, text: lineGroup.join("\n"), width: Math.ceil(rowWidth) };
   };
   window.wrapString = wrapString;
   const themeColor = vue.ref("rgb(19, 128, 255)");
@@ -85,7 +85,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const radius = 4;
   const paddingH = 10;
   const paddingV = 10;
-  const maxFontCount = 30;
+  const maxFontCount = 12;
   const globalFontSize = [16, 14, 12];
   const nodeMenuList = vue.ref([]);
   const changeNodeMenuList = (val) => nodeMenuList.value = val;
@@ -487,13 +487,14 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       NodeInput.style.fontSize = fontSize + "px";
       NodeInput.style.textAlign = "left";
       NodeInput.style.paddingTop = paddingV / 2 * ratio + "px";
-      NodeInput.style.paddingLeft = paddingH / 2 * ratio + "px";
-      NodeInput.style.lineHeight = fontSize + paddingV * ratio + "px";
+      NodeInput.style.paddingLeft = paddingH * ratio + "px";
+      NodeInput.style.lineHeight = (fontSize + paddingV) * ratio + "px";
       NodeInput.style.borderRadius = radius2 + "px";
       NodeInput.style.zIndex = "1";
       NodeInput.style.overflow = "hidden";
       NodeInput.style.resize = "none";
       NodeInput.style.outline = "none";
+      NodeInput.style.fontWeight = "600";
       document.body.style["--placeholderText"] = placeholderText;
       if (name2 === placeholderText) {
         NodeInput.classList.add("empty");
@@ -912,14 +913,14 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     },
     "collapse": {
       name: "collapse",
-      title: "\u6536\u8D77\u5F53\u524D\u8282\u70B9",
+      title: "\u6536\u8D77\u6A21\u578B",
       click: (node) => {
         collapse(node == null ? void 0 : node.id);
       }
     },
     "expand": {
       name: "expand",
-      title: "\u5C55\u5F00\u5F53\u524D\u8282\u70B9",
+      title: "\u5C55\u5F00\u6A21\u578B",
       click: (node) => {
         expand(node == null ? void 0 : node.id);
       }
@@ -2627,8 +2628,6 @@ ${timetravel.value ? `
   }
   function drawCollapse(group, params) {
     const fontSize = 14;
-    params.width = 30;
-    params.height = 30;
     if (params.collapseNum === 0)
       return;
     if (params.collapseNum > 99)
@@ -2687,7 +2686,8 @@ ${timetravel.value ? `
       fontSize,
       textBaseline: "top",
       cursor: "pointer",
-      fontWeight: 600
+      fontWeight: 600,
+      lineHeight: paddingV + fontSize
     };
     const DescWrapper = {
       x: 0,
@@ -2713,12 +2713,17 @@ ${timetravel.value ? `
     return { RectStyle, TextStyle, DescWrapper, DescText };
   }
   function buildNode(cfg, group) {
+    var _a, _b;
     const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
     const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0 });
     group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1 });
     if (cfg.desc) {
       group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 });
       group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1 });
+    }
+    if (cfg.collapse) {
+      console.log({ collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
+      drawCollapse(group, { collapseNum: (_b = cfg._children) == null ? void 0 : _b.length, width: RectStyle.width, height: RectStyle.height });
     }
     return container;
   }
@@ -2742,12 +2747,8 @@ ${timetravel.value ? `
   }
   G6__default["default"].registerNode("dice-mind-map-root", {
     draw(cfg, group) {
-      var _a;
       const container = buildNode(cfg, group);
       drawAddBtn();
-      if (cfg.collapse) {
-        drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
-      }
       return container;
     },
     setState,
@@ -2760,12 +2761,8 @@ ${timetravel.value ? `
   });
   G6__default["default"].registerNode("dice-mind-map-sub", {
     drawShape: function drawShape(cfg, group) {
-      var _a;
       const container = buildNode(cfg, group);
       drawAddBtn();
-      if (cfg.collapse) {
-        drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
-      }
       return container;
     },
     setState,
@@ -2778,12 +2775,8 @@ ${timetravel.value ? `
   });
   G6__default["default"].registerNode("dice-mind-map-leaf", {
     draw(cfg, group) {
-      var _a;
       const container = buildNode(cfg, group);
       drawAddBtn();
-      if (cfg.collapse) {
-        drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length });
-      }
       return container;
     },
     getAnchorPoints() {

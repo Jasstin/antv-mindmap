@@ -52,14 +52,14 @@ const nodeMenuMap = {
   },
   'collapse': {
     name: 'collapse',
-    title: '收起当前节点',
+    title: '收起模型',
     click: (node: NodeData) => {
       collapse(node?.id as string)
     }
   },
   'expand': {
     name: 'expand',
-    title: '展开当前节点',
+    title: '展开模型',
     click: (node: NodeData) => {
       expand(node?.id as string)
     }

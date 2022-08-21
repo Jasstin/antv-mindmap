@@ -38,13 +38,14 @@ class EditInput {
     NodeInput.style.fontSize = fontSize + 'px'
     NodeInput.style.textAlign = 'left'
     NodeInput.style.paddingTop = paddingV / 2 * ratio + 'px'
-    NodeInput.style.paddingLeft = paddingH / 2 * ratio + 'px'
-    NodeInput.style.lineHeight = fontSize + paddingV * ratio + 'px'
+    NodeInput.style.paddingLeft = paddingH * ratio + 'px'
+    NodeInput.style.lineHeight = (fontSize + paddingV) * ratio + 'px'
     NodeInput.style.borderRadius = radius + 'px'
     NodeInput.style.zIndex = '1'
     NodeInput.style.overflow = 'hidden'
     NodeInput.style.resize = 'none'
     NodeInput.style.outline = 'none';
+    NodeInput.style.fontWeight = "600";
     document.body.style['--placeholderText'] = placeholderText
     if (name === placeholderText) {
       NodeInput.classList.add("empty")

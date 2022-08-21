@@ -56,6 +56,6 @@ export const wrapString = (str: string, maxWidth: number, fontSize: number): { l
       lineGroup.push(str.slice(firstIndex, i + 1))
     }
   });
-  return { line: lineGroup.length, text: lineGroup.join('\n'), width: rowWidth }
+  return { line: lineGroup.length, text: lineGroup.join('\n'), width: Math.ceil(rowWidth) }
 };
 window.wrapString = wrapString

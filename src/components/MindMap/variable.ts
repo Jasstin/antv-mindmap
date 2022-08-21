@@ -31,7 +31,7 @@ export const changeScaleRatio = (val: number) => scaleRatio.value = val
 export const radius = 4
 export const paddingH = 10
 export const paddingV = 10
-export const maxFontCount = 30 // 最多显示字个数
+export const maxFontCount = 12 // 最多显示字个数
 export const globalFontSize = [16, 14, 12] // 字体大小
 export const nodeMenuList = ref([]) // 节点右键菜单列表
 export const changeNodeMenuList = (val: []) => nodeMenuList.value = val

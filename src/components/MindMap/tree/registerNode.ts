@@ -48,8 +48,6 @@ function drawAddBtn(group: IGroup, params?: { width?: number, height?: number, f
 
 function drawCollapse(group: IGroup, params: { width?, height?, collapseNum }) {
   const fontSize = 14
-  params.width = 30
-  params.height = 30
   if (params.collapseNum === 0) return
   if (params.collapseNum > 99) params.collapseNum = '...'
   const widthHeight = Util.getTextSize(params.collapseNum + '', fontSize);
@@ -107,7 +105,8 @@ function getAttribute(cfg) {
     fontSize: fontSize,
     textBaseline: textBaseline.top,
     cursor: 'pointer',
-    fontWeight: 600
+    fontWeight: 600,
+    lineHeight: paddingV + fontSize
   }
   const DescWrapper = {
     x: 0,
@@ -141,6 +140,10 @@ function buildNode(cfg, group) {
     group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 })
     group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1 })
   }
+  if (cfg.collapse) {
+    console.log({ collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
+    drawCollapse(group, { collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
+  }
   return container
 }
 
@@ -168,9 +171,6 @@ G6.registerNode(
   draw(cfg, group): IShape {
     const container = buildNode(cfg, group);
     drawAddBtn(group)
-    if (cfg.collapse) {
-      drawCollapse(group, { collapseNum: cfg._children?.length })
-    }
     return container;
   },
   setState,
@@ -187,9 +187,6 @@ G6.registerNode(
   drawShape: function drawShape(cfg, group) {
     const container = buildNode(cfg, group);
     drawAddBtn(group)
-    if (cfg.collapse) {
-      drawCollapse(group, { collapseNum: cfg._children?.length })
-    }
     return container;
   },
   setState,
@@ -206,9 +203,6 @@ G6.registerNode(
   draw(cfg, group) {
     const container = buildNode(cfg, group);
     drawAddBtn(group)
-    if (cfg.collapse) {
-      drawCollapse(group, { collapseNum: cfg._children?.length })
-    }
     return container;
   },
   getAnchorPoints() {
