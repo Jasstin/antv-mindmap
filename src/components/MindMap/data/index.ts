@@ -56,6 +56,7 @@ class IMData {
       parentId: parent?.id ?? '0',
       type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
       isCurrentSelected: false,
+      isCurrentEdit: false,
       children: [],
       _children: [],
       ...buildNodeStyle(name, desc, content, depth)
@@ -156,6 +157,7 @@ class IMData {
         isSubView: false,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: [],
         ...buildNodeStyle(name, desc, content, depth)
@@ -199,6 +201,7 @@ class IMData {
         parentId: d.parentId,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: [],
         ...buildNodeStyle(name, desc, content, depth)
@@ -239,6 +242,7 @@ class IMData {
         isSubView: false,
         rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: [],
         ...buildNodeStyle(name, desc, content, depth)
@@ -299,10 +303,10 @@ class IMData {
     }
   }
 
-  update(id: string, data: string | { name?: string, desc?: string, isCurrentSelected?: boolean }) {
+  update(id: string, data: string | { name?: string, desc?: string, isCurrentSelected?: boolean, isCurrentEdit?: boolean }) {
     let d = this.find(id)
     if (!d) return
-    let name, desc, isCurrentSelect;
+    let name, desc, isCurrentSelect, isCurrentEdit;
     if (typeof data !== 'string') {
       if (data.isCurrentSelected) {
         this._selectNode && (this._selectNode.isCurrentSelected = false)
@@ -311,10 +315,11 @@ class IMData {
       name = data?.name ?? d.fullName
       desc = data?.desc ?? d.desc
       isCurrentSelect = data?.isCurrentSelected ?? d.isCurrentSelected
+      isCurrentEdit = data?.isCurrentEdit ?? d.isCurrentEdit
     } else {
       name = data;
     }
-    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect })
+    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect, isCurrentEdit })
     console.log(this.data, "dData")
   }
 

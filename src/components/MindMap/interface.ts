@@ -12,6 +12,7 @@ export interface NodeData {
   width: number // 节点宽度
   height: number // 节点高度
   isCurrentSelected: boolean // 是否为当前选中节点
+  isCurrentEdit: boolean // 节点当前是否处于编辑状态
   desc?: string // 可配置的描述字段
   content?: string //可配置的内容字段
   destroyed?: boolean // 是否被废弃

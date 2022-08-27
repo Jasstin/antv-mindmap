@@ -5,10 +5,9 @@ import {
   paddingH,
   paddingV,
   branch,
-  branchColor, globalTree
+  branchColor, globalTree, fontColor_root, isDragging, isCurrentEdit
 } from "../variable";
 import Color from 'color';
-import { collapse } from "./methods";
 
 let activeStrokeColor = Color(themeColor.value).fade(0.2).string();
 
@@ -24,15 +23,13 @@ function drawAddBtn(group: IGroup, params?: { width?: number, height?: number, f
   if (!params) {
     params = {}
   }
-  params.width = 30
-  params.height = 30
-  params.fontSize = 14
+  params.fontSize = 16
   params.fillColor = themeColor.value
-  params.fontColor = themeColor.value
-  const r = params.height / 5
-  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor }
+  params.fontColor = fontColor_root.value
+  const r = params.height / 4
+  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: 'point' }
   const textStyle = {
-    x: params.width + 2.5,
+    x: params.width + r - 5,
     y: r - 1.5,
     text: '+',
     fill: params.fontColor,
@@ -41,9 +38,9 @@ function drawAddBtn(group: IGroup, params?: { width?: number, height?: number, f
     textBaseline: textBaseline.top,
     cursor: 'point'
   }
-  // const container = group.addGroup({name: 'add-btn', visible: false, capture: true})
-  // container?.addShape('circle', {attrs: circleStyle})
-  // container?.addShape('text', {attrs: textStyle})
+  const container = group.addGroup({ name: 'add-btn', zIndex: 3, capture: true, action: 'add' })
+  container?.addShape('circle', { attrs: circleStyle, zIndex: 3, action: 'add' })
+  container?.addShape('text', { attrs: textStyle, zIndex: 3, action: 'add' })
 }
 
 function drawCollapse(group: IGroup, params: { width?, height?, collapseNum }) {
@@ -78,7 +75,7 @@ function drawCollapse(group: IGroup, params: { width?, height?, collapseNum }) {
     textBaseline: textBaseline.top,
     cursor: 'pointer'
   }
-  const container = group.addGroup({ name: 'add-btn', visible: true, capture: true })
+  const container = group.addGroup({ name: 'expand-btn', visible: true, capture: true })
   container?.addShape('rect', { attrs: lineStyle })
   container?.addShape('circle', { attrs: circleStyle, action: 'expand' })
   container?.addShape('text', { attrs: textStyle, action: 'expand' })
@@ -135,16 +132,18 @@ function getAttribute(cfg) {
 
 function buildNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
-  const {depth} = cfg
-  const container = group?.addShape('rect', { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth>0 }) as IShape
-  group?.addShape('text', { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth>0 })
+  const { depth, collapse } = cfg
+  const container = group?.addShape('rect', { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth > 0 }) as IShape
+  group?.addShape('text', { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth > 0 })
   if (cfg.desc) {
-    group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth>0 })
-    group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth>0 })
+    group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth > 0 })
+    group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 })
   }
-  if (cfg.collapse) {
-    console.log({ collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
+  if (collapse) {
     drawCollapse(group, { collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
+  }
+  else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
+    drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height })
   }
   return container
 }
@@ -172,7 +171,6 @@ G6.registerNode(
   'dice-mind-map-root', {
   draw(cfg, group): IShape {
     const container = buildNode(cfg, group);
-    drawAddBtn(group)
     return container;
   },
   setState,
@@ -188,7 +186,6 @@ G6.registerNode(
   'dice-mind-map-sub', {
   drawShape: function drawShape(cfg, group) {
     const container = buildNode(cfg, group);
-    drawAddBtn(group)
     return container;
   },
   setState,
@@ -204,7 +201,6 @@ G6.registerNode(
   'dice-mind-map-leaf', {
   draw(cfg, group) {
     const container = buildNode(cfg, group);
-    drawAddBtn(group)
     return container;
   },
   getAnchorPoints() {
@@ -240,6 +236,7 @@ G6.registerEdge('hvh', {
       },
       // must be assigned in G6 3.3 and later versions. it can be any value you want
       name: 'path-shape',
+      zIndex: 0,
     });
     return shape;
   },

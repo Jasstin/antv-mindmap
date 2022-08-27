@@ -51,6 +51,7 @@ export const edit = (id: string) => {
   let ratio = Tree.getZoom()
   let { x, y } = Tree.getClientByPoint(pointX, pointY)
   setIsCurrentEdit(true)
+  update(id, { isCurrentEdit: true })
   EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
   EditInput.handleInputBlur = (name: string) => {
     console.log(name)
@@ -61,6 +62,8 @@ export const edit = (id: string) => {
     EditInput.hideInput()
     let timer = setTimeout(() => {
       setIsCurrentEdit(false);
+      update(id, { isCurrentEdit: false })
+      cancelAllSelect()
       clearTimeout(timer)
     }, 500)
   }
@@ -70,8 +73,12 @@ export const edit = (id: string) => {
     EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
   })
 }
-export const update = (id: string, name: string) => {
-  IMData.update(id, { name })
+export const update = (id: string, name: any) => {
+  if (typeof name === 'string') {
+    IMData.update(id, { name })
+  } else {
+    IMData.update(id, name)
+  }
   selectNode(id, true)
 }
 export const selectNode = (id: string, selected: boolean) => {
