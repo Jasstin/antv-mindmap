@@ -1045,7 +1045,12 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const mindmap = () => new G6__default["default"].Minimap({
     size: [100, 100],
     className: "mindmap-miniGap",
-    type: "delegate"
+    viewportClassName: "mindmap-miniGap-viewPort",
+    type: "delegate",
+    delegateStyle: {
+      fill: themeColor.value,
+      stroke: themeColor.value
+    }
   });
   const toolbar = () => new G6__default["default"].ToolBar({
     className: "mindmap-toolbar",

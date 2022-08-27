@@ -1039,7 +1039,12 @@ function handleMenuClick(target, item, graph) {
 const mindmap = () => new G6.Minimap({
   size: [100, 100],
   className: "mindmap-miniGap",
-  type: "delegate"
+  viewportClassName: "mindmap-miniGap-viewPort",
+  type: "delegate",
+  delegateStyle: {
+    fill: themeColor.value,
+    stroke: themeColor.value
+  }
 });
 const toolbar = () => new G6.ToolBar({
   className: "mindmap-toolbar",
