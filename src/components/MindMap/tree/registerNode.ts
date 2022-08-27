@@ -85,8 +85,9 @@ function drawCollapse(group: IGroup, params: { width?, height?, collapseNum }) {
 }
 
 function getAttribute(cfg) {
-  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor } = cfg
-  const RectStyle = {
+  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, style } = cfg
+  const withStyle = (obj) => Object.assign({}, obj, style)
+  const RectStyle = withStyle({
     x: 0,
     y: 0,
     width,
@@ -95,9 +96,9 @@ function getAttribute(cfg) {
     fill: FillColor,
     cursor: 'pointer',
     stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
-    lineWidth: 2,
-  }
-  const TextStyle = {
+    lineWidth: 2
+  })
+  const TextStyle = withStyle({
     x: paddingV,
     y: paddingH,
     text: cfg?.label,
@@ -107,8 +108,8 @@ function getAttribute(cfg) {
     cursor: 'pointer',
     fontWeight: 600,
     lineHeight: paddingV + fontSize
-  }
-  const DescWrapper = {
+  })
+  const DescWrapper = withStyle({
     x: 0,
     y: nameHeight,
     width,
@@ -117,9 +118,9 @@ function getAttribute(cfg) {
     fill: "rgba(255,255,255,0.3)",
     cursor: 'pointer',
     stroke: 'transparent',
-    lineWidth: 2,
-  }
-  const DescText = {
+    lineWidth: 2
+  })
+  const DescText = withStyle({
     x: paddingV,
     y: paddingV + nameHeight,
     text: cfg?.desc,
@@ -128,17 +129,18 @@ function getAttribute(cfg) {
     textBaseline: textBaseline.top,
     cursor: 'pointer',
     lineHeight: paddingV + descFontSize
-  }
+  })
   return { RectStyle, TextStyle, DescWrapper, DescText }
 }
 
 function buildNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
-  const container = group?.addShape('rect', { attrs: RectStyle, name: `wrapper`, zIndex: 0 }) as IShape
-  group?.addShape('text', { attrs: TextStyle, name: `title`, zIndex: 1 })
+  const {depth} = cfg
+  const container = group?.addShape('rect', { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth>0 }) as IShape
+  group?.addShape('text', { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth>0 })
   if (cfg.desc) {
-    group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 })
-    group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1 })
+    group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth>0 })
+    group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth>0 })
   }
   if (cfg.collapse) {
     console.log({ collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
