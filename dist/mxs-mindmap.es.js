@@ -2635,7 +2635,30 @@ function drawAddBtn(group, params) {
   container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, zIndex: 3, action: "add" });
   container == null ? void 0 : container.addShape("text", { attrs: textStyle, zIndex: 3, action: "add" });
 }
-function drawCollapse(group, params) {
+function drawCollapseBtn(group, params) {
+  if (!params) {
+    params = {};
+  }
+  params.fontSize = 16;
+  params.fillColor = themeColor.value;
+  params.fontColor = fontColor_root.value;
+  const r = params.height / 4;
+  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: "point" };
+  const textStyle = {
+    x: params.width + r - 5,
+    y: r - 1.5,
+    text: "<",
+    fill: params.fontColor,
+    fontSize: params.fontSize,
+    fontWeight: 600,
+    textBaseline: "top",
+    cursor: "point"
+  };
+  const container = group.addGroup({ name: "collapse-btn", zIndex: 3, capture: true, action: "collapse", visible: false });
+  container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, zIndex: 3, action: "collapse" });
+  container == null ? void 0 : container.addShape("text", { attrs: textStyle, zIndex: 3, action: "collapse" });
+}
+function drawExpandBtn(group, params) {
   const fontSize = 14;
   if (params.collapseNum === 0)
     return;
@@ -2723,7 +2746,7 @@ function getAttribute(cfg) {
   return { RectStyle, TextStyle, DescWrapper, DescText };
 }
 function buildNode(cfg, group) {
-  var _a;
+  var _a, _b;
   const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
   const { depth, collapse: collapse2 } = cfg;
   const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth > 0 });
@@ -2733,26 +2756,26 @@ function buildNode(cfg, group) {
     group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 });
   }
   if (collapse2) {
-    drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
+    drawExpandBtn(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
   } else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
     drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height });
+  } else if ((_b = cfg.children) == null ? void 0 : _b.length) {
+    drawCollapseBtn(group, { width: RectStyle.width, height: RectStyle.height });
   }
   return container;
 }
 function setState(name, state, node) {
   const group = node.getContainer();
   let wrapper = group.get("children").filter((t) => t.get("name") === "wrapper")[0];
+  let collapseBtn = group.get("children").filter((t) => t.get("name") === "collapse-btn")[0];
   if (name === "hover") {
     let hoverColor = Color$1(themeColor.value).fade(0.5).string();
     if (state) {
       wrapper == null ? void 0 : wrapper.attr("stroke", hoverColor);
     } else {
-      if (node.get("model").isCurrentSelected) {
-        wrapper == null ? void 0 : wrapper.attr("stroke", activeStrokeColor);
-      } else {
-        wrapper == null ? void 0 : wrapper.attr("stroke", "transparent");
-      }
+      wrapper == null ? void 0 : wrapper.attr("stroke", node.get("model").isCurrentSelected ? activeStrokeColor : "transparent");
     }
+    collapseBtn == null ? void 0 : collapseBtn.set("visible", state ? true : false);
   } else if (name === "selected") {
     wrapper == null ? void 0 : wrapper.attr("stroke", state ? activeStrokeColor : "transparent");
   }
@@ -2877,10 +2900,13 @@ G6.registerBehavior("edit-mindmap", {
     if (isDragging.value)
       return;
     tree2.setItemState(node, "hover", true);
+    node.toFront();
+    tree2.paint();
   },
   clearHoverStatus(evt) {
     const { currentTarget: tree2, item: node } = evt;
     tree2.setItemState(node, "hover", false);
+    tree2.layout();
   },
   dragStart(evt) {
     const { currentTarget: tree2, item: node, clientX, clientY } = evt;
@@ -3293,6 +3319,7 @@ class Tree {
       x: tree2.getWidth() / 2,
       y: tree2.getHeight() / 2
     });
+    tree2.setAutoPaint(true);
     this.enableFeature(layoutConfig);
     let global = window;
     global.mindTree = tree2;
