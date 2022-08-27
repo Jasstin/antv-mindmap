@@ -68,10 +68,13 @@ G6.registerBehavior('edit-mindmap', {
     const { currentTarget: tree, item: node } = evt
     if (isDragging.value) return
     tree.setItemState(node, 'hover', true)
+    node.toFront()
+    tree.paint();
   },
   clearHoverStatus(evt) {
     const { currentTarget: tree, item: node } = evt
     tree.setItemState(node, 'hover', false)
+    tree.layout()
   },
   dragStart(evt) {
     // 拖拽的节点及其所有子节点设置drag state 为true

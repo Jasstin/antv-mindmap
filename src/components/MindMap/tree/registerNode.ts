@@ -42,8 +42,31 @@ function drawAddBtn(group: IGroup, params?: { width?: number, height?: number, f
   container?.addShape('circle', { attrs: circleStyle, zIndex: 3, action: 'add' })
   container?.addShape('text', { attrs: textStyle, zIndex: 3, action: 'add' })
 }
+function drawCollapseBtn(group: IGroup, params?: { width?: number, height?: number, fillColor?: string, fontColor?: string, fontSize?: number }) {
+  if (!params) {
+    params = {}
+  }
+  params.fontSize = 16
+  params.fillColor = themeColor.value
+  params.fontColor = fontColor_root.value
+  const r = params.height / 4
+  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: 'point' }
+  const textStyle = {
+    x: params.width + r - 5,
+    y: r - 1.5,
+    text: '<',
+    fill: params.fontColor,
+    fontSize: params.fontSize,
+    fontWeight: 600,
+    textBaseline: textBaseline.top,
+    cursor: 'point'
+  }
+  const container = group.addGroup({ name: 'collapse-btn', zIndex: 3, capture: true, action: 'collapse', visible: false })
+  container?.addShape('circle', { attrs: circleStyle, zIndex: 3, action: 'collapse' })
+  container?.addShape('text', { attrs: textStyle, zIndex: 3, action: 'collapse' })
+}
 
-function drawCollapse(group: IGroup, params: { width?, height?, collapseNum }) {
+function drawExpandBtn(group: IGroup, params: { width?, height?, collapseNum }) {
   const fontSize = 14
   if (params.collapseNum === 0) return
   if (params.collapseNum > 99) params.collapseNum = '...'
@@ -140,10 +163,13 @@ function buildNode(cfg, group) {
     group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 })
   }
   if (collapse) {
-    drawCollapse(group, { collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
+    drawExpandBtn(group, { collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
   }
   else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
     drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height })
+  }
+  else if (cfg.children?.length) {
+    drawCollapseBtn(group, { width: RectStyle.width, height: RectStyle.height })
   }
   return container
 }
@@ -151,17 +177,15 @@ function buildNode(cfg, group) {
 function setState(name, state, node) {
   const group = node.getContainer();
   let wrapper = group.get('children').filter(t => t.get('name') === 'wrapper')[0]
+  let collapseBtn = group.get('children').filter(t => t.get('name') === 'collapse-btn')[0]
   if (name === 'hover') {
     let hoverColor = Color(themeColor.value).fade(0.5).string();
     if (state) {
       wrapper?.attr('stroke', hoverColor)
     } else {
-      if (node.get('model').isCurrentSelected) {
-        wrapper?.attr('stroke', activeStrokeColor)
-      } else {
-        wrapper?.attr('stroke', 'transparent')
-      }
+      wrapper?.attr('stroke', node.get('model').isCurrentSelected ? activeStrokeColor : 'transparent')
     }
+    collapseBtn?.set("visible", state ? true : false)
   } else if (name === 'selected') {
     wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
   }

@@ -184,6 +184,7 @@ class Tree {
       x: tree.getWidth() / 2,
       y: tree.getHeight() / 2
     })
+    tree.setAutoPaint(true)
     this.enableFeature(layoutConfig)
     let global = window as Window
     global.mindTree = tree
