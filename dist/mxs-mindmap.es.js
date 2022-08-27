@@ -91,6 +91,8 @@ const setLineType = (val) => lineType.value = val;
 const isCurrentEdit = ref(false);
 const setIsCurrentEdit = (val) => isCurrentEdit.value = val;
 const placeholderText = "\u65B0\u5EFA\u6A21\u578B";
+const isDragging = ref(false);
+const setIsDragging = (val) => isDragging.value = val;
 const buildNodeStyle = (name, desc = "", content = "", depth) => {
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2;
@@ -148,6 +150,7 @@ class IMData {
       parentId: (_a = parent == null ? void 0 : parent.id) != null ? _a : "0",
       type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
       isCurrentSelected: false,
+      isCurrentEdit: false,
       children: [],
       _children: []
     }, buildNodeStyle(name, desc, content, depth));
@@ -238,6 +241,7 @@ class IMData {
         isSubView: false,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: []
       }, buildNodeStyle(name, desc, content, depth));
@@ -281,6 +285,7 @@ class IMData {
         parentId: d.parentId,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: []
       }, buildNodeStyle(name, desc, content, depth));
@@ -317,6 +322,7 @@ class IMData {
         isSubView: false,
         rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: []
       }, buildNodeStyle(name, desc, content, depth));
@@ -370,11 +376,11 @@ class IMData {
     }
   }
   update(id, data) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d;
     let d = this.find(id);
     if (!d)
       return;
-    let name, desc, isCurrentSelect;
+    let name, desc, isCurrentSelect, isCurrentEdit2;
     if (typeof data !== "string") {
       if (data.isCurrentSelected) {
         this._selectNode && (this._selectNode.isCurrentSelected = false);
@@ -383,10 +389,11 @@ class IMData {
       name = (_a = data == null ? void 0 : data.name) != null ? _a : d.fullName;
       desc = (_b = data == null ? void 0 : data.desc) != null ? _b : d.desc;
       isCurrentSelect = (_c = data == null ? void 0 : data.isCurrentSelected) != null ? _c : d.isCurrentSelected;
+      isCurrentEdit2 = (_d = data == null ? void 0 : data.isCurrentEdit) != null ? _d : d.isCurrentEdit;
     } else {
       name = data;
     }
-    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect });
+    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect, isCurrentEdit: isCurrentEdit2 });
     console.log(this.data, "dData");
   }
   backParent() {
@@ -621,6 +628,7 @@ const edit = (id) => {
   let ratio = Tree2.getZoom();
   let { x, y } = Tree2.getClientByPoint(pointX, pointY);
   setIsCurrentEdit(true);
+  update(id, { isCurrentEdit: true });
   EditInput$1.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio);
   EditInput$1.handleInputBlur = (name2) => {
     console.log(name2);
@@ -631,6 +639,8 @@ const edit = (id) => {
     EditInput$1.hideInput();
     let timer = setTimeout(() => {
       setIsCurrentEdit(false);
+      update(id, { isCurrentEdit: false });
+      cancelAllSelect();
       clearTimeout(timer);
     }, 500);
   };
@@ -641,7 +651,11 @@ const edit = (id) => {
   });
 };
 const update = (id, name) => {
-  IMData$1.update(id, { name });
+  if (typeof name === "string") {
+    IMData$1.update(id, { name });
+  } else {
+    IMData$1.update(id, name);
+  }
   selectNode(id, true);
 };
 const selectNode = (id, selected) => {
@@ -2602,15 +2616,13 @@ function drawAddBtn(group, params) {
   if (!params) {
     params = {};
   }
-  params.width = 30;
-  params.height = 30;
-  params.fontSize = 14;
+  params.fontSize = 16;
   params.fillColor = themeColor.value;
-  params.fontColor = themeColor.value;
-  const r = params.height / 5;
-  ({ x: params.width + r, y: params.height / 2, r, fill: params.fillColor });
-  ({
-    x: params.width + 2.5,
+  params.fontColor = fontColor_root.value;
+  const r = params.height / 4;
+  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: "point" };
+  const textStyle = {
+    x: params.width + r - 5,
     y: r - 1.5,
     text: "+",
     fill: params.fontColor,
@@ -2618,7 +2630,10 @@ function drawAddBtn(group, params) {
     fontWeight: 600,
     textBaseline: "top",
     cursor: "point"
-  });
+  };
+  const container = group.addGroup({ name: "add-btn", zIndex: 3, capture: true, action: "add" });
+  container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, zIndex: 3, action: "add" });
+  container == null ? void 0 : container.addShape("text", { attrs: textStyle, zIndex: 3, action: "add" });
 }
 function drawCollapse(group, params) {
   const fontSize = 14;
@@ -2654,14 +2669,15 @@ function drawCollapse(group, params) {
     textBaseline: "top",
     cursor: "pointer"
   };
-  const container = group.addGroup({ name: "add-btn", visible: true, capture: true });
+  const container = group.addGroup({ name: "expand-btn", visible: true, capture: true });
   container == null ? void 0 : container.addShape("rect", { attrs: lineStyle });
   container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, action: "expand" });
   container == null ? void 0 : container.addShape("text", { attrs: textStyle, action: "expand" });
 }
 function getAttribute(cfg) {
-  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor } = cfg;
-  const RectStyle = {
+  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, style } = cfg;
+  const withStyle = (obj) => Object.assign({}, obj, style);
+  const RectStyle = withStyle({
     x: 0,
     y: 0,
     width,
@@ -2671,8 +2687,8 @@ function getAttribute(cfg) {
     cursor: "pointer",
     stroke: isCurrentSelected ? activeStrokeColor : "transparent",
     lineWidth: 2
-  };
-  const TextStyle = {
+  });
+  const TextStyle = withStyle({
     x: paddingV,
     y: paddingH,
     text: cfg == null ? void 0 : cfg.label,
@@ -2682,8 +2698,8 @@ function getAttribute(cfg) {
     cursor: "pointer",
     fontWeight: 600,
     lineHeight: paddingV + fontSize
-  };
-  const DescWrapper = {
+  });
+  const DescWrapper = withStyle({
     x: 0,
     y: nameHeight,
     width,
@@ -2693,8 +2709,8 @@ function getAttribute(cfg) {
     cursor: "pointer",
     stroke: "transparent",
     lineWidth: 2
-  };
-  const DescText = {
+  });
+  const DescText = withStyle({
     x: paddingV,
     y: paddingV + nameHeight,
     text: cfg == null ? void 0 : cfg.desc,
@@ -2703,21 +2719,23 @@ function getAttribute(cfg) {
     textBaseline: "top",
     cursor: "pointer",
     lineHeight: paddingV + descFontSize
-  };
+  });
   return { RectStyle, TextStyle, DescWrapper, DescText };
 }
 function buildNode(cfg, group) {
-  var _a, _b;
+  var _a;
   const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
-  const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0 });
-  group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1 });
+  const { depth, collapse: collapse2 } = cfg;
+  const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth > 0 });
+  group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth > 0 });
   if (cfg.desc) {
-    group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 });
-    group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1 });
+    group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth > 0 });
+    group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 });
   }
-  if (cfg.collapse) {
-    console.log({ collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
-    drawCollapse(group, { collapseNum: (_b = cfg._children) == null ? void 0 : _b.length, width: RectStyle.width, height: RectStyle.height });
+  if (collapse2) {
+    drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
+  } else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
+    drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height });
   }
   return container;
 }
@@ -2742,7 +2760,6 @@ function setState(name, state, node) {
 G6.registerNode("dice-mind-map-root", {
   draw(cfg, group) {
     const container = buildNode(cfg, group);
-    drawAddBtn();
     return container;
   },
   setState,
@@ -2756,7 +2773,6 @@ G6.registerNode("dice-mind-map-root", {
 G6.registerNode("dice-mind-map-sub", {
   drawShape: function drawShape(cfg, group) {
     const container = buildNode(cfg, group);
-    drawAddBtn();
     return container;
   },
   setState,
@@ -2770,7 +2786,6 @@ G6.registerNode("dice-mind-map-sub", {
 G6.registerNode("dice-mind-map-leaf", {
   draw(cfg, group) {
     const container = buildNode(cfg, group);
-    drawAddBtn();
     return container;
   },
   getAnchorPoints() {
@@ -2804,13 +2819,13 @@ G6.registerEdge("hvh", {
           ["L", endPoint.x, endPoint.y]
         ]
       },
-      name: "path-shape"
+      name: "path-shape",
+      zIndex: 0
     });
     return shape;
   }
 });
 G6.registerBehavior("edit-mindmap", {
-  dragging: false,
   selectNodeId: null,
   dragNodeId: null,
   nodePosition: {},
@@ -2832,15 +2847,20 @@ G6.registerBehavior("edit-mindmap", {
     cancelAllSelect();
   },
   clickNode(evt) {
-    evt.currentTarget;
+    const tree2 = evt.currentTarget;
     const model = evt.item.get("model");
     const name = evt.target.get("action");
     if (name === "expand") {
       expand(model.id);
+    } else if (name === "collapse") {
+      collapse(model.id);
+    } else if (name === "add") {
+      addData(model == null ? void 0 : model.id, placeholderText, true);
     } else if (model.isCurrentSelected) {
       edit(model.id);
     } else {
       selectNode(model.id, !model.isCurrentSelected);
+      tree2.findById(model.id).toFront();
     }
   },
   selectNode(evt) {
@@ -2854,7 +2874,7 @@ G6.registerBehavior("edit-mindmap", {
   },
   hoverNode(evt) {
     const { currentTarget: tree2, item: node } = evt;
-    if (this.dragging)
+    if (isDragging.value)
       return;
     tree2.setItemState(node, "hover", true);
   },
@@ -2865,7 +2885,7 @@ G6.registerBehavior("edit-mindmap", {
   dragStart(evt) {
     const { currentTarget: tree2, item: node, clientX, clientY } = evt;
     const id = node.get("model").id;
-    this.dragging = true;
+    setIsDragging(true);
     this.dragNodeId = id;
     const _dragnode = tree2.findById(this.dragNodeId);
     document.documentElement.style.cursor = "grabbing";
@@ -2916,7 +2936,7 @@ G6.registerBehavior("edit-mindmap", {
     });
   },
   dragNode({ tree: tree2, clientX, clientY, width, height }) {
-    if (!this.dragging)
+    if (!isDragging.value)
       return;
     let nodePosition = this.nodePosition;
     let nodes = [];
@@ -3005,9 +3025,9 @@ G6.registerBehavior("edit-mindmap", {
     }
   },
   dragEnd({ tree: tree2, clientX, clientY }) {
-    if (!this.dragging)
+    if (!isDragging.value)
       return;
-    this.dragging = false;
+    setIsDragging(false);
     if (this.dragNodeId) {
       tree2.setItemState(this.dragNodeId, "drag", false);
     }

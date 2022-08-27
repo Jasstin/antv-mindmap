@@ -97,6 +97,8 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const isCurrentEdit = vue.ref(false);
   const setIsCurrentEdit = (val) => isCurrentEdit.value = val;
   const placeholderText = "\u65B0\u5EFA\u6A21\u578B";
+  const isDragging = vue.ref(false);
+  const setIsDragging = (val) => isDragging.value = val;
   const buildNodeStyle = (name2, desc = "", content = "", depth) => {
     const fontSize = globalFontSize[depth] || 12;
     const size = fontSize * maxFontCount + paddingH * 2;
@@ -154,6 +156,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         parentId: (_a = parent == null ? void 0 : parent.id) != null ? _a : "0",
         type: ["dice-mind-map-root", "dice-mind-map-sub"][depth] || "dice-mind-map-leaf",
         isCurrentSelected: false,
+        isCurrentEdit: false,
         children: [],
         _children: []
       }, buildNodeStyle(name2, desc, content, depth));
@@ -244,6 +247,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           isSubView: false,
           rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           isCurrentSelected: false,
+          isCurrentEdit: false,
           children: [],
           _children: []
         }, buildNodeStyle(name2, desc, content, depth));
@@ -287,6 +291,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           parentId: d.parentId,
           rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           isCurrentSelected: false,
+          isCurrentEdit: false,
           children: [],
           _children: []
         }, buildNodeStyle(name2, desc, content, depth));
@@ -323,6 +328,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           isSubView: false,
           rawData: typeof rawData === "string" ? {} : rawData.rawData ? rawData.rawData : rawData,
           isCurrentSelected: false,
+          isCurrentEdit: false,
           children: [],
           _children: []
         }, buildNodeStyle(name2, desc, content, depth));
@@ -376,11 +382,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       }
     }
     update(id, data) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d;
       let d = this.find(id);
       if (!d)
         return;
-      let name2, desc, isCurrentSelect;
+      let name2, desc, isCurrentSelect, isCurrentEdit2;
       if (typeof data !== "string") {
         if (data.isCurrentSelected) {
           this._selectNode && (this._selectNode.isCurrentSelected = false);
@@ -389,10 +395,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         name2 = (_a = data == null ? void 0 : data.name) != null ? _a : d.fullName;
         desc = (_b = data == null ? void 0 : data.desc) != null ? _b : d.desc;
         isCurrentSelect = (_c = data == null ? void 0 : data.isCurrentSelected) != null ? _c : d.isCurrentSelected;
+        isCurrentEdit2 = (_d = data == null ? void 0 : data.isCurrentEdit) != null ? _d : d.isCurrentEdit;
       } else {
         name2 = data;
       }
-      Object.assign(d, buildNodeStyle(name2, desc, d.content, d.depth), { name: name2, isCurrentSelected: isCurrentSelect });
+      Object.assign(d, buildNodeStyle(name2, desc, d.content, d.depth), { name: name2, isCurrentSelected: isCurrentSelect, isCurrentEdit: isCurrentEdit2 });
       console.log(this.data, "dData");
     }
     backParent() {
@@ -627,6 +634,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     let ratio = Tree2.getZoom();
     let { x, y } = Tree2.getClientByPoint(pointX, pointY);
     setIsCurrentEdit(true);
+    update(id, { isCurrentEdit: true });
     EditInput$1.showInput(x, y, width * ratio, height * ratio, name2, fontSize * ratio, type, radius * ratio, ratio);
     EditInput$1.handleInputBlur = (name22) => {
       console.log(name22);
@@ -637,6 +645,8 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       EditInput$1.hideInput();
       let timer = setTimeout(() => {
         setIsCurrentEdit(false);
+        update(id, { isCurrentEdit: false });
+        cancelAllSelect();
         clearTimeout(timer);
       }, 500);
     };
@@ -647,7 +657,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     });
   };
   const update = (id, name2) => {
-    IMData$1.update(id, { name: name2 });
+    if (typeof name2 === "string") {
+      IMData$1.update(id, { name: name2 });
+    } else {
+      IMData$1.update(id, name2);
+    }
     selectNode(id, true);
   };
   const selectNode = (id, selected) => {
@@ -2608,15 +2622,13 @@ ${timetravel.value ? `
     if (!params) {
       params = {};
     }
-    params.width = 30;
-    params.height = 30;
-    params.fontSize = 14;
+    params.fontSize = 16;
     params.fillColor = themeColor.value;
-    params.fontColor = themeColor.value;
-    const r = params.height / 5;
-    ({ x: params.width + r, y: params.height / 2, r, fill: params.fillColor });
-    ({
-      x: params.width + 2.5,
+    params.fontColor = fontColor_root.value;
+    const r = params.height / 4;
+    const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: "point" };
+    const textStyle = {
+      x: params.width + r - 5,
       y: r - 1.5,
       text: "+",
       fill: params.fontColor,
@@ -2624,7 +2636,10 @@ ${timetravel.value ? `
       fontWeight: 600,
       textBaseline: "top",
       cursor: "point"
-    });
+    };
+    const container = group.addGroup({ name: "add-btn", zIndex: 3, capture: true, action: "add" });
+    container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, zIndex: 3, action: "add" });
+    container == null ? void 0 : container.addShape("text", { attrs: textStyle, zIndex: 3, action: "add" });
   }
   function drawCollapse(group, params) {
     const fontSize = 14;
@@ -2660,14 +2675,15 @@ ${timetravel.value ? `
       textBaseline: "top",
       cursor: "pointer"
     };
-    const container = group.addGroup({ name: "add-btn", visible: true, capture: true });
+    const container = group.addGroup({ name: "expand-btn", visible: true, capture: true });
     container == null ? void 0 : container.addShape("rect", { attrs: lineStyle });
     container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, action: "expand" });
     container == null ? void 0 : container.addShape("text", { attrs: textStyle, action: "expand" });
   }
   function getAttribute(cfg) {
-    const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor } = cfg;
-    const RectStyle = {
+    const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, style } = cfg;
+    const withStyle = (obj) => Object.assign({}, obj, style);
+    const RectStyle = withStyle({
       x: 0,
       y: 0,
       width,
@@ -2677,8 +2693,8 @@ ${timetravel.value ? `
       cursor: "pointer",
       stroke: isCurrentSelected ? activeStrokeColor : "transparent",
       lineWidth: 2
-    };
-    const TextStyle = {
+    });
+    const TextStyle = withStyle({
       x: paddingV,
       y: paddingH,
       text: cfg == null ? void 0 : cfg.label,
@@ -2688,8 +2704,8 @@ ${timetravel.value ? `
       cursor: "pointer",
       fontWeight: 600,
       lineHeight: paddingV + fontSize
-    };
-    const DescWrapper = {
+    });
+    const DescWrapper = withStyle({
       x: 0,
       y: nameHeight,
       width,
@@ -2699,8 +2715,8 @@ ${timetravel.value ? `
       cursor: "pointer",
       stroke: "transparent",
       lineWidth: 2
-    };
-    const DescText = {
+    });
+    const DescText = withStyle({
       x: paddingV,
       y: paddingV + nameHeight,
       text: cfg == null ? void 0 : cfg.desc,
@@ -2709,21 +2725,23 @@ ${timetravel.value ? `
       textBaseline: "top",
       cursor: "pointer",
       lineHeight: paddingV + descFontSize
-    };
+    });
     return { RectStyle, TextStyle, DescWrapper, DescText };
   }
   function buildNode(cfg, group) {
-    var _a, _b;
+    var _a;
     const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
-    const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0 });
-    group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1 });
+    const { depth, collapse: collapse2 } = cfg;
+    const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth > 0 });
+    group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth > 0 });
     if (cfg.desc) {
-      group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0 });
-      group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1 });
+      group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth > 0 });
+      group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 });
     }
-    if (cfg.collapse) {
-      console.log({ collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
-      drawCollapse(group, { collapseNum: (_b = cfg._children) == null ? void 0 : _b.length, width: RectStyle.width, height: RectStyle.height });
+    if (collapse2) {
+      drawCollapse(group, { collapseNum: (_a = cfg._children) == null ? void 0 : _a.length, width: RectStyle.width, height: RectStyle.height });
+    } else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
+      drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height });
     }
     return container;
   }
@@ -2748,7 +2766,6 @@ ${timetravel.value ? `
   G6__default["default"].registerNode("dice-mind-map-root", {
     draw(cfg, group) {
       const container = buildNode(cfg, group);
-      drawAddBtn();
       return container;
     },
     setState,
@@ -2762,7 +2779,6 @@ ${timetravel.value ? `
   G6__default["default"].registerNode("dice-mind-map-sub", {
     drawShape: function drawShape(cfg, group) {
       const container = buildNode(cfg, group);
-      drawAddBtn();
       return container;
     },
     setState,
@@ -2776,7 +2792,6 @@ ${timetravel.value ? `
   G6__default["default"].registerNode("dice-mind-map-leaf", {
     draw(cfg, group) {
       const container = buildNode(cfg, group);
-      drawAddBtn();
       return container;
     },
     getAnchorPoints() {
@@ -2810,13 +2825,13 @@ ${timetravel.value ? `
             ["L", endPoint.x, endPoint.y]
           ]
         },
-        name: "path-shape"
+        name: "path-shape",
+        zIndex: 0
       });
       return shape;
     }
   });
   G6__default["default"].registerBehavior("edit-mindmap", {
-    dragging: false,
     selectNodeId: null,
     dragNodeId: null,
     nodePosition: {},
@@ -2838,15 +2853,20 @@ ${timetravel.value ? `
       cancelAllSelect();
     },
     clickNode(evt) {
-      evt.currentTarget;
+      const tree2 = evt.currentTarget;
       const model = evt.item.get("model");
       const name2 = evt.target.get("action");
       if (name2 === "expand") {
         expand(model.id);
+      } else if (name2 === "collapse") {
+        collapse(model.id);
+      } else if (name2 === "add") {
+        addData(model == null ? void 0 : model.id, placeholderText, true);
       } else if (model.isCurrentSelected) {
         edit(model.id);
       } else {
         selectNode(model.id, !model.isCurrentSelected);
+        tree2.findById(model.id).toFront();
       }
     },
     selectNode(evt) {
@@ -2860,7 +2880,7 @@ ${timetravel.value ? `
     },
     hoverNode(evt) {
       const { currentTarget: tree2, item: node } = evt;
-      if (this.dragging)
+      if (isDragging.value)
         return;
       tree2.setItemState(node, "hover", true);
     },
@@ -2871,7 +2891,7 @@ ${timetravel.value ? `
     dragStart(evt) {
       const { currentTarget: tree2, item: node, clientX, clientY } = evt;
       const id = node.get("model").id;
-      this.dragging = true;
+      setIsDragging(true);
       this.dragNodeId = id;
       const _dragnode = tree2.findById(this.dragNodeId);
       document.documentElement.style.cursor = "grabbing";
@@ -2922,7 +2942,7 @@ ${timetravel.value ? `
       });
     },
     dragNode({ tree: tree2, clientX, clientY, width, height }) {
-      if (!this.dragging)
+      if (!isDragging.value)
         return;
       let nodePosition = this.nodePosition;
       let nodes = [];
@@ -3011,9 +3031,9 @@ ${timetravel.value ? `
       }
     },
     dragEnd({ tree: tree2, clientX, clientY }) {
-      if (!this.dragging)
+      if (!isDragging.value)
         return;
-      this.dragging = false;
+      setIsDragging(false);
       if (this.dragNodeId) {
         tree2.setItemState(this.dragNodeId, "drag", false);
       }
