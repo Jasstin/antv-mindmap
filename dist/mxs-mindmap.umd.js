@@ -99,6 +99,8 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const placeholderText = "\u65B0\u5EFA\u6A21\u578B";
   const isDragging = vue.ref(false);
   const setIsDragging = (val) => isDragging.value = val;
+  const hotkeys = vue.ref([]);
+  const changehotKeyList = (val) => hotkeys.value = val;
   const buildNodeStyle = (name2, desc = "", content = "", depth) => {
     const fontSize = globalFontSize[depth] || 12;
     const size = fontSize * maxFontCount + paddingH * 2;
@@ -766,130 +768,6 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     paste(findData(id).parentId);
     rePaint();
   };
-  var isMac = function() {
-    return /macintosh|mac os x/i.test(navigator.userAgent);
-  }();
-  var hotkeys = [
-    {
-      key: "Enter",
-      label: "\u63D2\u5165\u540C\u7EA7\u8282\u70B9",
-      Event: function(selectedNodes) {
-        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
-          return;
-        addSibling(selectedNodes[0].id, placeholderText, true);
-      },
-      name: "add-sibling"
-    },
-    {
-      key: "Tab",
-      label: "\u63D2\u5165\u5B50\u8282\u70B9",
-      Event: function(selectedNodes) {
-        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
-          return;
-        addData(selectedNodes[0].id, placeholderText, true);
-      },
-      name: "add"
-    },
-    {
-      key: "Tab",
-      control: "shift",
-      label: "\u63D2\u5165\u7236\u8282\u70B9",
-      Event: function(selectedNodes) {
-        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
-          return;
-        addParent(selectedNodes[0].id, placeholderText, true);
-      },
-      name: "add-parent"
-    },
-    {
-      key: "c",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u590D\u5236",
-      Event: function(selectedNodes) {
-        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
-          return;
-        let ids = selectedNodes.map((item) => item.id);
-        copy(ids);
-      },
-      name: "copy"
-    },
-    {
-      key: "x",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u526A\u5207",
-      Event: function(selectedNodes) {
-        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
-          return;
-        let ids = selectedNodes.map((item) => item.id);
-        cut(ids);
-      },
-      name: "cut"
-    },
-    {
-      key: "v",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u7C98\u8D34",
-      Event: function(selectedNodes) {
-        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
-          return;
-        paste(selectedNodes[0].id);
-      },
-      name: "paste"
-    },
-    {
-      key: "d",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u521B\u5EFA\u526F\u672C",
-      name: "create-a-copy",
-      Event: function(selectedNodes) {
-        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
-          return;
-        createACopy(selectedNodes[0].id);
-      }
-    },
-    {
-      key: "z",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u64A4\u9500\u64CD\u4F5C",
-      name: "revert",
-      Event: function(selectedNodes) {
-        unDo();
-      }
-    },
-    {
-      key: "y",
-      control: isMac ? "cmd" : "ctrl",
-      label: "\u91CD\u65B0\u64CD\u4F5C",
-      name: "redo",
-      Event: function(selectedNodes) {
-        reDo();
-      }
-    },
-    {
-      key: "Backspace",
-      label: "\u5220\u9664",
-      Event: function(selectedNodes) {
-        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
-          return;
-        selectedNodes.forEach((item) => {
-          deleteNode(item.id);
-        });
-      },
-      name: "delete"
-    },
-    {
-      key: " ",
-      label: "\u7F16\u8F91",
-      Event: function(selectedNodes) {
-        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
-          return;
-        selectedNodes.forEach((item) => {
-          edit(item.id);
-        });
-      },
-      name: "delete"
-    }
-  ];
   const nodeMenuMap = {
     add: {
       name: "add",
@@ -1001,7 +879,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
           if (isSubView && depth === 0 && item === "only-show-current")
             itemInfo = nodeMenuMap["back-parent"];
           nodeMenuClickList[itemInfo.name] = itemInfo.click;
-          let hotkey = hotkeys.filter((item2) => item2.name === itemInfo.name)[0];
+          let hotkey = hotkeys.value.filter((item2) => item2.name === itemInfo.name)[0];
           if (hotkey) {
             return `<li code="Node" name="${itemInfo.name}"><div code="Node" name="${itemInfo.name}">${itemInfo.title}</div><div class="small-tip" code="Node" name="${itemInfo.name}">${hotkey.control ? `${hotkey.control}+` : ""}${hotkey.key}</div></li>`;
           } else {
@@ -2895,8 +2773,8 @@ ${timetravel.value ? `
         edit(model.id);
       } else {
         selectNode(model.id, !model.isCurrentSelected);
-        tree2.findById(model.id).toFront();
       }
+      tree2.findById(model.id).toFront();
     },
     selectNode(evt) {
       const model = evt.item.get("model");
@@ -3187,7 +3065,7 @@ ${timetravel.value ? `
       if (isCurrentEdit.value)
         return;
       const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-      let handler = hotkeys.filter((item) => item.key === key);
+      let handler = hotkeys.value.filter((item) => item.key === key);
       if (!handler.length)
         return;
       if (shiftKey || ctrlKey || altKey || metaKey) {
@@ -3431,6 +3309,130 @@ ${timetravel.value ? `
       (_a = this.tree) == null ? void 0 : _a.destroy();
     }
   }
+  var isMac = function() {
+    return /macintosh|mac os x/i.test(navigator.userAgent);
+  }();
+  var defaultHotKey = [
+    {
+      key: "Enter",
+      label: "\u63D2\u5165\u540C\u7EA7\u8282\u70B9",
+      Event: function(selectedNodes) {
+        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
+          return;
+        addSibling(selectedNodes[0].id, placeholderText, true);
+      },
+      name: "add-sibling"
+    },
+    {
+      key: "Tab",
+      label: "\u63D2\u5165\u5B50\u8282\u70B9",
+      Event: function(selectedNodes) {
+        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
+          return;
+        addData(selectedNodes[0].id, placeholderText, true);
+      },
+      name: "add"
+    },
+    {
+      key: "Tab",
+      control: "shift",
+      label: "\u63D2\u5165\u7236\u8282\u70B9",
+      Event: function(selectedNodes) {
+        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
+          return;
+        addParent(selectedNodes[0].id, placeholderText, true);
+      },
+      name: "add-parent"
+    },
+    {
+      key: "c",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u590D\u5236",
+      Event: function(selectedNodes) {
+        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
+          return;
+        let ids = selectedNodes.map((item) => item.id);
+        copy(ids);
+      },
+      name: "copy"
+    },
+    {
+      key: "x",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u526A\u5207",
+      Event: function(selectedNodes) {
+        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
+          return;
+        let ids = selectedNodes.map((item) => item.id);
+        cut(ids);
+      },
+      name: "cut"
+    },
+    {
+      key: "v",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u7C98\u8D34",
+      Event: function(selectedNodes) {
+        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
+          return;
+        paste(selectedNodes[0].id);
+      },
+      name: "paste"
+    },
+    {
+      key: "d",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u521B\u5EFA\u526F\u672C",
+      name: "create-a-copy",
+      Event: function(selectedNodes) {
+        if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
+          return;
+        createACopy(selectedNodes[0].id);
+      }
+    },
+    {
+      key: "z",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u64A4\u9500\u64CD\u4F5C",
+      name: "revert",
+      Event: function(selectedNodes) {
+        unDo();
+      }
+    },
+    {
+      key: "y",
+      control: isMac ? "cmd" : "ctrl",
+      label: "\u91CD\u65B0\u64CD\u4F5C",
+      name: "redo",
+      Event: function(selectedNodes) {
+        reDo();
+      }
+    },
+    {
+      key: "Backspace",
+      label: "\u5220\u9664",
+      Event: function(selectedNodes) {
+        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
+          return;
+        selectedNodes.forEach((item) => {
+          deleteNode(item.id);
+        });
+      },
+      name: "delete"
+    },
+    {
+      key: " ",
+      label: "\u7F16\u8F91",
+      Event: function(selectedNodes) {
+        if (!(selectedNodes == null ? void 0 : selectedNodes.length))
+          return;
+        selectedNodes.forEach((item) => {
+          edit(item.id);
+        });
+      },
+      name: "edit"
+    }
+  ];
   var _export_sfc = (sfc, props) => {
     const target = sfc.__vccOpts || sfc;
     for (const [key, val] of props) {
@@ -3483,6 +3485,7 @@ ${timetravel.value ? `
       keyboard: Boolean,
       ctm: Boolean,
       nodeMenu: Array,
+      hotKey: Array,
       onAdd: Function,
       onExpand: Function,
       onCollapse: Function,
@@ -3607,6 +3610,14 @@ ${timetravel.value ? `
       nodeMenu: {
         handler(val) {
           changeNodeMenuList(val);
+        },
+        immediate: true
+      },
+      hotKey: {
+        handler(val) {
+          changehotKeyList(val.filter((i) => i.enabled == null || i.enabled === true).map((item) => {
+            return defaultHotKey.filter((i) => i.name === item || i.name === item.name)[0] || { key: null };
+          }));
         },
         immediate: true
       }
