@@ -171,12 +171,14 @@ class IMData {
         (_a2 = data == null ? void 0 : data._children) == null ? void 0 : _a2.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit));
       });
     }
-    if (collapse2) {
-      [data._children, data.children] = [data.children, data._children];
+    if (collapse2 && data.children.length) {
+      data._children = [...data.children];
+      data.children = [];
     }
     return data;
   }
   init(d, isInit = false) {
+    console.log(d, isInit);
     this.data = this.createMdataFromData(d, "0", null, isInit);
     return this.data;
   }
@@ -394,7 +396,6 @@ class IMData {
       name = data;
     }
     Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect, isCurrentEdit: isCurrentEdit2 });
-    console.log(this.data, "dData");
   }
   backParent() {
     let _data = this._data.pop();
@@ -404,12 +405,6 @@ class IMData {
     let data = this.find(id);
     const p = this.find(pid);
     let isSibling = data.parentId === pid;
-    if (p.collapse) {
-      this.expand(pid);
-    }
-    if (data.collapse) {
-      this.expand(id);
-    }
     if (!isSibling) {
       this.removeItem(id, false);
     }
@@ -418,6 +413,12 @@ class IMData {
       p.children = [];
       _data.splice(index, 0, data);
       _data.forEach((item, index2) => p.children.push(this.createMdataFromData(item, p.id + "-" + index2, p)));
+    } else if (p._children.length) {
+      let _data = [...p._children.filter((node) => node.id != id)];
+      p._children = [];
+      _data.splice(index, 0, data);
+      _data.forEach((item, index2) => p._children.push(this.createMdataFromData(item, p.id + "-" + index2, p)));
+      this.expand(pid);
     } else {
       this.add(pid, data);
     }

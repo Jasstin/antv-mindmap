@@ -76,13 +76,15 @@ class IMData {
         data?._children?.push(this.createMdataFromData(c, `${id}-${j}`, data, isInit))
       })
     }
-    if (collapse) {
-      [data._children, data.children] = [data.children, data._children]
+    if (collapse && data.children.length) {
+      data._children = [...data.children]
+      data.children = []
     }
     return data
   }
 
   init(d: InputData, isInit = false) {
+    console.log(d, isInit)
     this.data = this.createMdataFromData(d, '0', null, isInit)
     return this.data
   }
@@ -320,7 +322,6 @@ class IMData {
       name = data;
     }
     Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect, isCurrentEdit })
-    console.log(this.data, "dData")
   }
 
   backParent() {
@@ -333,12 +334,6 @@ class IMData {
     let data = this.find(id);
     const p = this.find(pid);
     let isSibling = data.parentId === pid
-    if (p.collapse) {
-      this.expand(pid)
-    }
-    if (data.collapse) {
-      this.expand(id)
-    }
     if (!isSibling) {
       this.removeItem(id, false);
     }
@@ -347,6 +342,12 @@ class IMData {
       p.children = []
       _data.splice(index, 0, data)
       _data.forEach((item, index) => p.children.push(this.createMdataFromData(item, p.id + '-' + index, p)))
+    } else if (p._children.length) {
+      let _data = [...p._children.filter(node => node.id != id)]
+      p._children = []
+      _data.splice(index, 0, data)
+      _data.forEach((item, index) => p._children.push(this.createMdataFromData(item, p.id + '-' + index, p)))
+      this.expand(pid)
     } else {
       this.add(pid, data)
     }
