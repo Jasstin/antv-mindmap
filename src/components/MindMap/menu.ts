@@ -1,5 +1,5 @@
 import G6 from "@antv/g6";
-import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, setCurrentNode, placeholderText } from "./variable";
+import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, setCurrentNode, placeholderText, hotkeys } from "./variable";
 import {
   addData,
   addParent,
@@ -11,7 +11,6 @@ import {
   onlyShowCurrent,
   backParent
 } from "./tree/methods"
-import hotkeys from "./tree/hotkeys";
 import { NodeData } from "./interface";
 
 const nodeMenuMap = {
@@ -126,7 +125,7 @@ function renderNodeMenu(evt: any) {
         if (!isSubView && depth === 0 && item === 'only-show-current') return ''
         if (isSubView && depth === 0 && item === 'only-show-current') itemInfo = nodeMenuMap['back-parent']
         nodeMenuClickList[itemInfo.name] = itemInfo.click;
-        let hotkey = hotkeys.filter(item => item.name === itemInfo.name)[0]
+        let hotkey = hotkeys.value.filter(item => item.name === itemInfo.name)[0]
         if (hotkey) {
           return `<li code="Node" name="${itemInfo.name}"><div code="Node" name="${itemInfo.name}">${itemInfo.title}</div><div class="small-tip" code="Node" name="${itemInfo.name}">${hotkey.control ? `${hotkey.control}+` : ''}${hotkey.key}</div></li>`
         } else {

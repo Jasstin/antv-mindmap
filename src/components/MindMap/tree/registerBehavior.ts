@@ -12,10 +12,10 @@ import {
   lineType, isCurrentEdit,
   placeholderText,
   isDragging,
-  setIsDragging
+  setIsDragging,
+  hotkeys
 } from "../variable";
 import emitter from "../mitt";
-import hotkeys from "./hotkeys";
 
 G6.registerBehavior('edit-mindmap', {
   selectNodeId: null,
@@ -52,8 +52,8 @@ G6.registerBehavior('edit-mindmap', {
       edit(model.id)
     } else {
       selectNode(model.id, !model.isCurrentSelected)
-      tree.findById(model.id).toFront();
     }
+    tree.findById(model.id).toFront();
   },
   selectNode(evt) {
     const model = evt.item.get('model');
@@ -356,7 +356,7 @@ G6.registerBehavior('edit-mindmap', {
     // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
     if (isCurrentEdit.value) return;
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-    let handler = hotkeys.filter(item => item.key === key)
+    let handler = hotkeys.value.filter(item => item.key === key)
     if (!handler.length) return;
     if (shiftKey || ctrlKey || altKey || metaKey) {
       if (shiftKey) {

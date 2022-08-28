@@ -14,7 +14,9 @@
       :zoom="featureList['zoom'].value" :centerBtn="featureList['centerBtn'].value"
       :fitBtn="featureList['fitBtn'].value" :downloadBtn="featureList['downloadBtn'].value"
       :timetravel="featureList['timetravel'].value" :mindmap="featureList['mindmap'].value"
-      :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :onDragEnd="onDragEnd"></mindmap>
+      :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :hotKey="hostKeyList"
+      :onDragEnd="onDragEnd">
+    </mindmap>
     <div class="right-bottom">
       <div style="font-weight: bold;font-size: 16px">样式设置</div>
       <div v-for="(item, key) in themeList" :key="key">
@@ -87,12 +89,17 @@ export default defineComponent({
         }
       }]
     ]
+    const hostKeyList = ['add-sibling', 'add', 'add-parent', {
+      name: 'copy',
+      enabled: true
+    }, 'cut', 'paste', 'create-a-copy', 'revert', 'redo', 'delete', 'edit']
     const $mindmap = ref('mindMapRef');
     return {
       data,
       nodeMenuList,
       featureList,
-      themeList
+      themeList,
+      hostKeyList
     }
   },
   mounted() {

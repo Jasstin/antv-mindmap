@@ -9,7 +9,7 @@ import './css/Mindmap.scss'
 import { PropType } from 'vue'
 import Tree from './tree/tree'
 import { tooltip } from "./plugins";
-import { changeNodeMenuList, setGlobalTree } from "./variable";
+import { changeNodeMenuList, setGlobalTree, changehotKeyList } from "./variable";
 import EditInput from './editInput'
 import {
   addData,
@@ -23,6 +23,7 @@ import {
   findData
 } from './tree/methods'
 import emitter from "./mitt";
+import defaultHotKey from "./tree/hotkeys"
 const isArray = (arg) => Object.prototype.toString.call(arg).toLowerCase().indexOf('array') > 5;
 const isObject = (arg) => Object.prototype.toString.call(arg).toLowerCase() === '[object object]';
 let tree;
@@ -71,6 +72,7 @@ export default {
     keyboard: Boolean,
     ctm: Boolean,//  开启右键菜单
     nodeMenu: Array, // 菜单配置
+    hotKey: Array, // 快捷键配置
     // 钩子函数
     onAdd: Function,
     onExpand: Function,
@@ -194,6 +196,14 @@ export default {
     nodeMenu: {
       handler(val) {
         changeNodeMenuList(val)
+      },
+      immediate: true
+    },
+    hotKey: {
+      handler(val) {
+        changehotKeyList(val.filter(i => i.enabled == null || i.enabled === true).map(item => {
+          return defaultHotKey.filter(i => i.name === item || i.name === item.name)[0] || { key: null }
+        }))
       },
       immediate: true
     }

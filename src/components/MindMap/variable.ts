@@ -46,3 +46,5 @@ export const setIsCurrentEdit = (val: boolean) => isCurrentEdit.value = val
 export const placeholderText = '新建模型'
 export const isDragging = ref<boolean>(false)
 export const setIsDragging = (val: boolean) => isDragging.value = val
+export const hotkeys = ref([]) // 节点右键菜单列表
+export const changehotKeyList = (val: []) => hotkeys.value = val

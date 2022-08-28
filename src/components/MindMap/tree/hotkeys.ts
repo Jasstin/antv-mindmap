@@ -1,10 +1,10 @@
 import { addData, addParent, addSibling, copy, deleteNode, paste, createACopy, cut, unDo, reDo, edit } from "./methods";
-import { globalTree, placeholderText } from "../variable";
+import { globalTree, placeholderText, hotKeyList } from "../variable";
 
 var isMac = function () {
   return /macintosh|mac os x/i.test(navigator.userAgent);
 }();
-export default [
+var defaultHotKey = [
   {
     key: 'Enter',
     label: '插入同级节点',
@@ -113,6 +113,7 @@ export default [
         edit(item.id)
       })
     },
-    name: 'delete', // 右键菜单匹配值
+    name: 'edit', // 右键菜单匹配值
   },
 ]
+export default defaultHotKey
