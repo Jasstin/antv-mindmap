@@ -247,6 +247,7 @@ G6.registerEdge('hvh', {
     }
     const shape = group.addShape('path', {
       attrs: {
+        cursor: 'pointer',
         stroke: branchColor.value,
         lineWidth: branch.value,
         opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,

@@ -16,7 +16,7 @@ import {
   hotkeys
 } from "../variable";
 import emitter from "../mitt";
-
+let leaveEdgeTimer;
 G6.registerBehavior('edit-mindmap', {
   selectNodeId: null,
   dragNodeId: null,
@@ -32,11 +32,31 @@ G6.registerBehavior('edit-mindmap', {
       'node:dragstart': 'dragStart',
       'node:contextmenu': 'selectNode',
       'keydown': 'keyDown',
-      'canvas:click': 'clickCanvas'
+      'canvas:click': 'clickCanvas',
+      "edge:mouseenter": 'hoverEdge',
+      "edge:mouseleave": 'mouseLeaveEdge',
     };
   },
   clickCanvas(evt) {
     cancelAllSelect()
+  },
+  hoverEdge(evt) {
+    const edge = evt.item;
+    const tree = evt.currentTarget;
+    const node = edge.getSource();
+    clearTimeout(leaveEdgeTimer);
+    console.log('hover')
+    tree.setItemState(node, 'hover', true)
+    node.toFront()
+    tree.paint();
+  },
+  mouseLeaveEdge(evt) {
+    leaveEdgeTimer = setTimeout(() => {
+      let { currentTarget: tree, item: edge } = evt
+      tree.setItemState(edge.getSource(), 'hover', false);
+      tree.layout()
+      clearTimeout(leaveEdgeTimer)
+    }, 800);
   },
   clickNode(evt) {
     const tree = evt.currentTarget;
@@ -72,8 +92,8 @@ G6.registerBehavior('edit-mindmap', {
     tree.paint();
   },
   clearHoverStatus(evt) {
-    const { currentTarget: tree, item: node } = evt
-    tree.setItemState(node, 'hover', false)
+    let { currentTarget: tree, item: node } = evt
+    tree.setItemState(node, 'hover', false);
     tree.layout()
   },
   dragStart(evt) {
