@@ -2715,6 +2715,7 @@ G6.registerEdge("hvh", {
     }
     const shape = group.addShape("path", {
       attrs: {
+        cursor: "pointer",
         stroke: branchColor.value,
         lineWidth: branch.value,
         opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
@@ -2732,6 +2733,7 @@ G6.registerEdge("hvh", {
     return shape;
   }
 });
+let leaveEdgeTimer;
 G6.registerBehavior("edit-mindmap", {
   selectNodeId: null,
   dragNodeId: null,
@@ -2747,11 +2749,31 @@ G6.registerBehavior("edit-mindmap", {
       "node:dragstart": "dragStart",
       "node:contextmenu": "selectNode",
       "keydown": "keyDown",
-      "canvas:click": "clickCanvas"
+      "canvas:click": "clickCanvas",
+      "edge:mouseenter": "hoverEdge",
+      "edge:mouseleave": "mouseLeaveEdge"
     };
   },
   clickCanvas(evt) {
     cancelAllSelect();
+  },
+  hoverEdge(evt) {
+    const edge = evt.item;
+    const tree2 = evt.currentTarget;
+    const node = edge.getSource();
+    clearTimeout(leaveEdgeTimer);
+    console.log("hover");
+    tree2.setItemState(node, "hover", true);
+    node.toFront();
+    tree2.paint();
+  },
+  mouseLeaveEdge(evt) {
+    leaveEdgeTimer = setTimeout(() => {
+      let { currentTarget: tree2, item: edge } = evt;
+      tree2.setItemState(edge.getSource(), "hover", false);
+      tree2.layout();
+      clearTimeout(leaveEdgeTimer);
+    }, 800);
   },
   clickNode(evt) {
     const tree2 = evt.currentTarget;
@@ -2788,7 +2810,7 @@ G6.registerBehavior("edit-mindmap", {
     tree2.paint();
   },
   clearHoverStatus(evt) {
-    const { currentTarget: tree2, item: node } = evt;
+    let { currentTarget: tree2, item: node } = evt;
     tree2.setItemState(node, "hover", false);
     tree2.layout();
   },
@@ -3096,6 +3118,37 @@ G6.registerBehavior("edit-mindmap", {
     handler[0].Event.call(this, getSelectedNodes());
   }
 });
+G6.registerBehavior("double-finger-drag-canvas", {
+  getEvents: function getEvents() {
+    return {
+      wheel: "onWheel"
+    };
+  },
+  onWheel: function onWheel(ev) {
+    const graph = globalTree.value;
+    if (ev.ctrlKey) {
+      const canvas = graph.get("canvas");
+      const point = canvas.getPointByClient(ev.clientX, ev.clientY);
+      let ratio = graph.getZoom();
+      if (ev.wheelDelta > 0) {
+        ratio = ratio + ratio * 0.05;
+      } else {
+        ratio = ratio - ratio * 0.05;
+      }
+      graph.zoomTo(ratio, {
+        x: point.x,
+        y: point.y
+      });
+    } else {
+      const x = ev.deltaX || ev.movementX;
+      let y = ev.deltaY || ev.movementY;
+      if (!y && navigator.userAgent.indexOf("Firefox") > -1)
+        y = -ev.wheelDelta * 125 / 3;
+      graph.translate(-x, -y);
+    }
+    ev.preventDefault();
+  }
+});
 class Tree {
   constructor(containerId, data) {
     this.container = document.getElementById(containerId);
@@ -3228,7 +3281,7 @@ class Tree {
       this.addBehaviors("drag-canvas");
     }
     if (layoutConfig == null ? void 0 : layoutConfig.zoom) {
-      this.addBehaviors("zoom-canvas");
+      this.addBehaviors("double-finger-drag-canvas");
     }
   }
   changeVariable({
