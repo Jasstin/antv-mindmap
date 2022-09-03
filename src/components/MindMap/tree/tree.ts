@@ -213,7 +213,7 @@ class Tree {
       this.addBehaviors('drag-canvas')
     }
     if (layoutConfig?.zoom) {
-      this.addBehaviors('zoom-canvas')
+      this.addBehaviors('double-finger-drag-canvas')
     }
   }
 
