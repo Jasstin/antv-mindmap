@@ -5,11 +5,12 @@ import {
   paddingH,
   paddingV,
   branch,
-  branchColor, globalTree, fontColor_root, isDragging, isCurrentEdit
+  branchColor,
+  fontColor_root,
+  hoverStrokeColor,
+  activeStrokeColor,
+  isCurrentEdit
 } from "../variable";
-import Color from 'color';
-
-let activeStrokeColor = Color(themeColor.value).fade(0.2).string();
 
 enum textBaseline {
   top = "top"
@@ -19,95 +20,68 @@ const {
   Util
 } = G6;
 
-function drawAddBtn(group: IGroup, params?: { width?: number, height?: number, fillColor?: string, fontColor?: string, fontSize?: number }) {
-  if (!params) {
-    params = {}
-  }
-  params.fontSize = 16
-  params.fillColor = themeColor.value
-  params.fontColor = fontColor_root.value
-  const r = params.height / 4
-  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: 'point' }
-  const textStyle = {
-    x: params.width + r - 5,
-    y: r - 1.5,
-    text: '+',
-    fill: params.fontColor,
-    fontSize: params.fontSize,
-    fontWeight: 600,
-    textBaseline: textBaseline.top,
-    cursor: 'point'
-  }
-  const container = group.addGroup({ name: 'add-btn', zIndex: 3, capture: true, action: 'add' })
-  container?.addShape('circle', { attrs: circleStyle, zIndex: 3, action: 'add' })
-  container?.addShape('text', { attrs: textStyle, zIndex: 3, action: 'add' })
-}
-function drawCollapseBtn(group: IGroup, params?: { width?: number, height?: number, fillColor?: string, fontColor?: string, fontSize?: number }) {
-  if (!params) {
-    params = {}
-  }
-  params.fontSize = 16
-  params.fillColor = themeColor.value
-  params.fontColor = fontColor_root.value
-  const r = params.height / 4
-  const circleStyle = { x: params.width + r, y: params.height / 2, r, fill: params.fillColor, cursor: 'point' }
-  const textStyle = {
-    x: params.width + r - 5,
-    y: r - 1.5,
-    text: '<',
-    fill: params.fontColor,
-    fontSize: params.fontSize,
-    fontWeight: 600,
-    textBaseline: textBaseline.top,
-    cursor: 'point'
-  }
-  const container = group.addGroup({ name: 'collapse-btn', zIndex: 3, capture: true, action: 'collapse', visible: false })
-  container?.addShape('circle', { attrs: circleStyle, zIndex: 3, action: 'collapse' })
-  container?.addShape('text', { attrs: textStyle, zIndex: 3, action: 'collapse' })
-}
-
-function drawExpandBtn(group: IGroup, params: { width?, height?, collapseNum }) {
+function drawHandleBtn(group: IGroup, cfg, type) {
+  const { style: { width, height, opacity = 1 }, _children } = cfg
+  console.log('>>>>>>>cfg=', cfg)
   const fontSize = 14
-  if (params.collapseNum === 0) return
-  if (params.collapseNum > 99) params.collapseNum = '...'
-  const widthHeight = Util.getTextSize(params.collapseNum + '', fontSize);
+  const text = {
+    'add': '+',
+    'collapse': '<',
+    'expand': _children.length + '' || '0'
+  }[type]
+  const widthHeight = Util.getTextSize(text, fontSize);
+  const isExpand = type === 'expand';
   const r = widthHeight[0] / 2 + 4
-  const lineStyle = {
-    x: params.width + 1,
-    y: params.height / 2 - 1,
-    width: 15,
+  const lineStyle = isExpand ? {
+    x: width + 1,
+    y: height / 2 - 1,
+    width: 10,
     height: 2,
     fill: themeColor.value,
+    opacity
+  } : { width: 0 }
+  const handleStyle = {
+    x: width,
+    y: 0,
+    width: widthHeight[0] + lineStyle.width + r + 3,
+    height,
+    fill: 'transparent'
   }
+  const fill = isExpand ? 'transparent' : themeColor.value
+  const stroke = isExpand ? themeColor.value : 'transparent'
+  const textColor = isExpand ? themeColor.value : fontColor_root.value
+  const visible = isExpand ? true : false
   const circleStyle = {
-    x: params.width + lineStyle.width + r + 3,
-    y: params.height / 2 - r / 2 + 3,
+    x: width + lineStyle.width + r + 3,
+    y: height / 2,
     r,
-    fill: 'transparent',
-    stroke: themeColor.value,
+    fill,
+    stroke,
     lineWidth: 2,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    opacity
   }
   const textStyle = {
-    x: params.width + lineStyle.width + r - widthHeight[0] / 2 + 3,
-    y: params.collapseNum === '...' ? params.height / 2 - r / 2 - 8 : params.height / 2 - r / 2 - 4,
-    text: params.collapseNum,
-    fill: themeColor.value,
+    x: width + lineStyle.width + r - widthHeight[0] / 2 + 3,
+    y: height / 2 - r / 2 - 4,
+    text,
+    fill: textColor,
     fontSize,
     fontWeight: 600,
     textBaseline: textBaseline.top,
-    cursor: 'pointer'
+    cursor: 'pointer',
+    opacity
   }
-  const container = group.addGroup({ name: 'expand-btn', visible: true, capture: true })
+  const container = group.addGroup({ name: type, visible, capture: true, action: type })
   container?.addShape('rect', { attrs: lineStyle })
-  container?.addShape('circle', { attrs: circleStyle, action: 'expand' })
-  container?.addShape('text', { attrs: textStyle, action: 'expand' })
+  container?.addShape('rect', { attrs: handleStyle })
+  container?.addShape('circle', { attrs: circleStyle, action: type })
+  container?.addShape('text', { attrs: textStyle, action: type })
 }
 
 function getAttribute(cfg) {
-  const { width, height, _children, isCurrentSelected, nameHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, style } = cfg
-  const withStyle = (obj) => Object.assign({}, obj, style)
-  const RectStyle = withStyle({
+  const { style: { width, height, nameHeight, nameLineHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, opacity = 1, stroke, strokeColor } } = cfg
+  const RectStyle = {
     x: 0,
     y: 0,
     width,
@@ -115,10 +89,11 @@ function getAttribute(cfg) {
     radius,
     fill: FillColor,
     cursor: 'pointer',
-    stroke: isCurrentSelected ? activeStrokeColor : 'transparent',
-    lineWidth: 2
-  })
-  const TextStyle = withStyle({
+    stroke: strokeColor,
+    lineWidth: stroke,
+    opacity
+  }
+  const TextStyle = {
     x: paddingV,
     y: paddingH,
     text: cfg?.label,
@@ -127,9 +102,10 @@ function getAttribute(cfg) {
     textBaseline: textBaseline.top,
     cursor: 'pointer',
     fontWeight: 600,
-    lineHeight: paddingV + fontSize
-  })
-  const DescWrapper = withStyle({
+    lineHeight: nameLineHeight,
+    opacity
+  }
+  const DescWrapper = {
     x: 0,
     y: nameHeight,
     width,
@@ -138,9 +114,10 @@ function getAttribute(cfg) {
     fill: "rgba(255,255,255,0.3)",
     cursor: 'pointer',
     stroke: 'transparent',
-    lineWidth: 2
-  })
-  const DescText = withStyle({
+    lineWidth: 2,
+    opacity
+  }
+  const DescText = {
     x: paddingV,
     y: paddingV + nameHeight,
     text: cfg?.desc,
@@ -148,8 +125,9 @@ function getAttribute(cfg) {
     fontSize: descFontSize,
     textBaseline: textBaseline.top,
     cursor: 'pointer',
-    lineHeight: paddingV + descFontSize
-  })
+    lineHeight: paddingV + descFontSize,
+    opacity
+  }
   return { RectStyle, TextStyle, DescWrapper, DescText }
 }
 
@@ -162,70 +140,65 @@ function buildNode(cfg, group) {
     group?.addShape('rect', { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth > 0 })
     group?.addShape('text', { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 })
   }
-  if (collapse) {
-    drawExpandBtn(group, { collapseNum: cfg._children?.length, width: RectStyle.width, height: RectStyle.height })
-  }
-  else if (cfg.isCurrentSelected && !isDragging.value && !cfg.isCurrentEdit) {
-    drawAddBtn(group, { width: RectStyle.width, height: RectStyle.height })
-  }
-  else if (cfg.children?.length) {
-    drawCollapseBtn(group, { width: RectStyle.width, height: RectStyle.height })
+  //  绘制操作按钮
+  drawHandleBtn(group, cfg, 'add')
+  if (cfg.children.length > 0 || cfg._children.length > 0) {
+    drawHandleBtn(group, cfg, collapse ? 'expand' : 'collapse')
   }
   return container
 }
-
-function setState(name, state, node) {
+const getNode = (group, name) => group.get('children').filter(t => t.get('name') === name)[0]
+const getCollapseBtn = group => getNode(group, 'collapse')
+const getWrapper = group => getNode(group, 'wrapper')
+const getAddBtn = group => getNode(group, 'add')
+let timer;
+function handleNodeHover(state, node) {
+  // 鼠标移上显示折叠按钮
+  if (isCurrentEdit.value) return
   const group = node.getContainer();
-  let wrapper = group.get('children').filter(t => t.get('name') === 'wrapper')[0]
-  let collapseBtn = group.get('children').filter(t => t.get('name') === 'collapse-btn')[0]
-  if (name === 'hover') {
-    let hoverColor = Color(themeColor.value).fade(0.5).string();
-    if (state) {
-      wrapper?.attr('stroke', hoverColor)
-    } else {
-      wrapper?.attr('stroke', node.get('model').isCurrentSelected ? activeStrokeColor : 'transparent')
-    }
-    collapseBtn?.set("visible", state ? true : false)
-  } else if (name === 'selected') {
-    wrapper?.attr('stroke', state ? activeStrokeColor : 'transparent')
+  const isCurrentSelected = node.hasState('selected');
+  let collapseBtn = getCollapseBtn(group)
+  const visible = state && !isCurrentSelected;
+  collapseBtn && collapseBtn[visible ? 'show' : 'hide']()
+  // 节点hover状态
+  let wrapper = getWrapper(group)
+  let hoverColor = 'transparent';
+  if (state && !isCurrentSelected) hoverColor = hoverStrokeColor.value;
+
+  //  如果当前节点不是选中状态才操作hover状态
+  if (!isCurrentSelected) {
+    wrapper?.attr('stroke', hoverColor);
   }
 }
+
+function handleNodeSelected(state, node) {
+  // 选中节点置于最上方
+  node[state ? 'toFront' : 'toBack']()
+  // 选中的节点显示添加按钮
+  const group = node.getContainer();
+  let addBtn = getAddBtn(group)
+  let collapseBtn = getCollapseBtn(group)
+  collapseBtn?.hide()
+  // 非折叠状态显示添加按钮
+  if (!node.get('model').collapse) {
+    addBtn?.[state ? 'show' : 'hide']()
+  }
+  if (isCurrentEdit.value) addBtn?.hide()
+  // 设置节点边框颜色
+  let wrapper = group.get('children').filter(t => t.get('name') === 'wrapper')[0]
+  wrapper?.attr('stroke', state ? activeStrokeColor.value : 'transparent')
+}
+
 // 根节点
 G6.registerNode(
-  'dice-mind-map-root', {
+  'mindmap-node', {
   draw(cfg, group): IShape {
     const container = buildNode(cfg, group);
     return container;
   },
-  setState,
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
-  },
-}
-);
-G6.registerNode(
-  'dice-mind-map-sub', {
-  drawShape: function drawShape(cfg, group) {
-    const container = buildNode(cfg, group);
-    return container;
-  },
-  setState,
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
-  },
-}
-);
-G6.registerNode(
-  'dice-mind-map-leaf', {
-  draw(cfg, group) {
-    const container = buildNode(cfg, group);
-    return container;
+  setState(name, state, node) {
+    if (name === 'hover') handleNodeHover(state, node)
+    if (name === 'selected') handleNodeSelected(state, node)
   },
   getAnchorPoints() {
     return [
@@ -233,7 +206,6 @@ G6.registerNode(
       [1, 0.5],
     ];
   },
-  setState
 }
 );
 G6.registerEdge('hvh', {

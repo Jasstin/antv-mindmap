@@ -1,45 +1,49 @@
 import { InputData, NodeData } from "../interface";
 import { fittingString, wrapString } from "../utils";
-import { globalFontSize, maxFontCount, paddingH, paddingV, themeColor_sub, themeColor, themeColor_leaf, fontColor_sub, fontColor_leaf, fontColor_root, placeholderText } from "../variable";
-const buildNodeStyle = (name, desc = "", content = "", depth) => {
+import { globalFontSize, maxFontCount, paddingH, paddingV, themeColor_sub, themeColor, themeColor_leaf, fontColor_sub, fontColor_leaf, fontColor_root, placeholderText, activeStrokeColor } from "../variable";
+export const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth }) => {
+  name === "" && (name = placeholderText);
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
   const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize); // 标题换行
   const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2); // 描述换行
-  const nameHeight = (fontSize + paddingV) * (nameLine) + paddingV; // 标题高度
+  console.log('>>>>>>>nameLine', nameLine)
+  const nameLineHeight = (fontSize + paddingV);
+  const nameHeight = nameLineHeight * (nameLine) + paddingV; // 标题高度
   const descHeight = (fontSize - 2 + paddingV) * (descLine) + paddingV; // 描述内容高度
   const height = nameHeight + (desc ? descHeight : 0) // 节点高度
-  const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value
-  const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value
+  const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value // 背景颜色
+  const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value // 字体颜色
   const obj = {
     label: wrapName,
     name: wrapName,
     fullName: name,
-    fontSize,
     desc: wrapDesc,
-    descFontSize: fontSize - 2,
-    descHeight,
     content,
-    width: Math.max(nameWidth, descWidth) + paddingV * 2, //  标题宽度与描述宽度取最大值
-    height,
-    nameHeight,
-    FillColor,
-    FontColor,
-    type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
+    type: 'mindmap-node',
+    style: {
+      fontSize,
+      descFontSize: fontSize - 2,
+      descHeight,
+      width: Math.max(nameWidth, descWidth) + paddingV * 2, //  标题宽度与描述宽度取最大值
+      maxWidth: size,
+      height,
+      nameHeight,
+      FillColor,
+      FontColor,
+      stroke: 2,
+      strokeColor: 'transparent',
+      nameLineHeight
+    }
   }
   return obj
 }
 class IMData {
   data: NodeData | null = null
   _data: NodeData | any[] = []
-  _selectNode: NodeData | null = null
 
-  private createMdataFromData(rawData: InputData | NodeData, id: string, parent: NodeData | null = null, isInit = false): NodeData {
+  private createMdataFromData(rawData: InputData, id: string, parent: NodeData | null = null, isInit = false): NodeData {
     const {
-      label,
-      name,
-      desc,
-      content,
       children: rawChildren,
       _children: _rawChildren,
       collapse,
@@ -49,22 +53,13 @@ class IMData {
     const data: NodeData = {
       id,
       depth,
-      desc,
-      content,
       isSubView: isSubView || false,
       collapse: collapse || false,
       parentId: parent?.id ?? '0',
-      type: ['dice-mind-map-root', 'dice-mind-map-sub'][depth] || 'dice-mind-map-leaf',
-      isCurrentSelected: false,
-      isCurrentEdit: false,
       children: [],
       _children: [],
-      ...buildNodeStyle(name, desc, content, depth)
-    }
-    if (isInit) {
-      data.rawData = rawData
-    } else {
-      data.rawData = rawData?.rawData
+      rawData: isInit ? rawData : rawData?.rawData,
+      ...buildNodeStyle({ ...rawData, depth })
     }
     if (rawChildren) {
       rawChildren.filter(t => !t.destroyed).forEach((c, j) => {
@@ -84,7 +79,6 @@ class IMData {
   }
 
   init(d: InputData, isInit = false) {
-    console.log(d, isInit)
     this.data = this.createMdataFromData(d, '0', null, isInit)
     return this.data
   }
@@ -130,132 +124,56 @@ class IMData {
    * */
   add(id: string, rawData: string | InputData): NodeData | null {
     const p = this.find(id)
-    if (p) {
-      if (p.collapse) {
-        this.expand(id)
-      }
-      if (!p.children) {
-        p.children = []
-      }
-      let name, desc, content, children, _children;
-      if (typeof rawData === 'string') {
-        name = rawData
-      } else {
-        name = rawData.name || rawData.label
-        desc = rawData.desc
-        content = rawData.content
-        children = rawData.children
-        _children = rawData._children
-      }
-      const depth = p ? p.depth + 1 : 0
-      name = name === '' ? placeholderText : name;
-      const data: NodeData = {
-        id: `${id}-${p.children.length}`,
-        depth,
-        desc,
-        content,
-        parentId: id,
-        collapse: false,
-        isSubView: false,
-        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        isCurrentSelected: false,
-        isCurrentEdit: false,
-        children: [],
-        _children: [],
-        ...buildNodeStyle(name, desc, content, depth)
-      }
-      if (children || _children) {
-        children.forEach((item, i) => {
-          data?.children?.push(this.createMdataFromData(item, `${data.id}-${i}`, data))
-        })
-        _children.forEach((item, i) => {
-          data?.children?.push(this.createMdataFromData(item, `${data.id}-${i}`, data))
-        })
-      }
-      p.children.push(data)
-      return data
+    if (!p) return null;
+    if (p.collapse) {
+      this.expand(id)
     }
-    return null
+    if (!p.children) {
+      p.children = []
+    }
+    if (typeof rawData === 'string') {
+      rawData = { name: rawData }
+    }
+    const newData = this.createMdataFromData(rawData, `${id}-${p.children.length}`, p);
+    p.children.push(newData);
+    return newData;
   }
 
   addSibling(id: string, rawData: string | InputData, before = false): NodeData | null {
-    const d = this.find(id)
-    if (d && d.parentId) {
-      const index = parseInt(id.split('-').pop() as string, 10)
-      const start = before ? index : index + 1
-      const depth = d ? d.depth : 1
-      let name, desc, content;
-      if (typeof rawData === 'string') {
-        name = rawData;
-      } else {
-        name = rawData.name
-        desc = rawData.desc
-        content = rawData.content
-      }
-      name = name === '' ? placeholderText : name;
-      const sibling: NodeData = {
-        id: `${d.parentId}-${start}`,
-        depth,
-        desc,
-        content,
-        collapse: false,
-        isSubView: false,
-        parentId: d.parentId,
-        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        isCurrentSelected: false,
-        isCurrentEdit: false,
-        children: [],
-        _children: [],
-        ...buildNodeStyle(name, desc, content, depth)
-      }
-      const parent: NodeData | null = this.find(d.parentId);
-      parent?.children.splice(start, 0, sibling)
-      parent?.children.forEach((item: NodeData, index: number) => item.id = `${parent.id}-${index}`)
-      return sibling
+    const d = this.find(id);
+    if (!d || !d.parentId) return null;
+    if (typeof rawData === 'string') {
+      rawData = { name: rawData };
     }
-    return null
+    this.add(d.parentId, rawData);
   }
 
   addParent(id: string, rawData: string | InputData): NodeData | null {
-    const d = this.find(id)
-    if (d && d.parentId) {
-      const p = this.find(d.parentId)
-      const index = parseInt(id.split('-').pop() as string, 10)
-      const depth = d ? d.depth : 1
-      const fontSize = globalFontSize[depth] || 12;
-      const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-      let name, desc, content;
-      const parentId = d.parentId
-      if (typeof rawData === 'string') {
-        name = rawData;
-      } else {
-        name = rawData.name
-        desc = rawData.desc
-        content = rawData.content
-      }
-      name = name === '' ? placeholderText : name;
-      const parent: NodeData = {
-        id,
-        depth,
-        desc,
-        content,
-        parentId,
-        collapse: false,
-        isSubView: false,
-        rawData: typeof rawData === 'string' ? {} : rawData.rawData ? rawData.rawData : rawData,
-        isCurrentSelected: false,
-        isCurrentEdit: false,
-        children: [],
-        _children: [],
-        ...buildNodeStyle(name, desc, content, depth)
-      }
-      p?.children.splice(index, 1, parent)
-      parent.children.push(this.createMdataFromData(d, id + '-0', parent))
-      return parent
+    let d = this.find(id);
+    if (!d || !d.parentId) return null;
+    const p = this.find(d.parentId);
+    if (typeof rawData === 'string') {
+      rawData = { name: rawData };
     }
-    return null
+    const newData = this.createMdataFromData({
+      ...rawData,
+      children: [d]
+    }, id, p)
+    this.replaceNode(id, newData);
+    return newData;
   }
-
+  replaceNode(id, rawData) {
+    let d = this.find(id);
+    let p = this.find(d.parentId);
+    if (!p?.children) return;
+    p.children.forEach(item => {
+      if (item.id === id) {
+        for (let key in rawData) {
+          item[key] = rawData[key]
+        }
+      }
+    })
+  }
   /**
    * 删除节点及其所有子节点 支持逻辑删除与物理删除
    * 逻辑删除： 在数据中，被打上destroyed的标识，会在下一次重置数据的时候删除 应用场景听：moveData 先逻辑删除再物理删除
@@ -305,23 +223,18 @@ class IMData {
     }
   }
 
-  update(id: string, data: string | { name?: string, desc?: string, isCurrentSelected?: boolean, isCurrentEdit?: boolean }) {
+  update(id: string, rawData: string | InputData) {
     let d = this.find(id)
     if (!d) return
-    let name, desc, isCurrentSelect, isCurrentEdit;
-    if (typeof data !== 'string') {
-      if (data.isCurrentSelected) {
-        this._selectNode && (this._selectNode.isCurrentSelected = false)
-        this._selectNode = d;
-      }
-      name = data?.name ?? d.fullName
-      desc = data?.desc ?? d.desc
-      isCurrentSelect = data?.isCurrentSelected ?? d.isCurrentSelected
-      isCurrentEdit = data?.isCurrentEdit ?? d.isCurrentEdit
+    const p = this.find(d.parentId);
+    if (typeof rawData === 'string') {
+      rawData = { ...d, name: rawData }
     } else {
-      name = data;
+      rawData = { ...d, ...rawData }
     }
-    Object.assign(d, buildNodeStyle(name, desc, d.content, d.depth), { name, isCurrentSelected: isCurrentSelect, isCurrentEdit })
+    const newData = this.createMdataFromData(rawData, id, p);
+    this.replaceNode(id, newData);
+    return newData;
   }
 
   backParent() {

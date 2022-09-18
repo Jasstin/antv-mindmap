@@ -1,5 +1,5 @@
 import G6 from "@antv/g6";
-import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, setCurrentNode, placeholderText, hotkeys } from "./variable";
+import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, hotkeys } from "./variable";
 import {
   addData,
   addParent,
@@ -18,21 +18,21 @@ const nodeMenuMap = {
     name: 'add',
     title: '添加子节点',
     click: (node: NodeData) => {
-      addData(node?.id as string, placeholderText, true)
+      addData(node?.id as string, "", true)
     }
   },
   'add-parent': {
     name: 'add-parent',
     title: '添加父级节点',
     click: (node: NodeData) => {
-      addParent(node?.id as string, placeholderText, true)
+      addParent(node?.id as string, "", true)
     }
   },
   'add-sibling': {
     name: 'add-sibling',
     title: '添加兄弟节点',
     click: (node: NodeData) => {
-      addSibling(node?.id as string, placeholderText, true)
+      addSibling(node?.id as string, "", true)
     }
   },
   'edit': {

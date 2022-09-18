@@ -1,6 +1,4 @@
 import { addData, addParent, addSibling, copy, deleteNode, paste, createACopy, cut, unDo, reDo, edit } from "./methods";
-import { globalTree, placeholderText, hotKeyList } from "../variable";
-
 var isMac = function () {
   return /macintosh|mac os x/i.test(navigator.userAgent);
 }();
@@ -10,7 +8,7 @@ var defaultHotKey = [
     label: '插入同级节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addSibling(selectedNodes[0].id, placeholderText, true)
+      addSibling(selectedNodes[0], "", true)
     },
     name: 'add-sibling', // 右键菜单匹配值
   },
@@ -19,7 +17,7 @@ var defaultHotKey = [
     label: '插入子节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addData(selectedNodes[0].id, placeholderText, true)
+      addData(selectedNodes[0], "", true)
     },
     name: 'add', // 右键菜单匹配值
   },
@@ -29,7 +27,7 @@ var defaultHotKey = [
     label: '插入父节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addParent(selectedNodes[0].id, placeholderText, true)
+      addParent(selectedNodes[0], "", true)
     },
     name: 'add-parent', // 右键菜单匹配值
   },
@@ -39,8 +37,7 @@ var defaultHotKey = [
     label: '复制',
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      let ids = selectedNodes.map(item => item.id)
-      copy(ids)
+      copy(selectedNodes)
     },
     name: 'copy', // 右键菜单匹配值
   },
@@ -50,8 +47,7 @@ var defaultHotKey = [
     label: '剪切',
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      let ids = selectedNodes.map(item => item.id)
-      cut(ids)
+      cut(selectedNodes)
     },
     name: 'cut', // 右键菜单匹配值
   },
@@ -61,7 +57,7 @@ var defaultHotKey = [
     label: '粘贴',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      paste(selectedNodes[0].id)
+      paste(selectedNodes[0])
     },
     name: 'paste', // 右键菜单匹配值
   },
@@ -72,7 +68,7 @@ var defaultHotKey = [
     name: 'create-a-copy', // 右键菜单匹配值
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      createACopy(selectedNodes[0].id)
+      createACopy(selectedNodes[0])
     },
   },
   {
@@ -98,8 +94,8 @@ var defaultHotKey = [
     label: '删除',
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      selectedNodes.forEach(item => {
-        deleteNode(item.id)
+      selectedNodes.forEach(nodeId => {
+        deleteNode(nodeId)
       })
     },
     name: 'delete', // 右键菜单匹配值
@@ -109,8 +105,8 @@ var defaultHotKey = [
     label: '编辑',
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      selectedNodes.forEach(item => {
-        edit(item.id)
+      selectedNodes.forEach(nodeId => {
+        edit(nodeId)
       })
     },
     name: 'edit', // 右键菜单匹配值

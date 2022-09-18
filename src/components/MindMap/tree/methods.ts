@@ -1,6 +1,6 @@
-import IMData from '../data/index'
-import { InputData, NodeData } from "../interface";
-import { globalTree, radius, setIsCurrentEdit, themeColor } from "../variable";
+import IMData, { buildNodeStyle } from '../data/index'
+import { InputData } from "../interface";
+import { globalTree, isCurrentEdit, setIsCurrentEdit } from "../variable";
 import { TreeGraph } from "@antv/g6";
 import History from "../data/history";
 import EditInput from "../editInput";
@@ -46,70 +46,68 @@ export const edit = (id: string) => {
   const Tree = globalTree.value
   const NodeData = Tree?.findById(id) as INode
   if (!NodeData || !Tree) return
-  const { x: pointX, y: pointY } = NodeData._cfg?.bboxCache
-  const { name, type, fontSize, width, height } = NodeData._cfg?.model as NodeData
-  let ratio = Tree.getZoom()
-  let { x, y } = Tree.getClientByPoint(pointX, pointY)
   setIsCurrentEdit(true)
-  update(id, { isCurrentEdit: true })
-  EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
+  let show = false;
+  let oldName = NodeData.get('model').name;
+  EditInput.showInput(NodeData)
+  show = true;
+  Tree.on('wheel', () => {
+    if (!show) return;
+    EditInput.showInput(NodeData)
+  })
+  EditInput.handleInput = (name: string) => {
+    console.log('>>>>>>2')
+    if (!isCurrentEdit.value) setIsCurrentEdit(true)
+    let _name = name.replace(/\s/g, '');
+    const newData = buildNodeStyle({
+      name: _name.length < oldName.length ? oldName : _name,
+      depth: NodeData.get('model').depth
+    })
+    EditInput.changeStyle(newData);
+  }
   EditInput.handleInputBlur = (name: string) => {
-    console.log(name)
+    show = false;
     emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
     let _name = name.replace(/\s/g, '');
-    update(id, _name === '' ? NodeData.get('model').name : _name)
-    Tree.off('wheelzoom')
+    update(id, _name === '' ? oldName : _name)
     EditInput.hideInput()
     let timer = setTimeout(() => {
-      setIsCurrentEdit(false);
-      update(id, { isCurrentEdit: false })
-      cancelAllSelect()
       clearTimeout(timer)
-    }, 500)
+      setIsCurrentEdit(false)
+    }, 100)
   }
-  Tree.on('wheelzoom', () => {
-    ratio = Tree.getZoom()
-    let { x, y } = Tree.getClientByPoint(pointX, pointY)
-    EditInput.showInput(x, y, width * ratio, height * ratio, name, fontSize * ratio, type, radius * ratio, ratio)
-  })
 }
 export const update = (id: string, name: any) => {
-  if (typeof name === 'string') {
-    IMData.update(id, { name })
-  } else {
-    IMData.update(id, name)
-  }
+  IMData.update(id, typeof name === 'string' ? { name } : name)
+  rePaint()
   selectNode(id, true)
 }
 export const selectNode = (id: string, selected: boolean) => {
-  let tree: TreeGraph | null = globalTree.value as TreeGraph
-  if (IMData._selectNode && tree.findDataById(IMData._selectNode.id)) {
-    tree.setItemState(IMData._selectNode.id, 'selected', false)
-  }
-  IMData.update(id, { isCurrentSelected: selected })
-  if (selected) {
-    tree.setItemState(id, 'selected', true)
-    emitter.emit('onSelectedNode', findData(id))
-  }
-  rePaint()
+  cancelAllSelect()
+  globalTree.value.setItemState(id, 'selected', selected)
+  selected && emitter.emit('onSelectedNode', findData(id));
+  // 节点选中的时候就将富文本内容显示出来
+  const nodeData = globalTree.value.findById(id)
+  console.log('>>>>>>nodeData=', nodeData)
+  EditInput.showInput(nodeData)
+  EditInput._input.addEventListener('focus', () => {
+    // 输入框聚焦时，调用编辑方法进行编辑
+    edit(id)
+  })
 }
 export const cancelAllSelect = () => {
-  let tree: TreeGraph | null = globalTree.value as TreeGraph
-  if (IMData._selectNode) {
-    const id = IMData._selectNode.id;
-    if (tree.findDataById(id)) {
-      tree.setItemState(id, 'selected', false)
+  globalTree.value.getNodes().forEach(item => {
+    if (item.hasState('selected')) {
+      item.clearStates('selected')
     }
-    IMData.update(id, { isCurrentSelected: false })
-  }
-  rePaint()
+  })
+  EditInput.hideInput()
 }
 export const getSelectedNodes = () => {
-  if (IMData._selectNode) {
-    return [IMData._selectNode]
-  } else {
-    return []
-  }
+  // 返回当前所有选中的节点
+  return globalTree.value.getNodes().filter(item => {
+    return item.hasState('selected');
+  }).map(item => item.get('model').id)
 }
 export const deleteNode = (id: string) => {
   IMData.removeItem(id)
@@ -120,6 +118,9 @@ export const deleteOneNode = (id: string) => {
   rePaint()
 }
 export const collapse = (id: string) => {
+  //  判断如果没有子元素直接返回
+  let data = findData(id);
+  if (data.children.length <= 0) return false;
   IMData.collapse(id)
   emitter.emit('onCollapse', findData(id))
   rePaint()
@@ -134,7 +135,7 @@ export const onlyShowCurrent = (id: string) => {
   rePaint()
 }
 export const backParent = (id: string) => {
-  IMData.backParent(id)
+  IMData.backParent()
   rePaint()
 }
 export const reDo = () => {

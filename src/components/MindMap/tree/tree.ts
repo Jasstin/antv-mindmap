@@ -124,10 +124,10 @@ class Tree {
         type: 'compactBox',
         direction: 'H',
         getHeight: (node: NodeData) => {
-          return node.height
+          return node.style.height
         },
         getWidth: (node: NodeData) => {
-          return node.width
+          return node.style.width
         },
         getVGap: () => {
           return layoutConfig?.yGap || 10;

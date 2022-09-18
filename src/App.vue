@@ -53,7 +53,7 @@ export default defineComponent({
     const themeList = reactive<input>({
       'branch': { type: 'range', value: 1, desc: '线条宽度', min: 1, max: 6, step: 1 },
       'branchColor': { type: 'color', value: '#ff0f00', desc: '线条颜色' },
-      'xGap': { type: 'range', value: 50, desc: '节点横向间距', min: 30, max: 100, step: 1 },
+      'xGap': { type: 'range', value: 10, desc: '节点横向间距', min: 10, max: 100, step: 1 },
       'yGap': { type: 'range', value: 10, desc: '节点纵向间距', min: 10, max: 100, step: 1 },
       'themeColor': { type: 'color', value: '#ff4444', desc: '根节点背景色' },
       'rootFontColor': { type: 'color', value: '#f5f5f5', desc: '根节点文字颜色' },

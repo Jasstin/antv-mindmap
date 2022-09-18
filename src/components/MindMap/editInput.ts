@@ -1,12 +1,14 @@
-import { fontColor_leaf, fontColor_root, fontColor_sub, maxFontCount, paddingH, paddingV, themeColor, themeColor_leaf, themeColor_sub, placeholderText } from "./variable";
+import { paddingH, paddingV, placeholderText, globalTree, radius, activeStrokeColor } from "./variable";
+function buildStyle(obj) {
+  let res = '';
+  for (let key in obj) {
+    res += `${key}:${obj[key]};`
+  }
+  return res;
+}
 
 class EditInput {
   _input: HTMLInputElement | null = null
-  _fontSize: number = 0
-  _height: number = 0
-  _ratio: number = 1
-  _lineHeight = 12
-  _width = 0
   _id: string
 
   init(id: string) {
@@ -15,82 +17,65 @@ class EditInput {
     this.bindEvent()
   }
 
-  showInput(x: number, y: number, width: number, height: number, name: string, fontSize: number, type: string, radius: number, ratio: number) {
+  showInput(nodeData) {
+    console.log('>>>>>>nodeInput')
     if (!this._input) {
       this.init(this._id)
       if (!this._input) return
     };
+    console.log('>>>>>>nodeInput')
     let NodeInput = this._input;
-    this._fontSize = fontSize
-    this._height = height
-    this._ratio = ratio;
-    this._width = width + 4 * ratio;
-    this._lineHeight = fontSize + paddingV * ratio * 2;
-    NodeInput.style.display = 'block'
-    NodeInput.style.position = 'fixed';
-    NodeInput.style.top = y + 'px';
-    NodeInput.style.left = x + 'px';
-    NodeInput.style.width = width + 4 * ratio + 'px';
-    NodeInput.style.height = height + 4 * ratio + 'px';
-    NodeInput.style.border = `${2 * ratio}px solid`;
-    NodeInput.style.boxSizing = 'border-box';
+    const { x: pointX, y: pointY } = nodeData._cfg?.bboxCache
+    const { name, style: { fontSize, width, height, maxWidth, FillColor, FontColor, stroke, nameLineHeight } } = nodeData._cfg?.model;
+    const Tree = globalTree.value;
+    let ratio = Tree.getZoom()
+    let { x, y } = Tree.getClientByPoint(pointX, pointY);
+    NodeInput.style.cssText = buildStyle({
+      transform: `scale(${ratio})`,
+      'transform-origin': '0 0',
+      display: 'block',
+      position: 'fixed',
+      top: `${y}px`,
+      left: `${x}px`,
+      width: `${width + stroke}px`,
+      height: `${height + stroke}px`,
+      'box-sizing': `border-box`,
+      'font-size': `${fontSize}px`,
+      'text-align': 'left',
+      'padding-top': `${paddingV / 2}px`,
+      'padding-left': `${paddingH - stroke}px`,
+      'border-radius': `${radius}px`,
+      zIndex: 1,
+      overflow: `hidden`,
+      resize: `none`,
+      outline: `none`,
+      'font-weight': 600,
+      color: FontColor,
+      background: FillColor,
+      border: `${stroke}px solid ${activeStrokeColor.value}`,
+      'line-height': nameLineHeight + 'px'
+    });
+    console.log('>>>>>>nodeInput', NodeInput)
     NodeInput.innerText = placeholderText === name ? "" : name
-    NodeInput.style.fontSize = fontSize + 'px'
-    NodeInput.style.textAlign = 'left'
-    NodeInput.style.paddingTop = paddingV / 2 * ratio + 'px'
-    NodeInput.style.paddingLeft = paddingH * ratio + 'px'
-    NodeInput.style.lineHeight = (fontSize + paddingV) * ratio + 'px'
-    NodeInput.style.borderRadius = radius + 'px'
-    NodeInput.style.zIndex = '1'
-    NodeInput.style.overflow = 'hidden'
-    NodeInput.style.resize = 'none'
-    NodeInput.style.outline = 'none';
-    NodeInput.style.fontWeight = "600";
     document.body.style['--placeholderText'] = placeholderText
-    if (name === placeholderText) {
-      NodeInput.classList.add("empty")
-    }
-    if (name === '') {
-      NodeInput.style.width = '120px';
-    }
-    if (type === 'dice-mind-map-root') {
-      NodeInput.style.color = fontColor_root.value
-      NodeInput.style.background = themeColor.value
-      NodeInput.style.borderColor = themeColor.value;
-    } else if (type === 'dice-mind-map-sub') {
-      NodeInput.style.color = fontColor_sub.value
-      NodeInput.style.background = themeColor_sub.value
-      NodeInput.style.borderColor = themeColor_sub.value;
-    } else if (type === 'dice-mind-map-leaf') {
-      NodeInput.style.color = fontColor_leaf.value
-      NodeInput.style.background = themeColor_leaf.value
-      NodeInput.style.borderColor = themeColor.value;
-    }
-    let timer = setTimeout(() => {
-      NodeInput.focus()
-      clearTimeout(timer)
-    }, 100)
+    NodeInput.classList[name === placeholderText ? 'add' : 'remove']("empty")
   }
-
-  changeLength(ev: Event) {
-    let input = ev.target as HTMLInputElement
-    let row = input.innerText.split('\n').sort((a, b) => b.length - a.length);
-    let lineWidth = row[0].replace(/[^\x00-\xff]/g, "00").length;
-    if (lineWidth > 30) lineWidth = 30;
-    let width = lineWidth * this._fontSize / 2 + paddingH * 2;
-    width = width + 4 * this._ratio;
-    input.style.width = `${Math.max(width, this._width)}px`
-    input.style.height = `${Math.max(input.scrollHeight, this._height + 5)}px`
-    if (input.innerText.length > 0) {
-      input.classList.remove("empty")
-    } else {
-      input.classList.add("empty")
-    }
+  changeStyle({ style: { width, stroke, height } }) {
+    let NodeInput = this._input;
+    NodeInput.style.width = `${width + stroke}px`;
+    NodeInput.style.height = `${height + stroke}px`;
   }
-
   bindEvent() {
     if (!this._input) return
-    this._input.addEventListener('input', this.changeLength.bind(this))
+    this._input.addEventListener('input', (ev) => {
+      let input = ev.target as HTMLInputElement
+      if (input.innerText.length > 0) {
+        input.classList.remove("empty")
+      } else {
+        input.classList.add("empty")
+      }
+      this.handleInput(this._input.innerText === '' ? placeholderText : this._input.innerText)
+    })
     this._input.addEventListener('blur', () => {
       this.handleInputBlur(this._input.innerText)
     })
@@ -101,9 +86,16 @@ class EditInput {
       }
     })
   }
-
   hideInput() {
     this._input.style.display = 'none'
+  }
+  handlefocus(name: string) {
+    //    methods 将会重写，用来更新节点状态
+
+  }
+
+  handleInput(name: string) {
+
   }
 
   handleInputBlur(name: string) {

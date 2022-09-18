@@ -1,5 +1,5 @@
 import G6 from "@antv/g6";
-import { cancelAllSelect, edit, expand, findData, moveData, moveToChild, selectNode, getSelectedNodes, collapse, addData } from "./methods";
+import { cancelAllSelect, edit, expand, findData, moveData, selectNode, getSelectedNodes, collapse, addData } from "./methods";
 import {
   branch,
   branchColor,
@@ -9,13 +9,14 @@ import {
   paddingH,
   radius,
   themeColor,
-  lineType, isCurrentEdit,
-  placeholderText,
+  lineType,
+  isCurrentEdit,
   isDragging,
   setIsDragging,
   hotkeys
 } from "../variable";
 import emitter from "../mitt";
+import editInput from "../editInput";
 let leaveEdgeTimer;
 G6.registerBehavior('edit-mindmap', {
   selectNodeId: null,
@@ -31,35 +32,16 @@ G6.registerBehavior('edit-mindmap', {
       'node:mouseleave': 'clearHoverStatus',
       'node:dragstart': 'dragStart',
       'node:contextmenu': 'selectNode',
-      'keydown': 'keyDown',
-      'canvas:click': 'clickCanvas',
-      "edge:mouseenter": 'hoverEdge',
-      "edge:mouseleave": 'mouseLeaveEdge',
+      'keyup': 'keyup',
+      'canvas:click': 'clickCanvas'
     };
   },
   clickCanvas(evt) {
     cancelAllSelect()
   },
-  hoverEdge(evt) {
-    const edge = evt.item;
-    const tree = evt.currentTarget;
-    const node = edge.getSource();
-    clearTimeout(leaveEdgeTimer);
-    console.log('hover')
-    tree.setItemState(node, 'hover', true)
-    node.toFront()
-    tree.paint();
-  },
-  mouseLeaveEdge(evt) {
-    leaveEdgeTimer = setTimeout(() => {
-      let { currentTarget: tree, item: edge } = evt
-      tree.setItemState(edge.getSource(), 'hover', false);
-      tree.layout()
-      clearTimeout(leaveEdgeTimer)
-    }, 800);
-  },
   clickNode(evt) {
     const tree = evt.currentTarget;
+    const node = evt.item;
     const model = evt.item.get('model');
     const name = evt.target.get('action');
     if (name === 'expand') {
@@ -67,13 +49,13 @@ G6.registerBehavior('edit-mindmap', {
     } else if (name === 'collapse') {
       collapse(model.id)
     } else if (name === 'add') {
-      addData(model?.id as string, placeholderText, true)
-    } else if (model.isCurrentSelected) {
+      addData(model?.id as string, "", true)
+    } else if (node.hasState('selected')) {
+      // 判断如果当前节点时选中节点，那么编辑节点
       edit(model.id)
     } else {
       selectNode(model.id, !model.isCurrentSelected)
     }
-    tree.findById(model.id).toFront();
   },
   selectNode(evt) {
     const model = evt.item.get('model');
@@ -94,7 +76,7 @@ G6.registerBehavior('edit-mindmap', {
   clearHoverStatus(evt) {
     let { currentTarget: tree, item: node } = evt
     tree.setItemState(node, 'hover', false);
-    tree.layout()
+    tree.paint();
   },
   dragStart(evt) {
     // 拖拽的节点及其所有子节点设置drag state 为true
@@ -103,6 +85,8 @@ G6.registerBehavior('edit-mindmap', {
     setIsDragging(true)
     this.dragNodeId = id
     const _dragnode = tree.findById(this.dragNodeId)
+    //  拖拽开始的时候，需要将节点的hover状态取消掉
+    tree.setItemState(id, 'hover', false)
     document.documentElement.style.cursor = 'grabbing'
     tree.getNodes().forEach(node => {
       const nodeId = node.get('id');
@@ -138,7 +122,6 @@ G6.registerBehavior('edit-mindmap', {
         })
       }
     })
-    cancelAllSelect()
     this.showDragDiv(clientX, clientY)
     let ratio = tree.getZoom()
     window.onmousemove = (ev) => this.dragNode.call(this, {
@@ -249,12 +232,9 @@ G6.registerBehavior('edit-mindmap', {
       this.dragStatus = ''
     }
   },
-  dragEnd({ tree, clientX, clientY }) {
+  dragEnd({ tree }) {
     if (!isDragging.value) return
     setIsDragging(false)
-    if (this.dragNodeId) {
-      tree.setItemState(this.dragNodeId, 'drag', false)
-    }
     document.documentElement.style.cursor = 'default'
     this.hideDragDiv()
     if (this.dragStatus !== '' && this.selectNodeId) {
@@ -348,33 +328,11 @@ G6.registerBehavior('edit-mindmap', {
       tree.removeItem(moveNode[0])
     }
   },
-  showDragCombo({ tree, clientX, clientY, width, height }) {
-    const { x, y } = tree.getPointByClient(clientX, clientY);
-    const model = {
-      id: 'dragCombo',
-      label: '',
-      x,
-      y,
-      type: 'rect',
-      zIndex: 3,
-      style: {
-        width,
-        height,
-        fill: themeColor.value,
-        radius: radius,
-        opacity: 0.6,
-      },
-    };
-    const combo = tree.getNodes().filter(item => item.get('id') === 'dragCombo')
-    if (combo.length) {
-      tree.updateItem(combo[0], model)
-    } else {
-      tree.addItem('node', model);
-    }
-  },
-  keyDown(evt) {
+  keyup(evt) {
+    console.log('>>>>>>1')
     // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
     if (isCurrentEdit.value) return;
+    editInput.hideInput(); // 选中节点时显示选中节点的编辑内容，所以如果执行快捷键需要先将输入文本框隐藏
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
     let handler = hotkeys.value.filter(item => item.key === key)
     if (!handler.length) return;
