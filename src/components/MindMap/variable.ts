@@ -3,7 +3,13 @@ import { TreeGraph } from "@antv/g6";
 import { INode } from "@antv/g6-core/lib/interface/item";
 
 export const themeColor = ref('rgb(19, 128, 255)')
-export const changeThemeColor = (val: string) => themeColor.value = val
+export const activeStrokeColor = ref('red')
+export const hoverStrokeColor = ref('green')
+export const changeThemeColor = (val: string) => {
+  themeColor.value = val
+  activeStrokeColor.value = val
+  hoverStrokeColor.value = val
+}
 export const themeColor_sub = ref('rgb(245,245,245)')
 export const changeSubThemeColor = (val: string) => themeColor_sub.value = val
 export const themeColor_leaf = ref('transparent')
@@ -48,5 +54,3 @@ export const isDragging = ref<boolean>(false)
 export const setIsDragging = (val: boolean) => isDragging.value = val
 export const hotkeys = ref([]) // 节点右键菜单列表
 export const changehotKeyList = (val: []) => hotkeys.value = val
-export const activeStrokeColor = ref('red')
-export const hoverStrokeColor = ref('green')

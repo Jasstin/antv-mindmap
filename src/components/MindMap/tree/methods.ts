@@ -56,7 +56,6 @@ export const edit = (id: string) => {
     EditInput.showInput(NodeData)
   })
   EditInput.handleInput = (name: string) => {
-    console.log('>>>>>>2')
     if (!isCurrentEdit.value) setIsCurrentEdit(true)
     let _name = name.replace(/\s/g, '');
     const newData = buildNodeStyle({
@@ -88,7 +87,6 @@ export const selectNode = (id: string, selected: boolean) => {
   selected && emitter.emit('onSelectedNode', findData(id));
   // 节点选中的时候就将富文本内容显示出来
   const nodeData = globalTree.value.findById(id)
-  console.log('>>>>>>nodeData=', nodeData)
   EditInput.showInput(nodeData)
   EditInput._input.addEventListener('focus', () => {
     // 输入框聚焦时，调用编辑方法进行编辑

@@ -18,12 +18,11 @@ class EditInput {
   }
 
   showInput(nodeData) {
-    console.log('>>>>>>nodeInput')
     if (!this._input) {
       this.init(this._id)
       if (!this._input) return
     };
-    console.log('>>>>>>nodeInput')
+
     let NodeInput = this._input;
     const { x: pointX, y: pointY } = nodeData._cfg?.bboxCache
     const { name, style: { fontSize, width, height, maxWidth, FillColor, FontColor, stroke, nameLineHeight } } = nodeData._cfg?.model;
@@ -55,7 +54,6 @@ class EditInput {
       border: `${stroke}px solid ${activeStrokeColor.value}`,
       'line-height': nameLineHeight + 'px'
     });
-    console.log('>>>>>>nodeInput', NodeInput)
     NodeInput.innerText = placeholderText === name ? "" : name
     document.body.style['--placeholderText'] = placeholderText
     NodeInput.classList[name === placeholderText ? 'add' : 'remove']("empty")

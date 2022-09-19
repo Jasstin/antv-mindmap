@@ -22,7 +22,6 @@ const {
 
 function drawHandleBtn(group: IGroup, cfg, type) {
   const { style: { width, height, opacity = 1 }, _children } = cfg
-  console.log('>>>>>>>cfg=', cfg)
   const fontSize = 14
   const text = {
     'add': '+',

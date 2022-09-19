@@ -7,7 +7,6 @@ export const buildNodeStyle = ({ name = placeholderText, desc = "", content = ""
   const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
   const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize); // 标题换行
   const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2); // 描述换行
-  console.log('>>>>>>>nameLine', nameLine)
   const nameLineHeight = (fontSize + paddingV);
   const nameHeight = nameLineHeight * (nameLine) + paddingV; // 标题高度
   const descHeight = (fontSize - 2 + paddingV) * (descLine) + paddingV; // 描述内容高度

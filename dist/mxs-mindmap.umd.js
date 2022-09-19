@@ -57,7 +57,13 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   };
   window.wrapString = wrapString;
   const themeColor = vue.ref("rgb(19, 128, 255)");
-  const changeThemeColor = (val) => themeColor.value = val;
+  const activeStrokeColor = vue.ref("red");
+  const hoverStrokeColor = vue.ref("green");
+  const changeThemeColor = (val) => {
+    themeColor.value = val;
+    activeStrokeColor.value = val;
+    hoverStrokeColor.value = val;
+  };
   const themeColor_sub = vue.ref("rgb(245,245,245)");
   const changeSubThemeColor = (val) => themeColor_sub.value = val;
   const themeColor_leaf = vue.ref("transparent");
@@ -101,15 +107,12 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const setIsDragging = (val) => isDragging.value = val;
   const hotkeys = vue.ref([]);
   const changehotKeyList = (val) => hotkeys.value = val;
-  const activeStrokeColor = vue.ref("red");
-  const hoverStrokeColor = vue.ref("green");
   const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth }) => {
     name === "" && (name = placeholderText);
     const fontSize = globalFontSize[depth] || 12;
     const size = fontSize * maxFontCount + paddingH * 2;
     const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize);
     const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2);
-    console.log(">>>>>>>nameLine", nameLine);
     const nameLineHeight = fontSize + paddingV;
     const nameHeight = nameLineHeight * nameLine + paddingV;
     const descHeight = (fontSize - 2 + paddingV) * descLine + paddingV;
@@ -398,13 +401,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     }
     showInput(nodeData) {
       var _a, _b;
-      console.log(">>>>>>nodeInput");
       if (!this._input) {
         this.init(this._id);
         if (!this._input)
           return;
       }
-      console.log(">>>>>>nodeInput");
       let NodeInput = this._input;
       const { x: pointX, y: pointY } = (_a = nodeData._cfg) == null ? void 0 : _a.bboxCache;
       const { name, style: { fontSize, width, height, maxWidth, FillColor, FontColor, stroke, nameLineHeight } } = (_b = nodeData._cfg) == null ? void 0 : _b.model;
@@ -436,7 +437,6 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         border: `${stroke}px solid ${activeStrokeColor.value}`,
         "line-height": nameLineHeight + "px"
       });
-      console.log(">>>>>>nodeInput", NodeInput);
       NodeInput.innerText = placeholderText === name ? "" : name;
       document.body.style["--placeholderText"] = placeholderText;
       NodeInput.classList[name === placeholderText ? "add" : "remove"]("empty");
@@ -554,7 +554,6 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       EditInput$1.showInput(NodeData);
     });
     EditInput$1.handleInput = (name) => {
-      console.log(">>>>>>2");
       if (!isCurrentEdit.value)
         setIsCurrentEdit(true);
       let _name = name.replace(/\s/g, "");
@@ -586,7 +585,6 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     globalTree.value.setItemState(id, "selected", selected);
     selected && emitter.emit("onSelectedNode", findData(id));
     const nodeData = globalTree.value.findById(id);
-    console.log(">>>>>>nodeData=", nodeData);
     EditInput$1.showInput(nodeData);
     EditInput$1._input.addEventListener("focus", () => {
       edit(id);
@@ -903,7 +901,6 @@ ${timetravel.value ? `
   } = G6__default["default"];
   function drawHandleBtn(group, cfg, type) {
     const { style: { width, height, opacity = 1 }, _children } = cfg;
-    console.log(">>>>>>>cfg=", cfg);
     const fontSize = 14;
     const text = {
       "add": "+",
@@ -1404,7 +1401,6 @@ ${timetravel.value ? `
       }
     },
     keyup(evt) {
-      console.log(">>>>>>1");
       if (isCurrentEdit.value)
         return;
       EditInput$1.hideInput();

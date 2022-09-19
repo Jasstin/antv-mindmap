@@ -329,7 +329,6 @@ G6.registerBehavior('edit-mindmap', {
     }
   },
   keyup(evt) {
-    console.log('>>>>>>1')
     // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
     if (isCurrentEdit.value) return;
     editInput.hideInput(); // 选中节点时显示选中节点的编辑内容，所以如果执行快捷键需要先将输入文本框隐藏
