@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "husky install",
+    "push": "git push && git push gitee && echo 代码提交完成",
     "lib": "vite build --config vite-lib.config.ts && tsc --project tsconfig.lib.json"
   },
   "dependencies": {
