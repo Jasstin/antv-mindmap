@@ -1,178 +1,373 @@
-{
-  "info": {
-    "id": "6290dfaf7d40192ad9defd54",
-    "title": "9"
-  },
-  "children": [
-    {
-      "info": {
-        "id": "6290dfa97d40192ad9defd51",
-        "title": "6"
-      },
-      "children": [
-        {
-          "info": {
-            "id": "6290dfa77d40192ad9defd50",
-            "title": "5"
-          },
-          "children": [
-            {
-              "info": {
-                "id": "6290dfa57d40192ad9defd4f",
-                "title": "1111222233335555"
-              },
-              "children": [
-                {
-                  "info": {
-                    "id": "6290dfa37d40192ad9defd4e",
-                    "title": "3"
-                  },
-                  "children": [
-                    {
-                      "info": {
-                        "id": "6290df9f7d40192ad9defd4d",
-                        "title": "2"
-                      },
-                      "children": [
-                        {
-                          "info": {
-                            "id": "618cf5b7a227ea87b4364d88",
-                            "title": "1"
-                          },
-                          "children": [
-                            {
-                              "info": {
-                                "id": "6290df9b7d40192ad9defd4b",
-                                "title": "1-1"
-                              },
-                              "children": null,
-                              "id": "6290df9b7d40192ad9defd4b",
-                              "name": "1-1",
-                              "parentId": "618cf5b7a227ea87b4364d88",
-                              "lineColor": "#1380FF",
-                              "hasChildren": true
-                            }
-                          ],
-                          "id": "618cf5b7a227ea87b4364d88",
-                          "name": "1",
-                          "parentId": "6290df9f7d40192ad9defd4d",
-                          "lineColor": "#1380FF",
-                          "hasChildren": false
-                        }
-                      ],
-                      "id": "6290df9f7d40192ad9defd4d",
-                      "name": "2",
-                      "parentId": "6290dfa37d40192ad9defd4e",
-                      "lineColor": "#1380FF",
-                      "hasChildren": false
-                    }
-                  ],
-                  "id": "6290dfa37d40192ad9defd4e",
-                  "name": "3",
-                  "parentId": "6290dfa57d40192ad9defd4f",
-                  "lineColor": "#1380FF",
-                  "hasChildren": false
-                }
-              ],
-              "id": "6290dfa57d40192ad9defd4f",
-              "name": "1111222233335555",
-              "parentId": "6290dfa77d40192ad9defd50",
-              "lineColor": "#1380FF",
-              "hasChildren": false
-            }
-          ],
-          "id": "6290dfa77d40192ad9defd50",
-          "name": "5",
-          "parentId": "6290dfa97d40192ad9defd51",
-          "lineColor": "#1380FF",
-          "hasChildren": false
-        }
-      ],
-      "id": "6290dfa97d40192ad9defd51",
-      "name": "6",
-      "parentId": "6290dfaf7d40192ad9defd54",
-      "lineColor": "#1380FF",
-      "hasChildren": false
+[
+  {
+    "info": {
+      "id": "63007c8e970a20e8b77bc8b1",
+      "title": "撒发顺丰1231312313123"
     },
-    {
-      "info": {
-        "id": "6290dfad7d40192ad9defd53",
-        "title": "8"
+    "children": [
+      {
+        "info": {
+          "id": "630b0193970a20e8b77bf362",
+          "title": "测试"
+        },
+        "children": null,
+        "id": "630b0193970a20e8b77bf362",
+        "name": "测试",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": true,
+        "level": 1,
+        "collapse": false
       },
-      "children": [
-        {
-          "info": {
-            "id": "6290dfb47d40192ad9defd57",
-            "title": "12"
-          },
-          "children": null,
-          "id": "6290dfb47d40192ad9defd57",
-          "name": "12",
-          "parentId": "6290dfad7d40192ad9defd53",
-          "lineColor": "#1380FF",
-          "hasChildren": true
-        }
-      ],
-      "id": "6290dfad7d40192ad9defd53",
-      "name": "8",
-      "parentId": "6290dfaf7d40192ad9defd54",
-      "lineColor": "#1380FF",
-      "hasChildren": false
-    },
-    {
-      "info": {
-        "id": "6290dfab7d40192ad9defd52",
-        "title": "7"
-      },
-      "children": [
-        {
-          "info": {
-            "id": "6290dfb27d40192ad9defd56",
-            "title": "11"
-          },
-          "children": [
-            {
-              "info": {
-                "id": "6290dfb07d40192ad9defd55",
-                "title": "10"
-              },
-              "children": null,
-              "id": "6290dfb07d40192ad9defd55",
-              "name": "10",
-              "parentId": "6290dfb27d40192ad9defd56",
-              "lineColor": "#1380FF",
-              "hasChildren": true
+      {
+        "info": {
+          "id": "6304c7e8970a20e8b77bda57",
+          "title": "1"
+        },
+        "children": [
+          {
+            "info": {
+              "id": "6304d10b970a20e8b77bda74",
+              "title": "1-1"
             },
-            {
-              "info": {
-                "id": "6290df9d7d40192ad9defd4c",
-                "title": "1-2"
+            "children": null,
+            "id": "6304d10b970a20e8b77bda74",
+            "name": "1-1",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "6304d14e970a20e8b77bda75",
+              "title": "1-222234324"
+            },
+            "children": null,
+            "id": "6304d14e970a20e8b77bda75",
+            "name": "1-222234324",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630c122e970a20e8b77bf641",
+              "title": "新建模型"
+            },
+            "children": [
+              {
+                "info": {
+                  "id": "630c12c7970a20e8b77bf643",
+                  "title": "新建模型"
+                },
+                "children": null,
+                "id": "630c12c7970a20e8b77bf643",
+                "name": "新建模型",
+                "parentId": "630c122e970a20e8b77bf641",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
               },
-              "children": null,
-              "id": "6290df9d7d40192ad9defd4c",
-              "name": "1-2",
-              "parentId": "6290dfb27d40192ad9defd56",
-              "lineColor": "#1380FF",
-              "hasChildren": true
-            }
-          ],
-          "id": "6290dfb27d40192ad9defd56",
-          "name": "11",
-          "parentId": "6290dfab7d40192ad9defd52",
-          "lineColor": "#1380FF",
-          "hasChildren": false
-        }
-      ],
-      "id": "6290dfab7d40192ad9defd52",
-      "name": "7",
-      "parentId": "6290dfaf7d40192ad9defd54",
-      "lineColor": "#1380FF",
-      "hasChildren": false
-    }
-  ],
-  "id": "6290dfaf7d40192ad9defd54",
-  "name": "9",
-  "parentId": null,
-  "lineColor": "#1380FF",
-  "hasChildren": false
-}
+              {
+                "info": {
+                  "id": "631abd003e7cfe1d77c9c5fc",
+                  "title": "123213"
+                },
+                "children": null,
+                "id": "631abd003e7cfe1d77c9c5fc",
+                "name": "123213",
+                "parentId": "630c122e970a20e8b77bf641",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630a4793970a20e8b77bf221",
+                  "title": "新建模型"
+                },
+                "children": null,
+                "id": "630a4793970a20e8b77bf221",
+                "name": "新建模型",
+                "parentId": "630c122e970a20e8b77bf641",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              }
+            ],
+            "id": "630c122e970a20e8b77bf641",
+            "name": "新建模型",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": false,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "6306eb26970a20e8b77be0e4",
+              "title": "1-3"
+            },
+            "children": [
+              {
+                "info": {
+                  "id": "630b020e970a20e8b77bf367",
+                  "title": "新建模型"
+                },
+                "children": [
+                  {
+                    "info": {
+                      "id": "630c12bb970a20e8b77bf642",
+                      "title": "123"
+                    },
+                    "children": null,
+                    "id": "630c12bb970a20e8b77bf642",
+                    "name": "123",
+                    "parentId": "630b020e970a20e8b77bf367",
+                    "hasChildren": true,
+                    "level": 4,
+                    "collapse": true
+                  }
+                ],
+                "id": "630b020e970a20e8b77bf367",
+                "name": "新建模型",
+                "parentId": "6306eb26970a20e8b77be0e4",
+                "hasChildren": false,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630b0395970a20e8b77bf370",
+                  "title": "新建模型"
+                },
+                "children": null,
+                "id": "630b0395970a20e8b77bf370",
+                "name": "新建模型",
+                "parentId": "6306eb26970a20e8b77be0e4",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630b03cd970a20e8b77bf372",
+                  "title": "123123"
+                },
+                "children": [
+                  {
+                    "info": {
+                      "id": "630c17bc970a20e8b77bf65d",
+                      "title": "新建模型"
+                    },
+                    "children": null,
+                    "id": "630c17bc970a20e8b77bf65d",
+                    "name": "新建模型",
+                    "parentId": "630b03cd970a20e8b77bf372",
+                    "hasChildren": true,
+                    "level": 4,
+                    "collapse": true
+                  }
+                ],
+                "id": "630b03cd970a20e8b77bf372",
+                "name": "123123",
+                "parentId": "6306eb26970a20e8b77be0e4",
+                "hasChildren": false,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630c119e970a20e8b77bf63d",
+                  "title": "新建模型"
+                },
+                "children": null,
+                "id": "630c119e970a20e8b77bf63d",
+                "name": "新建模型",
+                "parentId": "6306eb26970a20e8b77be0e4",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              }
+            ],
+            "id": "6306eb26970a20e8b77be0e4",
+            "name": "1-3",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": false,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630b0203970a20e8b77bf365",
+              "title": "新建模型"
+            },
+            "children": null,
+            "id": "630b0203970a20e8b77bf365",
+            "name": "新建模型",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630b6703970a20e8b77bf56b",
+              "title": "新建模型"
+            },
+            "children": null,
+            "id": "630b6703970a20e8b77bf56b",
+            "name": "新建模型",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630a47aa970a20e8b77bf222",
+              "title": "12321"
+            },
+            "children": [
+              {
+                "info": {
+                  "id": "630c1177970a20e8b77bf639",
+                  "title": "13123"
+                },
+                "children": null,
+                "id": "630c1177970a20e8b77bf639",
+                "name": "13123",
+                "parentId": "630a47aa970a20e8b77bf222",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630c1180970a20e8b77bf63c",
+                  "title": "123123"
+                },
+                "children": null,
+                "id": "630c1180970a20e8b77bf63c",
+                "name": "123123",
+                "parentId": "630a47aa970a20e8b77bf222",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              },
+              {
+                "info": {
+                  "id": "630c11ba970a20e8b77bf63f",
+                  "title": "新建模型"
+                },
+                "children": null,
+                "id": "630c11ba970a20e8b77bf63f",
+                "name": "新建模型",
+                "parentId": "630a47aa970a20e8b77bf222",
+                "hasChildren": true,
+                "level": 3,
+                "collapse": true
+              }
+            ],
+            "id": "630a47aa970a20e8b77bf222",
+            "name": "12321",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": false,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630b69d1970a20e8b77bf56e",
+              "title": "123213"
+            },
+            "children": null,
+            "id": "630b69d1970a20e8b77bf56e",
+            "name": "123213",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          },
+          {
+            "info": {
+              "id": "630b69f0970a20e8b77bf56f",
+              "title": "新建模型"
+            },
+            "children": null,
+            "id": "630b69f0970a20e8b77bf56f",
+            "name": "新建模型",
+            "parentId": "6304c7e8970a20e8b77bda57",
+            "hasChildren": true,
+            "level": 2,
+            "collapse": false
+          }
+        ],
+        "id": "6304c7e8970a20e8b77bda57",
+        "name": "1",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": false,
+        "level": 1,
+        "collapse": false
+      },
+      {
+        "info": {
+          "id": "6305b2e3970a20e8b77bdd7c",
+          "title": "新建模型"
+        },
+        "children": null,
+        "id": "6305b2e3970a20e8b77bdd7c",
+        "name": "新建模型",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": true,
+        "level": 1,
+        "collapse": false
+      },
+      {
+        "info": {
+          "id": "6306e803970a20e8b77be0d8",
+          "title": "123123123"
+        },
+        "children": null,
+        "id": "6306e803970a20e8b77be0d8",
+        "name": "123123123",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": true,
+        "level": 1,
+        "collapse": false
+      },
+      {
+        "info": {
+          "id": "630b015e970a20e8b77bf35f",
+          "title": "新建模型"
+        },
+        "children": null,
+        "id": "630b015e970a20e8b77bf35f",
+        "name": "新建模型",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": true,
+        "level": 1,
+        "collapse": false
+      },
+      {
+        "info": {
+          "id": "630b66f4970a20e8b77bf56a",
+          "title": "新建模型"
+        },
+        "children": null,
+        "id": "630b66f4970a20e8b77bf56a",
+        "name": "新建模型",
+        "parentId": "63007c8e970a20e8b77bc8b1",
+        "hasChildren": true,
+        "level": 1,
+        "collapse": false
+      }
+    ],
+    "id": "63007c8e970a20e8b77bc8b1",
+    "name": "撒发顺丰1231312313123",
+    "parentId": null,
+    "hasChildren": false,
+    "level": 0,
+    "collapse": false
+  }
+]

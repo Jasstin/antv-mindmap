@@ -463,6 +463,8 @@ class EditInput {
     });
   }
   hideInput() {
+    if (!this._input)
+      return;
     this._input.style.display = "none";
   }
   handlefocus(name) {
@@ -545,7 +547,7 @@ const edit = (id) => {
   Tree2.on("wheel", () => {
     if (!show)
       return;
-    EditInput$1.showInput(NodeData);
+    EditInput$1.hideInput();
   });
   EditInput$1.handleInput = (name) => {
     if (!isCurrentEdit.value)

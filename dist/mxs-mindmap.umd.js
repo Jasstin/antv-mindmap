@@ -469,6 +469,8 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       });
     }
     hideInput() {
+      if (!this._input)
+        return;
       this._input.style.display = "none";
     }
     handlefocus(name) {
@@ -551,7 +553,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     Tree2.on("wheel", () => {
       if (!show)
         return;
-      EditInput$1.showInput(NodeData);
+      EditInput$1.hideInput();
     });
     EditInput$1.handleInput = (name) => {
       if (!isCurrentEdit.value)

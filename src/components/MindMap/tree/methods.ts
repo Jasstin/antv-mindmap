@@ -53,7 +53,7 @@ export const edit = (id: string) => {
   show = true;
   Tree.on('wheel', () => {
     if (!show) return;
-    EditInput.showInput(NodeData)
+    EditInput.hideInput()
   })
   EditInput.handleInput = (name: string) => {
     if (!isCurrentEdit.value) setIsCurrentEdit(true)

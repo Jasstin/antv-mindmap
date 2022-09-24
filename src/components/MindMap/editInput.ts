@@ -85,6 +85,7 @@ class EditInput {
     })
   }
   hideInput() {
+    if (!this._input) return
     this._input.style.display = 'none'
   }
   handlefocus(name: string) {
