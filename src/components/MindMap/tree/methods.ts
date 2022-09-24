@@ -70,7 +70,7 @@ export const edit = (id: string) => {
   }
   EditInput.handleInputBlur = (name: string) => {
     show = false;
-    emitter.emit('onAfterEdit', name.replace(/\s/g, ''));
+    emitter.emit('onAfterEdit', { name: name.replace(/\s/g, ''), nodeData: findData(id) });
     let _name = name.replace(/\s/g, '');
     update(id, _name === '' ? oldName : _name)
     EditInput.hideInput()

@@ -15,7 +15,7 @@
       :fitBtn="featureList['fitBtn'].value" :downloadBtn="featureList['downloadBtn'].value"
       :timetravel="featureList['timetravel'].value" :mindmap="featureList['mindmap'].value"
       :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :hotKey="hostKeyList"
-      :onDragEnd="onDragEnd">
+      :onAfterEdit="handleAfterEdit" :onDragEnd="onDragEnd">
     </mindmap>
     <div class="right-bottom">
       <div style="font-weight: bold;font-size: 16px">样式设置</div>
@@ -110,6 +110,9 @@ export default defineComponent({
     });
   },
   methods: {
+    handleAfterEdit() {
+      console.log(arguments, '>>>>onAfterEdit')
+    },
     onDragEnd() {
       console.log('onDragEnd', arguments)
     }
