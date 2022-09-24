@@ -17,6 +17,7 @@ import {
 } from "../variable";
 import emitter from "../mitt";
 import editInput from "../editInput";
+import { returnStatement } from "@babel/types";
 let leaveEdgeTimer;
 G6.registerBehavior('edit-mindmap', {
   selectNodeId: null,
@@ -32,7 +33,7 @@ G6.registerBehavior('edit-mindmap', {
       'node:mouseleave': 'clearHoverStatus',
       'node:dragstart': 'dragStart',
       'node:contextmenu': 'selectNode',
-      'keyup': 'keyup',
+      'keydown': 'keydown',
       'canvas:click': 'clickCanvas'
     };
   },
@@ -328,13 +329,11 @@ G6.registerBehavior('edit-mindmap', {
       tree.removeItem(moveNode[0])
     }
   },
-  keyup(evt) {
-    // 判断如果是编辑节点的状态，不处理快捷键功能，直接返回
-    if (isCurrentEdit.value) return;
-    editInput.hideInput(); // 选中节点时显示选中节点的编辑内容，所以如果执行快捷键需要先将输入文本框隐藏
+  keydown(evt) {
+    // 选中节点时显示选中节点的编辑内容，如果执行快捷键需要先将输入文本框隐藏否则清空节点信息并进行键入
+    console.log('>>>>正在键入', evt.key)
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
     let handler = hotkeys.value.filter(item => item.key === key)
-    if (!handler.length) return;
     if (shiftKey || ctrlKey || altKey || metaKey) {
       if (shiftKey) {
         handler = handler.filter(item => item.control?.indexOf('shift') > -1)
@@ -351,9 +350,17 @@ G6.registerBehavior('edit-mindmap', {
     } else if (handler.length === 1 && handler[0].control) {
       handler = []
     }
-    if (!handler.length) return;
-    evt.preventDefault(); // 禁止默认事件
-    handler[0].Event.call(this, getSelectedNodes())
+    if (isCurrentEdit.value) return;
+    if (!handler.length) {
+      //  未识别到快捷键键入
+      editInput._input?.focus();
+      editInput._input.innerText = '';
+    } else {
+      // 识别到快捷键，处理快捷键
+      evt.preventDefault(); // 禁止默认事件
+      handler[0].Event.call(this, getSelectedNodes())
+      editInput.hideInput()
+    }
   }
 });
 

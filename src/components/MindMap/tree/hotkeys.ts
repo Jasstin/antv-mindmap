@@ -1,3 +1,4 @@
+import editInput from "../editInput";
 import { addData, addParent, addSibling, copy, deleteNode, paste, createACopy, cut, unDo, reDo, edit } from "./methods";
 var isMac = function () {
   return /macintosh|mac os x/i.test(navigator.userAgent);
@@ -107,6 +108,10 @@ var defaultHotKey = [
       if (!selectedNodes?.length) return;
       selectedNodes.forEach(nodeId => {
         edit(nodeId)
+        let timer = setTimeout(() => {
+          editInput._input?.focus();
+          clearTimeout(timer)
+        }, 300)
       })
     },
     name: 'edit', // 右键菜单匹配值

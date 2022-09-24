@@ -58,8 +58,12 @@ export const edit = (id: string) => {
   EditInput.handleInput = (name: string) => {
     if (!isCurrentEdit.value) setIsCurrentEdit(true)
     let _name = name.replace(/\s/g, '');
+    const pattern = new RegExp('[\u4E00-\u9FA5]+'); // distinguish the Chinese charactors and letters
+    let nL = _name.length * (pattern.test(_name) ? 2 : 1);
+    let oL = oldName.length * (pattern.test(oldName) ? 2 : 1);
+    // width: 如果当前节点显示的内容长于新建入的内容，使用当前节点的长度
     const newData = buildNodeStyle({
-      name: _name.length < oldName.length ? oldName : _name,
+      name: nL < oL ? oldName : _name,
       depth: NodeData.get('model').depth
     })
     EditInput.changeStyle(newData);
