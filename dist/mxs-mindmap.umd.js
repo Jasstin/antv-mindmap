@@ -559,8 +559,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       if (!isCurrentEdit.value)
         setIsCurrentEdit(true);
       let _name = name.replace(/\s/g, "");
+      const pattern = new RegExp("[\u4E00-\u9FA5]+");
+      let nL = _name.length * (pattern.test(_name) ? 2 : 1);
+      let oL = oldName.length * (pattern.test(oldName) ? 2 : 1);
       const newData = buildNodeStyle({
-        name: _name.length < oldName.length ? oldName : _name,
+        name: nL < oL ? oldName : _name,
         depth: NodeData.get("model").depth
       });
       EditInput$1.changeStyle(newData);
@@ -1120,7 +1123,7 @@ ${timetravel.value ? `
         "node:mouseleave": "clearHoverStatus",
         "node:dragstart": "dragStart",
         "node:contextmenu": "selectNode",
-        "keyup": "keyup",
+        "keydown": "keydown",
         "canvas:click": "clickCanvas"
       };
     },
@@ -1402,46 +1405,49 @@ ${timetravel.value ? `
         tree2.removeItem(moveNode[0]);
       }
     },
-    keyup(evt) {
-      if (isCurrentEdit.value)
-        return;
-      EditInput$1.hideInput();
+    keydown(evt) {
+      var _a;
+      console.log(">>>>\u6B63\u5728\u952E\u5165", evt.key);
       const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
       let handler = hotkeys.value.filter((item) => item.key === key);
-      if (!handler.length)
-        return;
       if (shiftKey || ctrlKey || altKey || metaKey) {
         if (shiftKey) {
           handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("shift")) > -1;
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("shift")) > -1;
           });
         }
         if (ctrlKey) {
           handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("ctrl")) > -1;
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("ctrl")) > -1;
           });
         }
         if (metaKey) {
           handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("cmd")) > -1;
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("cmd")) > -1;
           });
         }
         if (altKey) {
           handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("alt")) > -1;
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("alt")) > -1;
           });
         }
       } else if (handler.length === 1 && handler[0].control) {
         handler = [];
       }
-      if (!handler.length)
+      if (isCurrentEdit.value)
         return;
-      evt.preventDefault();
-      handler[0].Event.call(this, getSelectedNodes());
+      if (!handler.length) {
+        (_a = EditInput$1._input) == null ? void 0 : _a.focus();
+        EditInput$1._input.innerText = "";
+      } else {
+        evt.preventDefault();
+        handler[0].Event.call(this, getSelectedNodes());
+        EditInput$1.hideInput();
+      }
     }
   });
   G6__default["default"].registerBehavior("double-finger-drag-canvas", {
@@ -1799,6 +1805,11 @@ ${timetravel.value ? `
           return;
         selectedNodes.forEach((nodeId) => {
           edit(nodeId);
+          let timer = setTimeout(() => {
+            var _a;
+            (_a = EditInput$1._input) == null ? void 0 : _a.focus();
+            clearTimeout(timer);
+          }, 300);
         });
       },
       name: "edit"
