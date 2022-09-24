@@ -564,7 +564,7 @@ const edit = (id) => {
   };
   EditInput$1.handleInputBlur = (name) => {
     show = false;
-    emitter.emit("onAfterEdit", name.replace(/\s/g, ""));
+    emitter.emit("onAfterEdit", { name: name.replace(/\s/g, ""), nodeData: findData(id) });
     let _name = name.replace(/\s/g, "");
     update(id, _name === "" ? oldName : _name);
     EditInput$1.hideInput();
