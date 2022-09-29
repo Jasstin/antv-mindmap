@@ -231,9 +231,13 @@ class IMData {
     } else {
       rawData = { ...d, ...rawData }
     }
-    const newData = this.createMdataFromData(rawData, id, p);
-    this.replaceNode(id, newData);
-    return newData;
+    if (d.id === '0') {
+      return this.init(rawData)
+    } else {
+      const newData = this.createMdataFromData(rawData, id, p);
+      this.replaceNode(id, newData);
+      return newData;
+    }
   }
 
   backParent() {
