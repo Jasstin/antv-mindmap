@@ -179,7 +179,7 @@ function handleNodeSelected(state, node) {
   let collapseBtn = getCollapseBtn(group)
   collapseBtn?.hide()
   // 非折叠状态显示添加按钮
-  if (!node.get('model').collapse) {
+  if (!(node.get('model').collapse && node.get('model')._children.length)) {
     addBtn?.[state ? 'show' : 'hide']()
   }
   if (isCurrentEdit.value) addBtn?.hide()
