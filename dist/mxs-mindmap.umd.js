@@ -325,9 +325,13 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       } else {
         rawData = __spreadValues(__spreadValues({}, d), rawData);
       }
-      const newData = this.createMdataFromData(rawData, id, p);
-      this.replaceNode(id, newData);
-      return newData;
+      if (d.id === "0") {
+        return this.init(rawData);
+      } else {
+        const newData = this.createMdataFromData(rawData, id, p);
+        this.replaceNode(id, newData);
+        return newData;
+      }
     }
     backParent() {
       let _data = this._data.pop();
@@ -1053,7 +1057,7 @@ ${timetravel.value ? `
     let addBtn = getAddBtn(group);
     let collapseBtn = getCollapseBtn(group);
     collapseBtn == null ? void 0 : collapseBtn.hide();
-    if (!node.get("model").collapse) {
+    if (!(node.get("model").collapse && node.get("model")._children.length)) {
       addBtn == null ? void 0 : addBtn[state ? "show" : "hide"]();
     }
     if (isCurrentEdit.value)
