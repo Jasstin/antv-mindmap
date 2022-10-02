@@ -26,9 +26,9 @@ export const addData = (
   editNow = true
 ) => {
   let data = IMData.add(id, rawData);
+  emitter.emit("onAdd", data);
   rePaint();
   if (data && editNow) edit(data.id);
-  emitter.emit("onAdd", data);
 };
 export const addParent = (id: string, rawData: string | InputData) => {
   let data = IMData.addParent(id, rawData);

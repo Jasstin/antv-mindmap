@@ -557,10 +557,10 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   };
   const addData = (id, rawData, editNow = true) => {
     let data = IMData$1.add(id, rawData);
+    emitter.emit("onAdd", data);
     rePaint();
     if (data && editNow)
       edit(data.id);
-    emitter.emit("onAdd", data);
   };
   const addParent = (id, rawData) => {
     let data = IMData$1.addParent(id, rawData);
