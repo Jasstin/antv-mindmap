@@ -237,7 +237,7 @@ class IMData {
     if (typeof rawData === "string") {
       rawData = { name: rawData };
     }
-    this.add(d.parentId, rawData);
+    return this.add(d.parentId, rawData);
   }
   addParent(id, rawData) {
     let d = this.find(id);
@@ -406,7 +406,19 @@ class EditInput {
     }
     let NodeInput = this._input;
     const { x: pointX, y: pointY } = (_a = nodeData._cfg) == null ? void 0 : _a.bboxCache;
-    const { name, style: { fontSize, width, height, maxWidth, FillColor, FontColor, stroke, nameLineHeight } } = (_b = nodeData._cfg) == null ? void 0 : _b.model;
+    const {
+      name,
+      style: {
+        fontSize,
+        width,
+        height,
+        maxWidth,
+        FillColor,
+        FontColor,
+        stroke,
+        nameLineHeight
+      }
+    } = (_b = nodeData._cfg) == null ? void 0 : _b.model;
     const Tree2 = globalTree.value;
     let ratio = Tree2.getZoom();
     let { x, y } = Tree2.getClientByPoint(pointX, pointY);
@@ -477,6 +489,30 @@ class EditInput {
   }
   handleInputBlur(name) {
   }
+  moveCursor(len) {
+    let range = new Range();
+    let selection = document.getSelection();
+    let text = this._input.firstChild;
+    if (text) {
+      range.setStart(text, 0);
+      range.setEnd(text, len);
+      range.collapse(false);
+    } else {
+      range.collapse(true);
+    }
+    selection.removeAllRanges();
+    selection.addRange(range);
+  }
+  toFocus() {
+    if (!this._input)
+      return;
+    this._input.focus();
+    try {
+      this.moveCursor(0);
+    } catch (e) {
+      console.log(e);
+    }
+  }
 }
 var EditInput$1 = new EditInput();
 function mitt(n) {
@@ -516,41 +552,36 @@ const rePaint = (stack = true) => {
 const addData = (id, rawData, editNow = true) => {
   let data = IMData$1.add(id, rawData);
   rePaint();
+  if (data && editNow)
+    edit(data.id);
   emitter.emit("onAdd", data);
-  if (editNow) {
-    if (data)
-      edit(data.id);
-  }
 };
-const addParent = (id, rawData, editNow = true) => {
+const addParent = (id, rawData) => {
   let data = IMData$1.addParent(id, rawData);
   rePaint();
-  if (editNow) {
-    if (data)
-      edit(data.id);
-  }
+  if (data)
+    edit(data.id);
 };
-const addSibling = (id, rawData, editNow = true) => {
+const addSibling = (id, rawData) => {
   let data = IMData$1.addSibling(id, rawData);
   rePaint();
-  if (editNow) {
-    if (data)
-      edit(data.id);
-  }
+  if (data)
+    edit(data.id);
 };
-const edit = (id) => {
+const edit = (id, clear = false) => {
   const Tree2 = globalTree.value;
   const NodeData = Tree2 == null ? void 0 : Tree2.findById(id);
   if (!NodeData || !Tree2)
     return;
   setIsCurrentEdit(true);
-  let show = false;
+  selectNode(id, true);
   let oldName = NodeData.get("model").name;
+  if (clear) {
+    NodeData.set("model", Object.assign(NodeData.get("model"), { name: "" }));
+  }
   EditInput$1.showInput(NodeData);
-  show = true;
+  EditInput$1.toFocus();
   Tree2.on("wheel", () => {
-    if (!show)
-      return;
     EditInput$1.hideInput();
   });
   EditInput$1.handleInput = (name) => {
@@ -567,8 +598,10 @@ const edit = (id) => {
     EditInput$1.changeStyle(newData);
   };
   EditInput$1.handleInputBlur = (name) => {
-    show = false;
-    emitter.emit("onAfterEdit", { name: name.replace(/\s/g, ""), nodeData: findData(id) });
+    emitter.emit("onAfterEdit", {
+      name: name.replace(/\s/g, ""),
+      nodeData: findData(id)
+    });
     let _name = name.replace(/\s/g, "");
     update(id, _name === "" ? oldName : _name);
     EditInput$1.hideInput();
@@ -580,18 +613,13 @@ const edit = (id) => {
 };
 const update = (id, name) => {
   IMData$1.update(id, typeof name === "string" ? { name } : name);
-  rePaint();
   selectNode(id, true);
+  rePaint();
 };
 const selectNode = (id, selected) => {
   cancelAllSelect();
   globalTree.value.setItemState(id, "selected", selected);
   selected && emitter.emit("onSelectedNode", findData(id));
-  const nodeData = globalTree.value.findById(id);
-  EditInput$1.showInput(nodeData);
-  EditInput$1._input.addEventListener("focus", () => {
-    edit(id);
-  });
 };
 const cancelAllSelect = () => {
   globalTree.value.getNodes().forEach((item) => {
@@ -599,7 +627,6 @@ const cancelAllSelect = () => {
       item.clearStates("selected");
     }
   });
-  EditInput$1.hideInput();
 };
 const getSelectedNodes = () => {
   return globalTree.value.getNodes().filter((item) => {
@@ -669,7 +696,7 @@ const paste = (pid) => {
   let data = popData();
   if (data) {
     data.forEach((item) => {
-      addData(pid, item, false);
+      addData(pid, item);
     });
     rePaint();
   }
@@ -692,14 +719,14 @@ const nodeMenuMap = {
     name: "add-parent",
     title: "\u6DFB\u52A0\u7236\u7EA7\u8282\u70B9",
     click: (node) => {
-      addParent(node == null ? void 0 : node.id, "", true);
+      addParent(node == null ? void 0 : node.id, "");
     }
   },
   "add-sibling": {
     name: "add-sibling",
     title: "\u6DFB\u52A0\u5144\u5F1F\u8282\u70B9",
     click: (node) => {
-      addSibling(node == null ? void 0 : node.id, "", true);
+      addSibling(node == null ? void 0 : node.id, "");
     }
   },
   "edit": {
@@ -1121,7 +1148,7 @@ G6.registerBehavior("edit-mindmap", {
       "node:mouseleave": "clearHoverStatus",
       "node:dragstart": "dragStart",
       "node:contextmenu": "selectNode",
-      "keydown": "keydown",
+      keydown: "keydown",
       "canvas:click": "clickCanvas"
     };
   },
@@ -1328,7 +1355,11 @@ G6.registerBehavior("edit-mindmap", {
           break;
         }
       }
-      emitter.emit("onDragEnd", [findData(this.dragNodeId), findData(this.selectNodeId), index]);
+      emitter.emit("onDragEnd", [
+        findData(this.dragNodeId),
+        findData(this.selectNodeId),
+        index
+      ]);
       moveData(this.selectNodeId, this.dragNodeId, index);
     }
     tree2.getNodes().forEach((node) => {
@@ -1404,33 +1435,31 @@ G6.registerBehavior("edit-mindmap", {
     }
   },
   keydown(evt) {
-    var _a;
-    console.log(">>>>\u6B63\u5728\u952E\u5165", evt.key);
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
     let handler = hotkeys.value.filter((item) => item.key === key);
     if (shiftKey || ctrlKey || altKey || metaKey) {
       if (shiftKey) {
         handler = handler.filter((item) => {
-          var _a2;
-          return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("shift")) > -1;
+          var _a;
+          return ((_a = item.control) == null ? void 0 : _a.indexOf("shift")) > -1;
         });
       }
       if (ctrlKey) {
         handler = handler.filter((item) => {
-          var _a2;
-          return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("ctrl")) > -1;
+          var _a;
+          return ((_a = item.control) == null ? void 0 : _a.indexOf("ctrl")) > -1;
         });
       }
       if (metaKey) {
         handler = handler.filter((item) => {
-          var _a2;
-          return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("cmd")) > -1;
+          var _a;
+          return ((_a = item.control) == null ? void 0 : _a.indexOf("cmd")) > -1;
         });
       }
       if (altKey) {
         handler = handler.filter((item) => {
-          var _a2;
-          return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("alt")) > -1;
+          var _a;
+          return ((_a = item.control) == null ? void 0 : _a.indexOf("alt")) > -1;
         });
       }
     } else if (handler.length === 1 && handler[0].control) {
@@ -1439,12 +1468,13 @@ G6.registerBehavior("edit-mindmap", {
     if (isCurrentEdit.value)
       return;
     if (!handler.length) {
-      (_a = EditInput$1._input) == null ? void 0 : _a.focus();
-      EditInput$1._input.innerText = "";
+      let selectNodeId = getSelectedNodes()[0];
+      if (selectNodeId) {
+        edit(selectNodeId, true);
+      }
     } else {
       evt.preventDefault();
       handler[0].Event.call(this, getSelectedNodes());
-      EditInput$1.hideInput();
     }
   }
 });
@@ -1696,7 +1726,7 @@ var defaultHotKey = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addSibling(selectedNodes[0], "", true);
+      addSibling(selectedNodes[0], "");
     },
     name: "add-sibling"
   },
@@ -1706,7 +1736,7 @@ var defaultHotKey = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addData(selectedNodes[0], "", true);
+      addData(selectedNodes[0], "");
     },
     name: "add"
   },
@@ -1717,7 +1747,7 @@ var defaultHotKey = [
     Event: function(selectedNodes) {
       if ((selectedNodes == null ? void 0 : selectedNodes.length) != 1)
         return;
-      addParent(selectedNodes[0], "", true);
+      addParent(selectedNodes[0], "");
     },
     name: "add-parent"
   },

@@ -144,7 +144,7 @@ class IMData {
     if (typeof rawData === 'string') {
       rawData = { name: rawData };
     }
-    this.add(d.parentId, rawData);
+    return this.add(d.parentId, rawData);
   }
 
   addParent(id: string, rawData: string | InputData): NodeData | null {

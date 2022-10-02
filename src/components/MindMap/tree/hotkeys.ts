@@ -9,7 +9,7 @@ var defaultHotKey = [
     label: '插入同级节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addSibling(selectedNodes[0], "", true)
+      addSibling(selectedNodes[0], "")
     },
     name: 'add-sibling', // 右键菜单匹配值
   },
@@ -18,7 +18,7 @@ var defaultHotKey = [
     label: '插入子节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addData(selectedNodes[0], "", true)
+      addData(selectedNodes[0], "")
     },
     name: 'add', // 右键菜单匹配值
   },
@@ -28,7 +28,7 @@ var defaultHotKey = [
     label: '插入父节点',
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addParent(selectedNodes[0], "", true)
+      addParent(selectedNodes[0], "")
     },
     name: 'add-parent', // 右键菜单匹配值
   },
