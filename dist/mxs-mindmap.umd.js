@@ -488,6 +488,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
       if (!this._input)
         return;
       this._input.style.display = "none";
+      document.getElementById("mxs-mindmap_container").focus();
     }
     handlefocus(name) {
     }
@@ -1154,7 +1155,6 @@ ${timetravel.value ? `
         "node:mouseleave": "clearHoverStatus",
         "node:dragstart": "dragStart",
         "node:contextmenu": "selectNode",
-        keydown: "keydown",
         "canvas:click": "clickCanvas"
       };
     },
@@ -1439,49 +1439,6 @@ ${timetravel.value ? `
       if (moveNode.length) {
         tree2.removeItem(moveNode[0]);
       }
-    },
-    keydown(evt) {
-      const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-      let handler = hotkeys.value.filter((item) => item.key === key);
-      if (shiftKey || ctrlKey || altKey || metaKey) {
-        if (shiftKey) {
-          handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("shift")) > -1;
-          });
-        }
-        if (ctrlKey) {
-          handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("ctrl")) > -1;
-          });
-        }
-        if (metaKey) {
-          handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("cmd")) > -1;
-          });
-        }
-        if (altKey) {
-          handler = handler.filter((item) => {
-            var _a;
-            return ((_a = item.control) == null ? void 0 : _a.indexOf("alt")) > -1;
-          });
-        }
-      } else if (handler.length === 1 && handler[0].control) {
-        handler = [];
-      }
-      if (isCurrentEdit.value)
-        return;
-      if (!handler.length) {
-        let selectNodeId = getSelectedNodes()[0];
-        if (selectNodeId) {
-          edit(selectNodeId, true);
-        }
-      } else {
-        evt.preventDefault();
-        handler[0].Event.call(this, getSelectedNodes());
-      }
     }
   });
   G6__default["default"].registerBehavior("double-finger-drag-canvas", {
@@ -1513,6 +1470,60 @@ ${timetravel.value ? `
         graph.translate(-x, -y);
       }
       ev.preventDefault();
+    }
+  });
+  G6__default["default"].registerBehavior("my-shortcut", {
+    focusCanvasId: "mxs-mindmap_container",
+    getEvents: function getEvents2() {
+      return {
+        keydown: "keydown"
+      };
+    },
+    keydown(evt) {
+      var _a;
+      if (((_a = document.activeElement) == null ? void 0 : _a.id) !== this.focusCanvasId)
+        return;
+      const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
+      let handler = hotkeys.value.filter((item) => item.key === key);
+      if (shiftKey || ctrlKey || altKey || metaKey) {
+        if (shiftKey) {
+          handler = handler.filter((item) => {
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("shift")) > -1;
+          });
+        }
+        if (ctrlKey) {
+          handler = handler.filter((item) => {
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("ctrl")) > -1;
+          });
+        }
+        if (metaKey) {
+          handler = handler.filter((item) => {
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("cmd")) > -1;
+          });
+        }
+        if (altKey) {
+          handler = handler.filter((item) => {
+            var _a2;
+            return ((_a2 = item.control) == null ? void 0 : _a2.indexOf("alt")) > -1;
+          });
+        }
+      } else if (handler.length === 1 && handler[0].control) {
+        handler = [];
+      }
+      if (isCurrentEdit.value)
+        return;
+      if (!handler.length) {
+        let selectNodeId = getSelectedNodes()[0];
+        if (selectNodeId) {
+          edit(selectNodeId, true);
+        }
+      } else {
+        evt.preventDefault();
+        handler[0].Event.call(this, getSelectedNodes());
+      }
     }
   });
   class Tree {
@@ -1642,6 +1653,7 @@ ${timetravel.value ? `
       }
       if (layoutConfig == null ? void 0 : layoutConfig.edit) {
         this.changeEditMode(true);
+        this.addBehaviors("my-shortcut");
       }
       if (layoutConfig == null ? void 0 : layoutConfig.drag) {
         this.addBehaviors("drag-canvas");
@@ -2041,7 +2053,8 @@ ${timetravel.value ? `
   };
   const _hoisted_1 = /* @__PURE__ */ vue.createElementVNode("div", {
     id: "mxs-mindmap_container",
-    class: "mindmap-container"
+    class: "mindmap-container",
+    tabindex: "1"
   }, null, -1);
   const _hoisted_2 = /* @__PURE__ */ vue.createElementVNode("div", {
     id: "node-input",

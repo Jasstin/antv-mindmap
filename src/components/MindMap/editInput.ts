@@ -108,6 +108,7 @@ class EditInput {
   hideInput() {
     if (!this._input) return;
     this._input.style.display = "none";
+    document.getElementById('mxs-mindmap_container').focus() // 隐藏输入框时让画布focus
   }
   handlefocus(name: string) {
     //    methods 将会重写，用来更新节点状态

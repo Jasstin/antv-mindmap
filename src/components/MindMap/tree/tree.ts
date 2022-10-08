@@ -208,6 +208,7 @@ class Tree {
     }
     if (layoutConfig?.edit) {
       this.changeEditMode(true)
+      this.addBehaviors('my-shortcut')
     }
     if (layoutConfig?.drag) {
       this.addBehaviors('drag-canvas')

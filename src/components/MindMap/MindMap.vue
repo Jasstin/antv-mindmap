@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div id="mxs-mindmap_container" class="mindmap-container" />
+    <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1"/>
     <div id="node-input" contenteditable="true" />
   </div>
 </template>

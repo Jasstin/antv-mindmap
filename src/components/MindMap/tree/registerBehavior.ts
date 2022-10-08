@@ -26,9 +26,6 @@ import {
   hotkeys,
 } from "../variable";
 import emitter from "../mitt";
-import editInput from "../editInput";
-import { returnStatement } from "@babel/types";
-let leaveEdgeTimer;
 G6.registerBehavior("edit-mindmap", {
   selectNodeId: null,
   dragNodeId: null,
@@ -43,7 +40,6 @@ G6.registerBehavior("edit-mindmap", {
       "node:mouseleave": "clearHoverStatus",
       "node:dragstart": "dragStart",
       "node:contextmenu": "selectNode",
-      keydown: "keydown",
       "canvas:click": "clickCanvas",
     };
   },
@@ -370,38 +366,6 @@ G6.registerBehavior("edit-mindmap", {
       tree.removeItem(moveNode[0]);
     }
   },
-  keydown(evt) {
-    const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-    let handler = hotkeys.value.filter((item) => item.key === key);
-    if (shiftKey || ctrlKey || altKey || metaKey) {
-      if (shiftKey) {
-        handler = handler.filter((item) => item.control?.indexOf("shift") > -1);
-      }
-      if (ctrlKey) {
-        handler = handler.filter((item) => item.control?.indexOf("ctrl") > -1);
-      }
-      if (metaKey) {
-        handler = handler.filter((item) => item.control?.indexOf("cmd") > -1);
-      }
-      if (altKey) {
-        handler = handler.filter((item) => item.control?.indexOf("alt") > -1);
-      }
-    } else if (handler.length === 1 && handler[0].control) {
-      handler = [];
-    }
-    if (isCurrentEdit.value) return;
-    if (!handler.length) {
-      //  未识别到快捷键键入
-      let selectNodeId = getSelectedNodes()[0];
-      if (selectNodeId) {
-        edit(selectNodeId, true);
-      }
-    } else {
-      // 识别到快捷键，处理快捷键
-      evt.preventDefault(); // 禁止默认事件
-      handler[0].Event.call(this, getSelectedNodes());
-    }
-  },
 });
 
 G6.registerBehavior("double-finger-drag-canvas", {
@@ -434,5 +398,47 @@ G6.registerBehavior("double-finger-drag-canvas", {
       graph.translate(-x, -y);
     }
     ev.preventDefault();
+  },
+});
+
+G6.registerBehavior("my-shortcut", {
+  focusCanvasId: "mxs-mindmap_container",
+  getEvents: function getEvents() {
+    return {
+      keydown: "keydown",
+    };
+  },
+  keydown(evt) {
+    if (document.activeElement?.id !== this.focusCanvasId) return;
+    const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
+    let handler = hotkeys.value.filter((item) => item.key === key);
+    if (shiftKey || ctrlKey || altKey || metaKey) {
+      if (shiftKey) {
+        handler = handler.filter((item) => item.control?.indexOf("shift") > -1);
+      }
+      if (ctrlKey) {
+        handler = handler.filter((item) => item.control?.indexOf("ctrl") > -1);
+      }
+      if (metaKey) {
+        handler = handler.filter((item) => item.control?.indexOf("cmd") > -1);
+      }
+      if (altKey) {
+        handler = handler.filter((item) => item.control?.indexOf("alt") > -1);
+      }
+    } else if (handler.length === 1 && handler[0].control) {
+      handler = [];
+    }
+    if (isCurrentEdit.value) return;
+    if (!handler.length) {
+      //  未识别到快捷键键入
+      let selectNodeId = getSelectedNodes()[0];
+      if (selectNodeId) {
+        edit(selectNodeId, true);
+      }
+    } else {
+      // 识别到快捷键，处理快捷键
+      evt.preventDefault(); // 禁止默认事件
+      handler[0].Event.call(this, getSelectedNodes());
+    }
   },
 });

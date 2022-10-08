@@ -3,7 +3,7 @@
     <div class="left-top">
       <a href="https://github.com/hellowuxin/vue3-mindmap" target="_blank">GitHub</a>
     </div>
-    <div class="right-top"><span>Props</span></div>
+    <div class="right-top"><span>Props</span><input/></div>
     <mindmap ref="mindMapRef" class="left-bottom" v-model="data" :branch="themeList['branch'].value"
       :branchColor="themeList['branchColor'].value" :xGap="themeList['xGap'].value" :yGap="themeList['yGap'].value"
       :themeColor="themeList['themeColor'].value" :rootFontColor="themeList['rootFontColor'].value"
@@ -15,6 +15,7 @@
       :fitBtn="featureList['fitBtn'].value" :downloadBtn="featureList['downloadBtn'].value"
       :timetravel="featureList['timetravel'].value" :mindmap="featureList['mindmap'].value"
       :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :hotKey="hostKeyList"
+      :onAdd = "handleOnAdd"
       :onAfterEdit="handleAfterEdit" :onDragEnd="onDragEnd">
     </mindmap>
     <div class="right-bottom">
@@ -115,6 +116,9 @@ export default defineComponent({
     },
     onDragEnd() {
       console.log('onDragEnd', arguments)
+    },
+    handleOnAdd(){
+      console.log(`>>>>>>onAdd`)
     }
   }
 })
