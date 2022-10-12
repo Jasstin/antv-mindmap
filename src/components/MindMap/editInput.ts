@@ -108,7 +108,7 @@ class EditInput {
   hideInput() {
     if (!this._input) return;
     this._input.style.display = "none";
-    document.getElementById('mxs-mindmap_container').focus() // 隐藏输入框时让画布focus
+    document.getElementById("mxs-mindmap_container").focus(); // 隐藏输入框时让画布focus
   }
   handlefocus(name: string) {
     //    methods 将会重写，用来更新节点状态
@@ -123,10 +123,11 @@ class EditInput {
   moveCursor(len) {
     let range = new Range();
     let selection = document.getSelection();
-    let text = this._input.firstChild;
+    if (!selection) return;
+    let text = this._input.lastChild;
     if (text) {
       range.setStart(text, 0);
-      range.setEnd(text, len);
+      range.setEndAfter(text);
       range.collapse(false);
     } else {
       range.collapse(true);
@@ -140,8 +141,13 @@ class EditInput {
     if (!this._input) return;
     this._input.focus();
     try {
-      this.moveCursor(0); // 光标在开头位置
-    } catch (e) {console.log(e)}
+      let timer = setTimeout(() => {
+        this.moveCursor(this._input.innerText.length); // 光标在末尾
+        clearTimeout(timer);
+      }, 0);
+    } catch (e) {
+      console.log(e);
+    }
   }
 }
 

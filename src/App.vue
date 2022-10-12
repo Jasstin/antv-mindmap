@@ -16,6 +16,7 @@
       :timetravel="featureList['timetravel'].value" :mindmap="featureList['mindmap'].value"
       :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList" :hotKey="hostKeyList"
       :onAdd = "handleOnAdd"
+      :onSelectedNode = "handleSelectedNode"
       :onAfterEdit="handleAfterEdit" :onDragEnd="onDragEnd">
     </mindmap>
     <div class="right-bottom">
@@ -119,6 +120,9 @@ export default defineComponent({
     },
     handleOnAdd(){
       console.log(`>>>>>>onAdd`)
+    },
+    handleSelectedNode(){
+      console.log(`>>>>>selectedNode`)
     }
   }
 })

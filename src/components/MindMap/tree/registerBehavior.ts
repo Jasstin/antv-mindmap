@@ -405,11 +405,15 @@ G6.registerBehavior("my-shortcut", {
   focusCanvasId: "mxs-mindmap_container",
   getEvents: function getEvents() {
     return {
-      keydown: "keydown",
+      keydown: "handleKeydown",
     };
   },
-  keydown(evt) {
-    if (document.activeElement?.id !== this.focusCanvasId) return;
+  handleKeydown(evt) {
+    if (
+      document.activeElement?.id !== this.focusCanvasId ||
+      isCurrentEdit.value
+    )
+      return;
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
     let handler = hotkeys.value.filter((item) => item.key === key);
     if (shiftKey || ctrlKey || altKey || metaKey) {

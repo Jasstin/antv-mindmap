@@ -499,10 +499,12 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
     moveCursor(len) {
       let range = new Range();
       let selection = document.getSelection();
-      let text = this._input.firstChild;
+      if (!selection)
+        return;
+      let text = this._input.lastChild;
       if (text) {
         range.setStart(text, 0);
-        range.setEnd(text, len);
+        range.setEndAfter(text);
         range.collapse(false);
       } else {
         range.collapse(true);
@@ -515,7 +517,10 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         return;
       this._input.focus();
       try {
-        this.moveCursor(0);
+        let timer = setTimeout(() => {
+          this.moveCursor(this._input.innerText.length);
+          clearTimeout(timer);
+        }, 0);
       } catch (e) {
         console.log(e);
       }
@@ -1476,12 +1481,12 @@ ${timetravel.value ? `
     focusCanvasId: "mxs-mindmap_container",
     getEvents: function getEvents2() {
       return {
-        keydown: "keydown"
+        keydown: "handleKeydown"
       };
     },
-    keydown(evt) {
+    handleKeydown(evt) {
       var _a;
-      if (((_a = document.activeElement) == null ? void 0 : _a.id) !== this.focusCanvasId)
+      if (((_a = document.activeElement) == null ? void 0 : _a.id) !== this.focusCanvasId || isCurrentEdit.value)
         return;
       const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
       let handler = hotkeys.value.filter((item) => item.key === key);
@@ -1637,6 +1642,7 @@ ${timetravel.value ? `
       this.enableFeature(layoutConfig);
       let global = window;
       global.mindTree = tree2;
+      global.mindTree.version = "2.0.0";
       setGlobalTree(tree2);
       this.bindEvent(tree2);
       return tree2;
@@ -2058,7 +2064,8 @@ ${timetravel.value ? `
   }, null, -1);
   const _hoisted_2 = /* @__PURE__ */ vue.createElementVNode("div", {
     id: "node-input",
-    contenteditable: "true"
+    contenteditable: "true",
+    tabIndex: "2"
   }, null, -1);
   const _hoisted_3 = [
     _hoisted_1,
