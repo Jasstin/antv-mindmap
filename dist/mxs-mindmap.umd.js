@@ -1155,12 +1155,14 @@ ${timetravel.value ? `
     getEvents() {
       return {
         "node:click": "clickNode",
+        "node:touchend": "clickNode",
         "node:dblclick": "editNode",
         "node:mouseover": "hoverNode",
         "node:mouseleave": "clearHoverStatus",
         "node:dragstart": "dragStart",
         "node:contextmenu": "selectNode",
-        "canvas:click": "clickCanvas"
+        "canvas:click": "clickCanvas",
+        "canvas:touchend": "clickCanvas"
       };
     },
     clickCanvas(evt) {
