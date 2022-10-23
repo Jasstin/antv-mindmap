@@ -96,6 +96,7 @@ export const cancelAllSelect = () => {
   globalTree.value.getNodes().forEach((item) => {
     if (item.hasState("selected")) {
       item.clearStates("selected");
+      emitter.emit("onCancelSelected")
     }
   });
 };

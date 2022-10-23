@@ -20,7 +20,8 @@ import {
   collapse,
   addSibling,
   addParent,
-  findData
+  findData,
+  edit
 } from './tree/methods'
 import emitter from "./mitt";
 import defaultHotKey from "./tree/hotkeys"
@@ -88,6 +89,7 @@ export default {
     this.$props.onSelectedNode && emitter.on('onSelectedNode', this.$props.onSelectedNode)
     this.$props.onAfterEdit && emitter.on('onAfterEdit', this.$props.onAfterEdit)
     this.$props.onDragEnd && emitter.on('onDragEnd', this.$props.onDragEnd)
+    this.$props.onCancelSelected && emitter.on('onCancelSelected',this.$props.onCancelSelected)
     this.changeCanvasSize()
     window.addEventListener("resize", this.changeCanvasSize)
   },
@@ -98,6 +100,7 @@ export default {
     this.$props.onSelectedNode && emitter.off('onSelectedNode', this.$props.onSelectedNode)
     this.$props.onAfterEdit && emitter.off('onAfterEdit', this.$props.onAfterEdit)
     this.$props.onDragEnd && emitter.off('onDragEnd', this.$props.onDragEnd)
+    this.$props.onCancelSelected && emitter.off('onCancelSelected',this.$props.onCancelSelected)
     window.removeEventListener("resize", this.changeCanvasSize)
     tree.destroy()
     tree = null
@@ -131,7 +134,8 @@ export default {
     collapse,
     addSibling,
     addParent,
-    find: findData
+    find: findData,
+    edit
   },
   watch: {
     '$props.modelValue': {
