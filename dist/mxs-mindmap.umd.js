@@ -1924,6 +1924,7 @@ ${timetravel.value ? `
       nodeMenu: Array,
       hotKey: Array,
       onAdd: Function,
+      onCancelSelected: Function,
       onExpand: Function,
       onCollapse: Function,
       onSelectedNode: Function,
@@ -1983,7 +1984,7 @@ ${timetravel.value ? `
       addSibling,
       addParent,
       find: findData,
-      edit
+      editNode: edit
     },
     watch: {
       "$props.modelValue": {

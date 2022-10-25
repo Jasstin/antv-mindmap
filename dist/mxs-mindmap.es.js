@@ -1918,6 +1918,7 @@ const _sfc_main = {
     nodeMenu: Array,
     hotKey: Array,
     onAdd: Function,
+    onCancelSelected: Function,
     onExpand: Function,
     onCollapse: Function,
     onSelectedNode: Function,
@@ -1977,7 +1978,7 @@ const _sfc_main = {
     addSibling,
     addParent,
     find: findData,
-    edit
+    editNode: edit
   },
   watch: {
     "$props.modelValue": {
