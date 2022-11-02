@@ -39,6 +39,8 @@
       :onCancelSelected="handleCancelSelected"
       :onAfterEdit="handleAfterEdit"
       :onDragEnd="onDragEnd"
+      :closeEditInput="true"
+      :onEdit="handleOnEdit"
     >
     </mindmap>
     <div class="right-bottom">
@@ -267,6 +269,9 @@ export default defineComponent({
     },
     handleSelectedNode() {
       console.log(`>>>>>selectedNode`);
+    },
+    handleOnEdit() {
+      console.log(`>>>>onEdit`, arguments);
     },
   },
 });

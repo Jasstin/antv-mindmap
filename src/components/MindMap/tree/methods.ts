@@ -1,6 +1,11 @@
 import IMData, { buildNodeStyle } from "../data/index";
 import { InputData } from "../interface";
-import { globalTree, isCurrentEdit, setIsCurrentEdit } from "../variable";
+import {
+  globalTree,
+  isCurrentEdit,
+  setIsCurrentEdit,
+  closeEditInput,
+} from "../variable";
 import { TreeGraph } from "@antv/g6";
 import History from "../data/history";
 import EditInput from "../editInput";
@@ -41,6 +46,8 @@ export const addSibling = (id: string, rawData: string | InputData) => {
   if (data) edit(data.id);
 };
 export const edit = (id: string, clear = false) => {
+  if (closeEditInput.value)
+    return emitter.emit("onEdit", { nodeData: findData(id) });
   const Tree = globalTree.value;
   const NodeData = Tree?.findById(id) as INode;
   if (!NodeData || !Tree) return;
@@ -96,7 +103,7 @@ export const cancelAllSelect = () => {
   globalTree.value.getNodes().forEach((item) => {
     if (item.hasState("selected")) {
       item.clearStates("selected");
-      emitter.emit("onCancelSelected")
+      emitter.emit("onCancelSelected");
     }
   });
 };

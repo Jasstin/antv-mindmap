@@ -19,6 +19,7 @@ import {
   changeSubThemeColor,
   changeThemeColor,
   changeTimetravel,
+  changeCloseEditInput,
   globalTree,
   lineType,
   paddingH,
@@ -62,6 +63,7 @@ interface layoutConfig {
   addNodeBtn?: boolean;
   collapseBtn?: boolean;
   watchResize?: boolean;
+  closeEditInput?:boolean;
 }
 
 interface Variable {
@@ -79,6 +81,7 @@ interface Variable {
   lineType?: string;
   leafThemeColor?: string;
   leafFontColor?: string;
+  closeEditInput?:boolean
 }
 
 class Tree {
@@ -108,6 +111,7 @@ class Tree {
         fitBtn,
         downloadBtn,
         scaleRatio,
+        closeEditInput
       } = layoutConfig;
       this.changeVariable({
         branch,
@@ -124,6 +128,7 @@ class Tree {
         leafThemeColor,
         leafFontColor,
         lineType: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
+        closeEditInput
       });
     }
     const config = {
@@ -244,6 +249,7 @@ class Tree {
     lineType,
     leafThemeColor,
     leafFontColor,
+    closeEditInput
   }: Variable) {
     branch && changeBranch(branch);
     branchColor && changeBranchColor(branchColor);
@@ -259,6 +265,7 @@ class Tree {
     lineType && setLineType(lineType);
     leafThemeColor && changeLeafThemeColor(leafThemeColor);
     leafFontColor && changeLeafFontColor(leafFontColor);
+    closeEditInput && changeCloseEditInput(closeEditInput);
   }
 
   changeLayout(layoutConfig?: layoutConfig) {

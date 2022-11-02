@@ -80,6 +80,7 @@ export default {
     ctm: Boolean, //  开启右键菜单
     nodeMenu: Array, // 菜单配置
     hotKey: Array, // 快捷键配置
+    closeEditInput: Boolean, // 关闭思维导图富文本编辑功能
     // 钩子函数
     onAdd: Function,
     onCancelSelected: Function,
@@ -88,6 +89,7 @@ export default {
     onSelectedNode: Function,
     onAfterEdit: Function,
     onDragEnd: Function,
+    onEdit:Function
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);
@@ -100,6 +102,7 @@ export default {
     this.$props.onDragEnd && emitter.on("onDragEnd", this.$props.onDragEnd);
     this.$props.onCancelSelected &&
       emitter.on("onCancelSelected", this.$props.onCancelSelected);
+    this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
     this.changeCanvasSize();
     window.addEventListener("resize", this.changeCanvasSize);
   },
@@ -114,6 +117,7 @@ export default {
     this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
     this.$props.onCancelSelected &&
       emitter.off("onCancelSelected", this.$props.onCancelSelected);
+    this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
     window.removeEventListener("resize", this.changeCanvasSize);
     tree.destroy();
     tree = null;

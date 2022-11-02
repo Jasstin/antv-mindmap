@@ -101,6 +101,8 @@ const isDragging = ref(false);
 const setIsDragging = (val) => isDragging.value = val;
 const hotkeys = ref([]);
 const changehotKeyList = (val) => hotkeys.value = val;
+const closeEditInput = ref(false);
+const changeCloseEditInput = (val) => closeEditInput.value = val;
 const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth }) => {
   name === "" && (name = placeholderText);
   const fontSize = globalFontSize[depth] || 12;
@@ -575,6 +577,8 @@ const addSibling = (id, rawData) => {
     edit(data.id);
 };
 const edit = (id, clear = false) => {
+  if (closeEditInput.value)
+    return emitter.emit("onEdit", { nodeData: findData(id) });
   const Tree2 = globalTree.value;
   const NodeData = Tree2 == null ? void 0 : Tree2.findById(id);
   if (!NodeData || !Tree2)
@@ -1550,7 +1554,8 @@ class Tree {
         centerBtn: centerBtn2,
         fitBtn: fitBtn2,
         downloadBtn: downloadBtn2,
-        scaleRatio: scaleRatio2
+        scaleRatio: scaleRatio2,
+        closeEditInput: closeEditInput2
       } = layoutConfig;
       this.changeVariable({
         branch: branch2,
@@ -1566,7 +1571,8 @@ class Tree {
         scaleRatio: scaleRatio2,
         leafThemeColor,
         leafFontColor,
-        lineType: (layoutConfig == null ? void 0 : layoutConfig.sharpCorner) ? "hvh" : "cubic-horizontal"
+        lineType: (layoutConfig == null ? void 0 : layoutConfig.sharpCorner) ? "hvh" : "cubic-horizontal",
+        closeEditInput: closeEditInput2
       });
     }
     const config = {
@@ -1679,7 +1685,8 @@ class Tree {
     scaleRatio: scaleRatio2,
     lineType: lineType2,
     leafThemeColor,
-    leafFontColor
+    leafFontColor,
+    closeEditInput: closeEditInput2
   }) {
     branch2 && changeBranch(branch2);
     branchColor2 && changeBranchColor(branchColor2);
@@ -1695,6 +1702,7 @@ class Tree {
     lineType2 && setLineType(lineType2);
     leafThemeColor && changeLeafThemeColor(leafThemeColor);
     leafFontColor && changeLeafFontColor(leafFontColor);
+    closeEditInput2 && changeCloseEditInput(closeEditInput2);
   }
   changeLayout(layoutConfig) {
     var _a;
@@ -1917,13 +1925,15 @@ const _sfc_main = {
     ctm: Boolean,
     nodeMenu: Array,
     hotKey: Array,
+    closeEditInput: Boolean,
     onAdd: Function,
     onCancelSelected: Function,
     onExpand: Function,
     onCollapse: Function,
     onSelectedNode: Function,
     onAfterEdit: Function,
-    onDragEnd: Function
+    onDragEnd: Function,
+    onEdit: Function
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);
@@ -1933,6 +1943,7 @@ const _sfc_main = {
     this.$props.onAfterEdit && emitter.on("onAfterEdit", this.$props.onAfterEdit);
     this.$props.onDragEnd && emitter.on("onDragEnd", this.$props.onDragEnd);
     this.$props.onCancelSelected && emitter.on("onCancelSelected", this.$props.onCancelSelected);
+    this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
     this.changeCanvasSize();
     window.addEventListener("resize", this.changeCanvasSize);
   },
@@ -1944,6 +1955,7 @@ const _sfc_main = {
     this.$props.onAfterEdit && emitter.off("onAfterEdit", this.$props.onAfterEdit);
     this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
     this.$props.onCancelSelected && emitter.off("onCancelSelected", this.$props.onCancelSelected);
+    this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
     window.removeEventListener("resize", this.changeCanvasSize);
     tree.destroy();
     tree = null;
