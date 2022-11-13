@@ -96,7 +96,7 @@
   </div>
 </template>
 <script lang="ts">
-import learn from "./test.json";
+import learn from "./learn.json";
 import { defineComponent, reactive, ref } from "vue";
 import Mindmap from "./components/MindMap";
 // import "../dist/style.css"
