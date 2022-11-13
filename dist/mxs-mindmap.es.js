@@ -103,16 +103,32 @@ const hotkeys = ref([]);
 const changehotKeyList = (val) => hotkeys.value = val;
 const closeEditInput = ref(false);
 const changeCloseEditInput = (val) => closeEditInput.value = val;
-const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth }) => {
+const buildNodeStyle = ({
+  name = placeholderText,
+  desc = "",
+  content = "",
+  depth,
+  iconPath
+}) => {
   name === "" && (name = placeholderText);
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2;
-  const { text: wrapName, line: nameLine, width: nameWidth } = wrapString(name, size, fontSize);
-  const { text: wrapDesc, line: descLine, width: descWidth } = wrapString(desc, size, fontSize - 2);
+  let {
+    text: wrapName,
+    line: nameLine,
+    width: nameWidth
+  } = wrapString(name, size, fontSize);
+  const {
+    text: wrapDesc,
+    line: descLine,
+    width: descWidth
+  } = wrapString(desc, size, fontSize - 2);
   const nameLineHeight = fontSize + paddingV;
   const nameHeight = nameLineHeight * nameLine + paddingV;
   const descHeight = (fontSize - 2 + paddingV) * descLine + paddingV;
   const height = nameHeight + (desc ? descHeight : 0);
+  const imageIconWidth = iconPath ? nameHeight : 0;
+  nameWidth += imageIconWidth;
   const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value;
   const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value;
   const obj = {
@@ -121,12 +137,13 @@ const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth
     fullName: name,
     desc: wrapDesc,
     content,
+    iconPath,
     type: "mindmap-node",
     style: {
       fontSize,
       descFontSize: fontSize - 2,
       descHeight,
-      width: Math.max(nameWidth, descWidth) + paddingV * 2,
+      width: Math.max(nameWidth, descWidth) + paddingH * 2,
       maxWidth: size,
       height,
       nameHeight,
@@ -134,7 +151,8 @@ const buildNodeStyle = ({ name = placeholderText, desc = "", content = "", depth
       FontColor,
       stroke: 2,
       strokeColor: "transparent",
-      nameLineHeight
+      nameLineHeight,
+      imageIconWidth
     }
   };
   return obj;
@@ -937,16 +955,17 @@ const tooltip = {
   },
   offset: 10
 };
-const {
-  Util
-} = G6;
+const { Util } = G6;
 function drawHandleBtn(group, cfg, type) {
-  const { style: { width, height, opacity = 1 }, _children } = cfg;
+  const {
+    style: { width, height, opacity = 1 },
+    _children
+  } = cfg;
   const fontSize = 14;
   const text = {
-    "add": "+",
-    "collapse": "<",
-    "expand": _children.length + "" || "0"
+    add: "+",
+    collapse: "<",
+    expand: _children.length + "" || "0"
   }[type];
   const widthHeight = Util.getTextSize(text, fontSize);
   const isExpand = type === "expand";
@@ -991,14 +1010,35 @@ function drawHandleBtn(group, cfg, type) {
     cursor: "pointer",
     opacity
   };
-  const container = group.addGroup({ name: type, visible, capture: true, action: type });
+  const container = group.addGroup({
+    name: type,
+    visible,
+    capture: true,
+    action: type
+  });
   container == null ? void 0 : container.addShape("rect", { attrs: lineStyle });
   container == null ? void 0 : container.addShape("rect", { attrs: handleStyle });
   container == null ? void 0 : container.addShape("circle", { attrs: circleStyle, action: type });
   container == null ? void 0 : container.addShape("text", { attrs: textStyle, action: type });
 }
 function getAttribute(cfg) {
-  const { style: { width, height, nameHeight, nameLineHeight, fontSize, descFontSize, descHeight, FillColor, FontColor, opacity = 1, stroke, strokeColor } } = cfg;
+  const {
+    style: {
+      width,
+      height,
+      nameHeight,
+      nameLineHeight,
+      fontSize,
+      descFontSize,
+      descHeight,
+      FillColor,
+      FontColor,
+      opacity = 1,
+      stroke,
+      strokeColor,
+      imageIconWidth
+    }
+  } = cfg;
   const RectStyle = {
     x: 0,
     y: 0,
@@ -1012,8 +1052,8 @@ function getAttribute(cfg) {
     opacity
   };
   const TextStyle = {
-    x: paddingV,
-    y: paddingH,
+    x: paddingH + imageIconWidth,
+    y: paddingV,
     text: cfg == null ? void 0 : cfg.label,
     fill: FontColor,
     fontSize,
@@ -1022,6 +1062,14 @@ function getAttribute(cfg) {
     fontWeight: 600,
     lineHeight: nameLineHeight,
     opacity
+  };
+  const IconStyle = {
+    x: paddingH,
+    y: 0,
+    opacity,
+    img: cfg.iconPath,
+    width: imageIconWidth,
+    height: imageIconWidth
   };
   const DescWrapper = {
     x: 0,
@@ -1046,16 +1094,43 @@ function getAttribute(cfg) {
     lineHeight: paddingV + descFontSize,
     opacity
   };
-  return { RectStyle, TextStyle, DescWrapper, DescText };
+  console.log(IconStyle, "iconStyle");
+  return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
 function buildNode(cfg, group) {
-  const { RectStyle, TextStyle, DescWrapper, DescText } = getAttribute(cfg);
+  const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } = getAttribute(cfg);
   const { depth, collapse: collapse2 } = cfg;
-  const container = group == null ? void 0 : group.addShape("rect", { attrs: RectStyle, name: `wrapper`, zIndex: 0, draggable: depth > 0 });
-  group == null ? void 0 : group.addShape("text", { attrs: TextStyle, name: `title`, zIndex: 1, draggable: depth > 0 });
+  const container = group == null ? void 0 : group.addShape("rect", {
+    attrs: RectStyle,
+    name: `wrapper`,
+    zIndex: 0,
+    draggable: depth > 0
+  });
+  group == null ? void 0 : group.addShape("image", {
+    attrs: IconStyle,
+    name: `icon`,
+    zIndex: 1,
+    draggable: depth > 0
+  });
+  group == null ? void 0 : group.addShape("text", {
+    attrs: TextStyle,
+    name: `title`,
+    zIndex: 1,
+    draggable: depth > 0
+  });
   if (cfg.desc) {
-    group == null ? void 0 : group.addShape("rect", { attrs: DescWrapper, name: `desc-wrapper`, zIndex: 0, draggable: depth > 0 });
-    group == null ? void 0 : group.addShape("text", { attrs: DescText, name: `desc`, zIndex: 1, draggable: depth > 0 });
+    group == null ? void 0 : group.addShape("rect", {
+      attrs: DescWrapper,
+      name: `desc-wrapper`,
+      zIndex: 0,
+      draggable: depth > 0
+    });
+    group == null ? void 0 : group.addShape("text", {
+      attrs: DescText,
+      name: `desc`,
+      zIndex: 1,
+      draggable: depth > 0
+    });
   }
   drawHandleBtn(group, cfg, "add");
   if (cfg.children.length > 0 || cfg._children.length > 0) {
@@ -1134,8 +1209,18 @@ G6.registerEdge("hvh", {
         path: [
           ["M", startPoint.x, startPoint.y],
           ["L", endPoint.x / 3 + 2 / 3 * startPoint.x, startPoint.y],
-          ["L", endPoint.x / 3 + 2 / 3 * startPoint.x, startPoint.y + (endPoint.y - startPoint.y) + dist],
-          ["Q", endPoint.x / 3 + 2 / 3 * startPoint.x, startPoint.y + (endPoint.y - startPoint.y), endPoint.x / 3 + 2 / 3 * startPoint.x + 10, endPoint.y],
+          [
+            "L",
+            endPoint.x / 3 + 2 / 3 * startPoint.x,
+            startPoint.y + (endPoint.y - startPoint.y) + dist
+          ],
+          [
+            "Q",
+            endPoint.x / 3 + 2 / 3 * startPoint.x,
+            startPoint.y + (endPoint.y - startPoint.y),
+            endPoint.x / 3 + 2 / 3 * startPoint.x + 10,
+            endPoint.y
+          ],
           ["L", endPoint.x, endPoint.y]
         ]
       },
