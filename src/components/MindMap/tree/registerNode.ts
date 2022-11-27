@@ -159,7 +159,6 @@ function getAttribute(cfg) {
     lineHeight: paddingV + descFontSize,
     opacity,
   };
-  console.log(IconStyle, "iconStyle");
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
 

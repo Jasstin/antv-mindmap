@@ -4,13 +4,16 @@
     "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ",
     "children": [
       {
-        "name": "自定义节点",
+        "name": "2-1",
         "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ"
       },
       {
-        "name": "二级节点",
-        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
-        "desc": "自卑的心宛若一条疯狗，日子平淡无奇进展顺利的时候，它躲进笼子里，安稳地睡了，就好像从来都没存在过，一旦有东西刺激它，它就会跑出来疯狂乱叫，要么叫到你崩溃，要么叫到你成长，否则是不会乖乖又回到笼子里去的。"
+        "name": "2-2",
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+      },
+      {
+        "name": "2-3",
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
       }
     ]
   }

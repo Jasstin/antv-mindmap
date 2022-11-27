@@ -26,7 +26,7 @@ import {
   hotkeys,
 } from "../variable";
 import emitter from "../mitt";
-G6.registerBehavior("edit-mindmap", {
+G6.registerBehavior("edit-mindmap-pc", {
   selectNodeId: null,
   dragNodeId: null,
   nodePosition: {},
@@ -445,6 +445,324 @@ G6.registerBehavior("my-shortcut", {
       // 识别到快捷键，处理快捷键
       evt.preventDefault(); // 禁止默认事件
       handler[0].Event.call(this, getSelectedNodes());
+    }
+  },
+});
+
+// 移动端自定义行为
+G6.registerBehavior("edit-mindmap-mobile", {
+  selectNodeId: null,
+  dragNodeId: null,
+  nodePosition: {},
+  dragStatus: "",
+  upClientInfo: [],
+  readyToDrag: false,
+  getEvents() {
+    return {
+      "node:touchstart": "handleTouchStart",
+      "canvas:touchmove": "dragNode",
+      "canvas:touchend": "handleTouchEnd",
+      "node:touchend": "handleTouchEnd",
+    };
+  },
+  handleTouchStart(evt) {
+    this.readyToDrag = true;
+    let timer = setTimeout(() => {
+      if (this.readyToDrag) {
+        this.dragStart(evt); // 长按拖拽
+        clearTimeout(timer);
+      }
+    }, 400);
+  },
+  handleTouchEnd(evt) {
+    this.readyToDrag = false;
+    if (!isDragging.value) {
+      this.clickNode(evt); // 点击事件
+    } else {
+      this.dragEnd(evt); // 拖拽事件
+    }
+  },
+  clickNode(evt) {
+    const tree = evt.currentTarget;
+    const node = evt.item;
+    const model = evt.item.get("model");
+    const name = evt.target.get("action");
+    if (name === "expand") {
+      expand(model.id);
+    } else if (name === "collapse") {
+      collapse(model.id);
+    } else if (name === "add") {
+      addData(model?.id as string, "", true);
+    } else if (node.hasState("selected")) {
+      // 判断如果当前节点时选中节点，那么编辑节点
+      edit(model.id);
+    } else {
+      selectNode(model.id, !model.isCurrentSelected);
+    }
+  },
+  dragStart(evt) {
+    // 拖拽的节点及其所有子节点设置drag state 为true
+    const { currentTarget: tree, item: node, clientX, clientY } = evt;
+    const id = node.get("model").id;
+    setIsDragging(true);
+    this.dragNodeId = id;
+    const _dragnode = tree.findById(this.dragNodeId);
+    tree.getNodes().forEach((node) => {
+      const nodeId = node.get("id");
+      const { x: pointX, y: pointY, width, height } = node.getBBox();
+      let { x: clientX, y: clientY } = tree.getClientByPoint(pointX, pointY);
+      let model = node.get("model");
+      const ratio = tree.getZoom();
+      // 记录节点位置
+      this.nodePosition[nodeId] = {
+        clientX,
+        clientY,
+        width: width * ratio,
+        height: height * ratio,
+        depth: model.depth,
+        parentId: model.parentId,
+        sameLevel: model.depth === _dragnode.get("model").depth,
+      };
+      // 修改拖拽节点及其所有子节点的样式
+      if (nodeId.indexOf(this.dragNodeId) === 0) {
+        tree.updateItem(node, {
+          // 节点的样式
+          style: {
+            opacity: 0.2,
+          },
+        });
+        node.get("edges").forEach((edge) => {
+          tree.updateItem(edge, {
+            // 节点的样式
+            style: {
+              opacity: 0.2,
+            },
+          });
+        });
+      }
+    });
+    this.showDragDiv(clientX, clientY);
+  },
+  dragNode(evt) {
+    if (!isDragging.value) return;
+    const { currentTarget: tree, clientX, clientY } = evt;
+    let ratio = tree.getZoom();
+    const [width, height] = [(40 * ratio) / 2, (20 * ratio) / 2];
+    let nodePosition = this.nodePosition;
+    let nodes = [];
+    for (let nodeId in nodePosition) {
+      let node = nodePosition[nodeId];
+      /**
+       * 完全碰撞： 符合条件即为两个节点完全重合，拖拽节点将成为重合节点的子级
+       * */
+      let size =
+        (globalFontSize[node.depth] || 12) * maxFontCount +
+        paddingH * 4 +
+        width * 4; // 最大横向距离=最大节点宽度+两个拖拽节点的宽度
+      let parentNode = findData(node.parentId);
+      let firstNode = node;
+      let lastNode = node;
+      if (parentNode.children.length) {
+        firstNode = nodePosition[parentNode.children[0].id];
+        lastNode =
+          nodePosition[parentNode.children[parentNode.children.length - 1].id];
+      }
+      let coditionH_inner =
+        clientX - width > node.clientX - width * 2 &&
+        clientX + width < node.clientX + node.width + width * 2;
+      let coditionV_inner =
+        clientY - height > node.clientY - height * 2 &&
+        clientY + height < node.clientY + node.height + height * 2;
+      let coditionH_outer =
+        clientX - width > node.clientX - width * 2 &&
+        clientX + width < node.clientX + size + width * 2;
+      let coditionV_outer =
+        clientY - height > firstNode.clientY - height * 2 &&
+        clientY + height < lastNode.clientY + lastNode.height + height * 2; // 所有节点的纵向区域
+      if (coditionH_inner && coditionV_inner) {
+        // 拖拽节点与树节点有重合部分
+        nodes.push({
+          nodeId: nodeId,
+          inner: true,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: true,
+          parentId: node.parentId,
+        });
+      } else if (coditionH_outer && coditionV_inner) {
+        //     超出节点但在最大节点宽度范围内，高度在节点范围内
+        nodes.push({
+          nodeId: nodeId,
+          inner: false,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: false,
+          parentId: node.parentId,
+        });
+      } else if (
+        coditionH_inner &&
+        coditionV_outer &&
+        clientX - width > node.clientX &&
+        nodeId != node.parentId
+      ) {
+        // 拖拽节点在允许选中范围
+        nodes.push({
+          nodeId: nodeId,
+          inner: false,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: true,
+          parentId: node.parentId,
+        });
+      }
+    }
+    if (nodes.length) {
+      // 有重合节点,可能有多个符合条件的节点
+      let node = nodes.filter(
+        (node) => node.inner || (!node.inner && !node.sameLevel)
+      ) as any;
+      if (node.length > 1) {
+        node.sort((a, b) => {
+          if (a.depth === b.depth) {
+            return a.index - b.index;
+          } else {
+            return b.depth - a.depth;
+          }
+        });
+      }
+      if (nodes.length > 1) {
+        nodes.sort((a, b) => {
+          if (a.depth === b.depth) {
+            return a.index - b.index;
+          } else {
+            return b.depth - a.depth;
+          }
+        });
+      }
+      node = node.length ? node[0] : nodes[0];
+      let nodeId = node.sameLevel ? node.parentId : node.nodeId;
+      if (nodeId.indexOf(this.dragNodeId) != -1) {
+        cancelAllSelect();
+        this.selectNodeId = null;
+        this.showDragDiv(clientX, clientY, false, null);
+        this.dragStatus = "";
+        return; // 如果是拖拽节点或者拖拽子级，直接返回
+      }
+      selectNode(nodeId, true);
+      this.selectNodeId = nodeId;
+      this.showDragDiv(clientX, clientY, true, nodeId);
+      this.dragStatus = "child";
+      this.upClientInfo = [clientX, clientY];
+    } else {
+      cancelAllSelect();
+      this.selectNodeId = null;
+      this.showDragDiv(clientX, clientY, false, null);
+      this.dragStatus = "";
+    }
+  },
+  dragEnd(evt) {
+    const { currentTarget: tree } = evt;
+    setIsDragging(false);
+    document.documentElement.style.cursor = "default";
+    this.hideDragDiv();
+    if (this.dragStatus !== "" && this.selectNodeId) {
+      const parentNode = tree.findDataById(this.selectNodeId);
+      let index = 0;
+      for (let i = 0, len = parentNode.children.length; i < len; i++) {
+        let node = parentNode.children[i];
+        if (node.id === this.dragNodeId) continue;
+        if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
+          index++;
+        } else {
+          break;
+        }
+      }
+      emitter.emit("onDragEnd", [
+        findData(this.dragNodeId),
+        findData(this.selectNodeId),
+        index,
+      ]);
+      moveData(this.selectNodeId, this.dragNodeId, index);
+    }
+    //    还原
+    tree.getNodes().forEach((node) => {
+      const nodeId = node.get("id");
+      // 修改拖拽节点及其所有子节点的样式
+      tree.updateItem(node, {
+        // 节点的样式
+        style: {
+          opacity: 1,
+        },
+      });
+      node.get("edges").forEach((edge) => {
+        tree.updateItem(edge, {
+          // 节点的样式
+          style: {
+            opacity: 1,
+          },
+        });
+      });
+    });
+    cancelAllSelect();
+    this.selectNodeId = null;
+    this.dragStatus = "";
+    this.nodePosition = {};
+  },
+  showDragDiv(clientX, clientY, showLine, parentId) {
+    const tree = globalTree.value;
+    const { x, y } = tree.getPointByClient(clientX, clientY);
+    console.log(">>>>>drag", x, y);
+    const model = {
+      id: "moveNode",
+      label: "",
+      x,
+      y,
+      type: "rect",
+      zIndex: 3,
+      style: {
+        width: 40,
+        height: 20,
+        fill: themeColor.value,
+        radius: radius,
+        opacity: 0.6,
+        cursor: "grabbing",
+      },
+    };
+    const edgeOption = {
+      id: "moveNodeEdge",
+      source: parentId || "0",
+      target: "moveNode",
+      type: lineType.value,
+      zIndex: 3,
+      style: {
+        stroke: branchColor.value,
+        lineWidth: branch.value,
+        opacity: showLine ? 0.6 : 0,
+        cursor: "grabbing",
+      },
+    };
+    const moveNode = tree
+      .getNodes()
+      .filter((item) => item.get("id") === "moveNode");
+    const moveEdge = tree
+      .getEdges()
+      .filter((item) => item.get("id") === "moveNodeEdge");
+    if (moveNode.length && moveEdge.length) {
+      tree.updateItem(moveNode[0], model);
+      tree.updateItem(moveEdge[0], edgeOption);
+    } else {
+      tree.addItem("node", model);
+      tree.addItem("edge", edgeOption);
+    }
+    return { moveNode: moveNode[0] };
+  },
+  hideDragDiv() {
+    const tree = globalTree.value;
+    const moveNode = tree
+      .getNodes()
+      .filter((item) => item.get("id") === "moveNode");
+    if (moveNode.length) {
+      tree.removeItem(moveNode[0]);
     }
   },
 });

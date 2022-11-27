@@ -3,6 +3,7 @@ import IMData from "../data";
 import contextMenu from "../menu";
 import { NodeData, InputData } from "../interface";
 import { mindmap, toolbar, tooltip } from "../plugins";
+import { isMobile } from "../utils/testDevice";
 import {
   branch,
   branchColor,
@@ -63,7 +64,7 @@ interface layoutConfig {
   addNodeBtn?: boolean;
   collapseBtn?: boolean;
   watchResize?: boolean;
-  closeEditInput?:boolean;
+  closeEditInput?: boolean;
 }
 
 interface Variable {
@@ -81,7 +82,7 @@ interface Variable {
   lineType?: string;
   leafThemeColor?: string;
   leafFontColor?: string;
-  closeEditInput?:boolean
+  closeEditInput?: boolean;
 }
 
 class Tree {
@@ -111,7 +112,7 @@ class Tree {
         fitBtn,
         downloadBtn,
         scaleRatio,
-        closeEditInput
+        closeEditInput,
       } = layoutConfig;
       this.changeVariable({
         branch,
@@ -128,7 +129,7 @@ class Tree {
         leafThemeColor,
         leafFontColor,
         lineType: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
-        closeEditInput
+        closeEditInput,
       });
     }
     const config = {
@@ -163,7 +164,7 @@ class Tree {
       scaleRatio: layoutConfig?.scaleRatio || 1,
       modes: {
         default: [],
-        edit: ["edit-mindmap"],
+        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc"],
       },
       plugins: [] as any,
       groupByTypes: false,
@@ -205,7 +206,7 @@ class Tree {
     this.enableFeature(layoutConfig);
     let global = window as Window;
     global.mindTree = tree;
-    global.mindTree.version = '2.0.0';
+    global.mindTree.version = "2.0.0";
     setGlobalTree(tree);
     this.bindEvent(tree);
     return tree;
@@ -249,7 +250,7 @@ class Tree {
     lineType,
     leafThemeColor,
     leafFontColor,
-    closeEditInput
+    closeEditInput,
   }: Variable) {
     branch && changeBranch(branch);
     branchColor && changeBranchColor(branchColor);
