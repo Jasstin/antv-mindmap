@@ -13,7 +13,11 @@
       },
       {
         "name": "2-3",
-        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+        "nodeStyle": {
+          "FontColor": "yellow",
+          "FillColor": "blue"
+        }
       }
     ]
   }

@@ -19,6 +19,7 @@ export const buildNodeStyle = ({
   content = "",
   depth,
   iconPath,
+  nodeStyle,
 }) => {
   name === "" && (name = placeholderText);
   const fontSize = globalFontSize[depth] || 12;
@@ -53,21 +54,25 @@ export const buildNodeStyle = ({
     content,
     iconPath,
     type: "mindmap-node",
-    style: {
-      fontSize,
-      descFontSize: fontSize - 2,
-      descHeight,
-      width: Math.max(nameWidth, descWidth) + paddingH * 2, //  标题宽度与描述宽度取最大值
-      maxWidth: size,
-      height,
-      nameHeight,
-      FillColor,
-      FontColor,
-      stroke: 2,
-      strokeColor: "transparent",
-      nameLineHeight,
-      imageIconWidth,
-    },
+    style: Object.assign(
+      {},
+      {
+        fontSize,
+        descFontSize: fontSize - 2,
+        descHeight,
+        width: Math.max(nameWidth, descWidth) + paddingH * 2, //  标题宽度与描述宽度取最大值
+        maxWidth: size,
+        height,
+        nameHeight,
+        FillColor,
+        FontColor,
+        stroke: 2,
+        strokeColor: "transparent",
+        nameLineHeight,
+        imageIconWidth,
+      },
+      nodeStyle
+    ),
   };
   return obj;
 };
