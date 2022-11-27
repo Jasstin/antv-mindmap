@@ -108,7 +108,8 @@ const buildNodeStyle = ({
   desc = "",
   content = "",
   depth,
-  iconPath
+  iconPath,
+  nodeStyle
 }) => {
   name === "" && (name = placeholderText);
   const fontSize = globalFontSize[depth] || 12;
@@ -139,7 +140,7 @@ const buildNodeStyle = ({
     content,
     iconPath,
     type: "mindmap-node",
-    style: {
+    style: Object.assign({}, {
       fontSize,
       descFontSize: fontSize - 2,
       descHeight,
@@ -153,7 +154,7 @@ const buildNodeStyle = ({
       strokeColor: "transparent",
       nameLineHeight,
       imageIconWidth
-    }
+    }, nodeStyle)
   };
   return obj;
 };
@@ -955,6 +956,9 @@ const tooltip = {
   },
   offset: 10
 };
+const isMobile = () => {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+};
 const { Util } = G6;
 function drawHandleBtn(group, cfg, type) {
   const {
@@ -1094,7 +1098,6 @@ function getAttribute(cfg) {
     lineHeight: paddingV + descFontSize,
     opacity
   };
-  console.log(IconStyle, "iconStyle");
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
 function buildNode(cfg, group) {
@@ -1230,7 +1233,7 @@ G6.registerEdge("hvh", {
     return shape;
   }
 });
-G6.registerBehavior("edit-mindmap", {
+G6.registerBehavior("edit-mindmap-pc", {
   selectNodeId: null,
   dragNodeId: null,
   nodePosition: {},
@@ -1617,6 +1620,282 @@ G6.registerBehavior("my-shortcut", {
     }
   }
 });
+G6.registerBehavior("edit-mindmap-mobile", {
+  selectNodeId: null,
+  dragNodeId: null,
+  nodePosition: {},
+  dragStatus: "",
+  upClientInfo: [],
+  readyToDrag: false,
+  getEvents() {
+    return {
+      "node:touchstart": "handleTouchStart",
+      "canvas:touchmove": "dragNode",
+      "canvas:touchend": "handleTouchEnd",
+      "node:touchend": "handleTouchEnd"
+    };
+  },
+  handleTouchStart(evt) {
+    this.readyToDrag = true;
+    let timer = setTimeout(() => {
+      if (this.readyToDrag) {
+        this.dragStart(evt);
+        clearTimeout(timer);
+      }
+    }, 400);
+  },
+  handleTouchEnd(evt) {
+    this.readyToDrag = false;
+    if (!isDragging.value) {
+      this.clickNode(evt);
+    } else {
+      this.dragEnd(evt);
+    }
+  },
+  clickNode(evt) {
+    evt.currentTarget;
+    const node = evt.item;
+    const model = evt.item.get("model");
+    const name = evt.target.get("action");
+    if (name === "expand") {
+      expand(model.id);
+    } else if (name === "collapse") {
+      collapse(model.id);
+    } else if (name === "add") {
+      addData(model == null ? void 0 : model.id, "", true);
+    } else if (node.hasState("selected")) {
+      edit(model.id);
+    } else {
+      selectNode(model.id, !model.isCurrentSelected);
+    }
+  },
+  dragStart(evt) {
+    const { currentTarget: tree2, item: node, clientX, clientY } = evt;
+    const id = node.get("model").id;
+    setIsDragging(true);
+    this.dragNodeId = id;
+    const _dragnode = tree2.findById(this.dragNodeId);
+    tree2.getNodes().forEach((node2) => {
+      const nodeId = node2.get("id");
+      const { x: pointX, y: pointY, width, height } = node2.getBBox();
+      let { x: clientX2, y: clientY2 } = tree2.getClientByPoint(pointX, pointY);
+      let model = node2.get("model");
+      const ratio = tree2.getZoom();
+      this.nodePosition[nodeId] = {
+        clientX: clientX2,
+        clientY: clientY2,
+        width: width * ratio,
+        height: height * ratio,
+        depth: model.depth,
+        parentId: model.parentId,
+        sameLevel: model.depth === _dragnode.get("model").depth
+      };
+      if (nodeId.indexOf(this.dragNodeId) === 0) {
+        tree2.updateItem(node2, {
+          style: {
+            opacity: 0.2
+          }
+        });
+        node2.get("edges").forEach((edge) => {
+          tree2.updateItem(edge, {
+            style: {
+              opacity: 0.2
+            }
+          });
+        });
+      }
+    });
+    this.showDragDiv(clientX, clientY);
+  },
+  dragNode(evt) {
+    if (!isDragging.value)
+      return;
+    const { currentTarget: tree2, clientX, clientY } = evt;
+    let ratio = tree2.getZoom();
+    const [width, height] = [40 * ratio / 2, 20 * ratio / 2];
+    let nodePosition = this.nodePosition;
+    let nodes = [];
+    for (let nodeId in nodePosition) {
+      let node = nodePosition[nodeId];
+      let size = (globalFontSize[node.depth] || 12) * maxFontCount + paddingH * 4 + width * 4;
+      let parentNode = findData(node.parentId);
+      let firstNode = node;
+      let lastNode = node;
+      if (parentNode.children.length) {
+        firstNode = nodePosition[parentNode.children[0].id];
+        lastNode = nodePosition[parentNode.children[parentNode.children.length - 1].id];
+      }
+      let coditionH_inner = clientX - width > node.clientX - width * 2 && clientX + width < node.clientX + node.width + width * 2;
+      let coditionV_inner = clientY - height > node.clientY - height * 2 && clientY + height < node.clientY + node.height + height * 2;
+      let coditionH_outer = clientX - width > node.clientX - width * 2 && clientX + width < node.clientX + size + width * 2;
+      let coditionV_outer = clientY - height > firstNode.clientY - height * 2 && clientY + height < lastNode.clientY + lastNode.height + height * 2;
+      if (coditionH_inner && coditionV_inner) {
+        nodes.push({
+          nodeId,
+          inner: true,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: true,
+          parentId: node.parentId
+        });
+      } else if (coditionH_outer && coditionV_inner) {
+        nodes.push({
+          nodeId,
+          inner: false,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: false,
+          parentId: node.parentId
+        });
+      } else if (coditionH_inner && coditionV_outer && clientX - width > node.clientX && nodeId != node.parentId) {
+        nodes.push({
+          nodeId,
+          inner: false,
+          depth: node.depth,
+          index: +nodeId.split("-").pop(),
+          sameLevel: true,
+          parentId: node.parentId
+        });
+      }
+    }
+    if (nodes.length) {
+      let node = nodes.filter((node2) => node2.inner || !node2.inner && !node2.sameLevel);
+      if (node.length > 1) {
+        node.sort((a, b) => {
+          if (a.depth === b.depth) {
+            return a.index - b.index;
+          } else {
+            return b.depth - a.depth;
+          }
+        });
+      }
+      if (nodes.length > 1) {
+        nodes.sort((a, b) => {
+          if (a.depth === b.depth) {
+            return a.index - b.index;
+          } else {
+            return b.depth - a.depth;
+          }
+        });
+      }
+      node = node.length ? node[0] : nodes[0];
+      let nodeId = node.sameLevel ? node.parentId : node.nodeId;
+      if (nodeId.indexOf(this.dragNodeId) != -1) {
+        cancelAllSelect();
+        this.selectNodeId = null;
+        this.showDragDiv(clientX, clientY, false, null);
+        this.dragStatus = "";
+        return;
+      }
+      selectNode(nodeId, true);
+      this.selectNodeId = nodeId;
+      this.showDragDiv(clientX, clientY, true, nodeId);
+      this.dragStatus = "child";
+      this.upClientInfo = [clientX, clientY];
+    } else {
+      cancelAllSelect();
+      this.selectNodeId = null;
+      this.showDragDiv(clientX, clientY, false, null);
+      this.dragStatus = "";
+    }
+  },
+  dragEnd(evt) {
+    const { currentTarget: tree2 } = evt;
+    setIsDragging(false);
+    document.documentElement.style.cursor = "default";
+    this.hideDragDiv();
+    if (this.dragStatus !== "" && this.selectNodeId) {
+      const parentNode = tree2.findDataById(this.selectNodeId);
+      let index = 0;
+      for (let i = 0, len = parentNode.children.length; i < len; i++) {
+        let node = parentNode.children[i];
+        if (node.id === this.dragNodeId)
+          continue;
+        if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
+          index++;
+        } else {
+          break;
+        }
+      }
+      emitter.emit("onDragEnd", [
+        findData(this.dragNodeId),
+        findData(this.selectNodeId),
+        index
+      ]);
+      moveData(this.selectNodeId, this.dragNodeId, index);
+    }
+    tree2.getNodes().forEach((node) => {
+      node.get("id");
+      tree2.updateItem(node, {
+        style: {
+          opacity: 1
+        }
+      });
+      node.get("edges").forEach((edge) => {
+        tree2.updateItem(edge, {
+          style: {
+            opacity: 1
+          }
+        });
+      });
+    });
+    cancelAllSelect();
+    this.selectNodeId = null;
+    this.dragStatus = "";
+    this.nodePosition = {};
+  },
+  showDragDiv(clientX, clientY, showLine, parentId) {
+    const tree2 = globalTree.value;
+    const { x, y } = tree2.getPointByClient(clientX, clientY);
+    console.log(">>>>>drag", x, y);
+    const model = {
+      id: "moveNode",
+      label: "",
+      x,
+      y,
+      type: "rect",
+      zIndex: 3,
+      style: {
+        width: 40,
+        height: 20,
+        fill: themeColor.value,
+        radius,
+        opacity: 0.6,
+        cursor: "grabbing"
+      }
+    };
+    const edgeOption = {
+      id: "moveNodeEdge",
+      source: parentId || "0",
+      target: "moveNode",
+      type: lineType.value,
+      zIndex: 3,
+      style: {
+        stroke: branchColor.value,
+        lineWidth: branch.value,
+        opacity: showLine ? 0.6 : 0,
+        cursor: "grabbing"
+      }
+    };
+    const moveNode = tree2.getNodes().filter((item) => item.get("id") === "moveNode");
+    const moveEdge = tree2.getEdges().filter((item) => item.get("id") === "moveNodeEdge");
+    if (moveNode.length && moveEdge.length) {
+      tree2.updateItem(moveNode[0], model);
+      tree2.updateItem(moveEdge[0], edgeOption);
+    } else {
+      tree2.addItem("node", model);
+      tree2.addItem("edge", edgeOption);
+    }
+    return { moveNode: moveNode[0] };
+  },
+  hideDragDiv() {
+    const tree2 = globalTree.value;
+    const moveNode = tree2.getNodes().filter((item) => item.get("id") === "moveNode");
+    if (moveNode.length) {
+      tree2.removeItem(moveNode[0]);
+    }
+  }
+});
 class Tree {
   constructor(containerId, data) {
     this.container = document.getElementById(containerId);
@@ -1692,7 +1971,7 @@ class Tree {
       scaleRatio: (layoutConfig == null ? void 0 : layoutConfig.scaleRatio) || 1,
       modes: {
         default: [],
-        edit: ["edit-mindmap"]
+        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc"]
       },
       plugins: [],
       groupByTypes: false
