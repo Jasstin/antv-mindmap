@@ -103,15 +103,9 @@ const hotkeys = ref([]);
 const changehotKeyList = (val) => hotkeys.value = val;
 const closeEditInput = ref(false);
 const changeCloseEditInput = (val) => closeEditInput.value = val;
-const buildNodeStyle = ({
-  name = placeholderText,
-  desc = "",
-  content = "",
-  depth,
-  iconPath,
-  nodeStyle
-}) => {
+const buildNodeStyle = ({ name = placeholderText, desc = "", depth, iconPath, nodeStyle }, config) => {
   name === "" && (name = placeholderText);
+  const isSvg = config.renderer === "svg";
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2;
   let {
@@ -126,9 +120,9 @@ const buildNodeStyle = ({
   } = wrapString(desc, size, fontSize - 2);
   const nameLineHeight = fontSize + paddingV;
   const nameHeight = nameLineHeight * nameLine + paddingV;
-  const descHeight = (fontSize - 2 + paddingV) * descLine + paddingV;
-  const height = nameHeight + (desc ? descHeight : 0);
+  const descHeight = isSvg ? 300 : (fontSize - 2 + paddingV) * descLine + paddingV;
   const imageIconWidth = iconPath ? nameHeight : 0;
+  const height = nameHeight + (desc ? descHeight : 0);
   nameWidth += imageIconWidth;
   const FillColor = [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] || themeColor_leaf.value;
   const FontColor = [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] || fontColor_leaf.value;
@@ -136,10 +130,9 @@ const buildNodeStyle = ({
     label: wrapName,
     name: wrapName,
     fullName: name,
-    desc: wrapDesc,
-    content,
+    desc: isSvg ? desc : wrapDesc,
     iconPath,
-    type: "mindmap-node",
+    type: isSvg ? "dom-node" : "mindmap-node",
     style: Object.assign({}, {
       fontSize,
       descFontSize: fontSize - 2,
@@ -181,7 +174,7 @@ class IMData {
       children: [],
       _children: [],
       rawData: isInit ? rawData : rawData == null ? void 0 : rawData.rawData
-    }, buildNodeStyle(__spreadProps(__spreadValues({}, rawData), { depth })));
+    }, buildNodeStyle(__spreadProps(__spreadValues({}, rawData), { depth }), this.config));
     if (rawChildren) {
       rawChildren.filter((t) => !t.destroyed).forEach((c, j) => {
         var _a2;
@@ -203,6 +196,9 @@ class IMData {
   init(d, isInit = false) {
     this.data = this.createMdataFromData(d, "0", null, isInit);
     return this.data;
+  }
+  setConfig(config) {
+    this.config = config;
   }
   find(id) {
     const array = id.split("-").map((n) => ~~n);
@@ -402,7 +398,7 @@ class History {
   }
 }
 var History$1 = new History();
-function buildStyle(obj) {
+function buildStyle$1(obj) {
   let res = "";
   for (let key in obj) {
     res += `${key}:${obj[key]};`;
@@ -443,7 +439,7 @@ class EditInput {
     const Tree2 = globalTree.value;
     let ratio = Tree2.getZoom();
     let { x, y } = Tree2.getClientByPoint(pointX, pointY);
-    NodeInput.style.cssText = buildStyle({
+    NodeInput.style.cssText = buildStyle$1({
       transform: `scale(${ratio})`,
       "transform-origin": "0 0",
       display: "block",
@@ -1100,7 +1096,35 @@ function getAttribute(cfg) {
   };
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
-function buildNode(cfg, group) {
+function buildStyle(obj) {
+  let res = "";
+  for (let key in obj) {
+    res += `${key}:${obj[key]};`;
+  }
+  return res;
+}
+function getStyle(cfg) {
+  const {
+    style: { fontSize, FillColor, FontColor, stroke, nameLineHeight }
+  } = cfg;
+  return buildStyle({
+    width: "100%",
+    height: "100%",
+    display: "block",
+    "box-sizing": `border-box`,
+    "font-size": `${fontSize}px`,
+    "text-align": "left",
+    "border-radius": `${radius}px`,
+    "z-index": 1,
+    overflow: `hidden`,
+    "font-weight": 600,
+    color: FontColor,
+    background: FillColor,
+    border: `${stroke}px solid ${activeStrokeColor.value}`,
+    "line-height": nameLineHeight + "px"
+  });
+}
+function buildCanvasNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } = getAttribute(cfg);
   const { depth, collapse: collapse2 } = cfg;
   const container = group == null ? void 0 : group.addShape("rect", {
@@ -1141,6 +1165,23 @@ function buildNode(cfg, group) {
   }
   return container;
 }
+function buildDomNode(cfg, group) {
+  const { depth } = cfg;
+  const container = group == null ? void 0 : group.addShape("dom", {
+    attrs: {
+      width: cfg.style.width,
+      height: cfg.style.height,
+      html: `<div style=${getStyle(cfg)}>
+      <p style="margin:0;display:flex;align-items:center"><img src="${cfg.iconPath}" style="width:${cfg.style.imageIconWidth}px;height:${cfg.style.imageIconWidth}px"/>${cfg.name}</p>
+      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${cfg.desc}</div>
+      </div>`
+    },
+    name: `wrapper`,
+    zIndex: 0,
+    draggable: depth > 0
+  });
+  return container;
+}
 const getNode = (group, name) => group.get("children").filter((t) => t.get("name") === name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
 const getWrapper = (group) => getNode(group, "wrapper");
@@ -1177,7 +1218,25 @@ function handleNodeSelected(state, node) {
 }
 G6.registerNode("mindmap-node", {
   draw(cfg, group) {
-    const container = buildNode(cfg, group);
+    const container = buildCanvasNode(cfg, group);
+    return container;
+  },
+  setState(name, state, node) {
+    if (name === "hover")
+      handleNodeHover(state, node);
+    if (name === "selected")
+      handleNodeSelected(state, node);
+  },
+  getAnchorPoints() {
+    return [
+      [0, 0.5],
+      [1, 0.5]
+    ];
+  }
+});
+G6.registerNode("dom-node", {
+  draw(cfg, group) {
+    const container = buildDomNode(cfg, group);
     return container;
   },
   setState(name, state, node) {
@@ -1991,11 +2050,12 @@ class Tree {
     if (!this.container)
       return;
     const config = this.createLayoutConfig(layoutConfig);
+    IMData$1.setConfig({ renderer: layoutConfig.renderer });
     const data = IMData$1.init(this.data instanceof Array ? this.data[0] : this.data, true);
     const tree2 = new G6.TreeGraph(__spreadProps(__spreadValues({}, config), {
       container: this.container,
       animate: false,
-      renderer: "canvas"
+      renderer: layoutConfig.renderer || "canvas"
     }));
     tree2.data(data);
     this.tree = tree2;
@@ -2297,7 +2357,8 @@ const _sfc_main = {
     onSelectedNode: Function,
     onAfterEdit: Function,
     onDragEnd: Function,
-    onEdit: Function
+    onEdit: Function,
+    renderer: String
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

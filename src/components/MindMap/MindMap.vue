@@ -89,7 +89,9 @@ export default {
     onSelectedNode: Function,
     onAfterEdit: Function,
     onDragEnd: Function,
-    onEdit:Function
+    onEdit: Function,
+    // 绘图方式
+    renderer: String,
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

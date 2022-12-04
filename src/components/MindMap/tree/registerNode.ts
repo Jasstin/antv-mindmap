@@ -161,8 +161,36 @@ function getAttribute(cfg) {
   };
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
+function buildStyle(obj) {
+  let res = "";
+  for (let key in obj) {
+    res += `${key}:${obj[key]};`;
+  }
+  return res;
+}
+function getStyle(cfg) {
+  const {
+    style: { fontSize, FillColor, FontColor, stroke, nameLineHeight },
+  } = cfg;
+  return buildStyle({
+    width: "100%",
+    height: "100%",
+    display: "block",
+    "box-sizing": `border-box`,
+    "font-size": `${fontSize}px`,
+    "text-align": "left",
+    "border-radius": `${radius}px`,
+    "z-index": 1,
+    overflow: `hidden`,
+    "font-weight": 600,
+    color: FontColor,
+    background: FillColor,
+    border: `${stroke}px solid ${activeStrokeColor.value}`,
+    "line-height": nameLineHeight + "px",
+  });
+}
 
-function buildNode(cfg, group) {
+function buildCanvasNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
     getAttribute(cfg);
   const { depth, collapse } = cfg;
@@ -205,6 +233,30 @@ function buildNode(cfg, group) {
   }
   return container;
 }
+function buildDomNode(cfg, group) {
+  const { depth } = cfg;
+  const container = group?.addShape("dom", {
+    attrs: {
+      width: cfg.style.width,
+      height: cfg.style.height,
+      html: `<div style=${getStyle(cfg)}>
+      <p style="margin:0;display:flex;align-items:center"><img src="${
+        cfg.iconPath
+      }" style="width:${cfg.style.imageIconWidth}px;height:${
+        cfg.style.imageIconWidth
+      }px"/>${cfg.name}</p>
+      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${
+        cfg.desc
+      }</div>
+      </div>`,
+    },
+    name: `wrapper`,
+    zIndex: 0,
+    draggable: depth > 0,
+  });
+  return container;
+}
+
 const getNode = (group, name) =>
   group.get("children").filter((t) => t.get("name") === name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
@@ -250,10 +302,27 @@ function handleNodeSelected(state, node) {
   wrapper?.attr("stroke", state ? activeStrokeColor.value : "transparent");
 }
 
-// 根节点
+// canvas节点
 G6.registerNode("mindmap-node", {
   draw(cfg, group): IShape {
-    const container = buildNode(cfg, group);
+    const container = buildCanvasNode(cfg, group);
+    return container;
+  },
+  setState(name, state, node) {
+    if (name === "hover") handleNodeHover(state, node);
+    if (name === "selected") handleNodeSelected(state, node);
+  },
+  getAnchorPoints() {
+    return [
+      [0, 0.5],
+      [1, 0.5],
+    ];
+  },
+});
+// dom节点
+G6.registerNode("dom-node", {
+  draw(cfg, group): IShape {
+    const container = buildDomNode(cfg, group);
     return container;
   },
   setState(name, state, node) {

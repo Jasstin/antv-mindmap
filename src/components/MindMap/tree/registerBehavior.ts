@@ -26,6 +26,7 @@ import {
   hotkeys,
 } from "../variable";
 import emitter from "../mitt";
+// pc端自定义行为
 G6.registerBehavior("edit-mindmap-pc", {
   selectNodeId: null,
   dragNodeId: null,

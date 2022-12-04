@@ -13,15 +13,12 @@ import {
   fontColor_root,
   placeholderText,
 } from "../variable";
-export const buildNodeStyle = ({
-  name = placeholderText,
-  desc = "",
-  content = "",
-  depth,
-  iconPath,
-  nodeStyle,
-}) => {
+export const buildNodeStyle = (
+  { name = placeholderText, desc = "", depth, iconPath, nodeStyle },
+  config
+) => {
   name === "" && (name = placeholderText);
+  const isSvg = config.renderer === "svg";
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
   let {
@@ -36,9 +33,11 @@ export const buildNodeStyle = ({
   } = wrapString(desc, size, fontSize - 2); // 描述换行
   const nameLineHeight = fontSize + paddingV;
   const nameHeight = nameLineHeight * nameLine + paddingV; // 标题高度
-  const descHeight = (fontSize - 2 + paddingV) * descLine + paddingV; // 描述内容高度
-  const height = nameHeight + (desc ? descHeight : 0); // 节点高度
+  const descHeight = isSvg
+    ? 300
+    : (fontSize - 2 + paddingV) * descLine + paddingV; // 描述内容高度 如果是富文本固定为300
   const imageIconWidth = iconPath ? nameHeight : 0; // 标题icon宽度 =  标题高度
+  const height = nameHeight + (desc ? descHeight : 0); // 节点高度
   nameWidth += imageIconWidth; // 添加标题icon
   const FillColor =
     [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] ||
@@ -50,10 +49,9 @@ export const buildNodeStyle = ({
     label: wrapName,
     name: wrapName,
     fullName: name,
-    desc: wrapDesc,
-    content,
+    desc: isSvg ? desc : wrapDesc,
     iconPath,
-    type: "mindmap-node",
+    type: isSvg ? "dom-node" : "mindmap-node",
     style: Object.assign(
       {},
       {
@@ -79,6 +77,7 @@ export const buildNodeStyle = ({
 class IMData {
   data: NodeData | null = null;
   _data: NodeData | any[] = [];
+  config: any;
 
   private createMdataFromData(
     rawData: InputData,
@@ -102,7 +101,7 @@ class IMData {
       children: [],
       _children: [],
       rawData: isInit ? rawData : rawData?.rawData,
-      ...buildNodeStyle({ ...rawData, depth }),
+      ...buildNodeStyle({ ...rawData, depth }, this.config),
     };
     if (rawChildren) {
       rawChildren
@@ -132,6 +131,9 @@ class IMData {
   init(d: InputData, isInit = false) {
     this.data = this.createMdataFromData(d, "0", null, isInit);
     return this.data;
+  }
+  setConfig(config) {
+    this.config = config;
   }
 
   find(id: string): NodeData | null {

@@ -65,6 +65,7 @@ interface layoutConfig {
   collapseBtn?: boolean;
   watchResize?: boolean;
   closeEditInput?: boolean;
+  renderer?: string;
 }
 
 interface Variable {
@@ -184,6 +185,7 @@ class Tree {
   async init(layoutConfig?: layoutConfig) {
     if (!this.container) return;
     const config = this.createLayoutConfig(layoutConfig);
+    IMData.setConfig({ renderer: layoutConfig.renderer });
     const data = IMData.init(
       this.data instanceof Array ? this.data[0] : this.data,
       true
@@ -192,7 +194,7 @@ class Tree {
       ...config,
       container: this.container,
       animate: false,
-      renderer: "canvas",
+      renderer: layoutConfig.renderer || "canvas",
     });
     tree.data(data);
     this.tree = tree;
