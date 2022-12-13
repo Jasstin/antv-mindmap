@@ -1,173 +1,128 @@
-import G6 from "@antv/g6";
-import { centerBtn, fitBtn, downloadBtn, scaleRatio, nodeMenuList, hotkeys } from "./variable";
-import {
-  addData,
-  addParent,
-  addSibling,
-  edit,
-  deleteNode,
-  collapse,
-  expand,
-  onlyShowCurrent,
-  backParent
-} from "./tree/methods"
-import { NodeData } from "./interface";
-
+import * as TreeMethods from "./tree/methods";
+import { NodeData } from "./type/NodeData";
+import { isObject } from "./utils/type";
+const isCanvas = (evt) =>
+  evt.target && evt.target.isCanvas && evt.target.isCanvas();
+const depthGt = (evt, num) => !isCanvas(evt) && evt.item._cfg.model.depth > num;
+const isCanCollapse = (evt) =>
+  !isCanvas(evt) &&
+  !evt.item._cfg.model.collapse &&
+  evt.item._cfg.model.children.length;
+const isCanExpand = (evt) => !isCanvas(evt) && evt.item._cfg.model.collapse;
 const nodeMenuMap = {
   add: {
-    name: 'add',
-    title: '添加子节点',
+    name: "add",
+    title: "添加子节点",
     click: (node: NodeData) => {
-      addData(node?.id as string, "", true)
-    }
+      TreeMethods.addData(node?.id as string, "", true);
+    },
   },
-  'add-parent': {
-    name: 'add-parent',
-    title: '添加父级节点',
+  "add-parent": {
+    name: "add-parent",
+    title: "添加父级节点",
+    auth: (evt) => depthGt(evt, 0),
     click: (node: NodeData) => {
-      addParent(node?.id as string, "", true)
-    }
+      TreeMethods.addParent(node?.id as string);
+    },
   },
-  'add-sibling': {
-    name: 'add-sibling',
-    title: '添加兄弟节点',
+  "add-sibling": {
+    name: "add-sibling",
+    title: "添加兄弟节点",
+    auth: (evt) => depthGt(evt, 0),
     click: (node: NodeData) => {
-      addSibling(node?.id as string, "", true)
-    }
+      TreeMethods.addSibling(node?.id as string);
+    },
   },
-  'edit': {
-    name: 'edit',
-    title: '编辑当前节点',
+  edit: {
+    name: "edit",
+    title: "编辑当前节点",
     click: (node: NodeData) => {
-      edit(node?.id as string)
-    }
+      TreeMethods.edit(node?.id as string);
+    },
   },
-  'delete': {
-    name: 'delete',
-    title: '删除当前节点',
+  delete: {
+    name: "delete",
+    title: "删除当前节点",
+    auth: (evt) => depthGt(evt, 0),
     click: (node: NodeData) => {
-      deleteNode(node?.id as string)
-    }
+      TreeMethods.deleteNode(node?.id as string);
+    },
   },
-  'collapse': {
-    name: 'collapse',
-    title: '收起模型',
+  collapse: {
+    name: "collapse",
+    title: "收起模型",
+    auth: isCanCollapse,
     click: (node: NodeData) => {
-      collapse(node?.id as string)
-    }
+      TreeMethods.collapse(node?.id as string);
+    },
   },
-  'expand': {
-    name: 'expand',
-    title: '展开模型',
+  expand: {
+    name: "expand",
+    title: "展开模型",
+    auth: isCanExpand,
     click: (node: NodeData) => {
-      expand(node?.id as string)
-    }
+      TreeMethods.expand(node?.id as string);
+    },
   },
-  'only-show-current': {
-    name: 'only-show-current',
-    title: '进入当前节点',
+  "add-edge": {
+    name: "add-edge",
+    title: "联系",
     click: (node: NodeData) => {
-      onlyShowCurrent(node?.id as string)
-    }
+      TreeMethods.addEdge(node?.id as string);
+    },
   },
-  'back-parent': {
-    name: 'back-parent',
-    title: '返回上一级节点',
-    click: (node: NodeData) => {
-      backParent(node?.id as string)
-    }
-  }
-}
-const nodeMenuClickList = {}
-const contextMenu = () => new G6.Menu({
-  getContent(evt) {
-    if (!evt) return `div`;
-    const isCanvasTarget = evt.target && evt.target.isCanvas && evt.target.isCanvas()
-    return isCanvasTarget ? renderCanvasMenu(evt) : renderNodeMenu(evt);
+  enlarge: {
+    name: "enlarge",
+    title: "放大",
+    auth: isCanvas,
+    click: TreeMethods.canvasEnLarge,
   },
-  handleMenuClick: (target, item, graph) => {
-    handleMenuClick(target, item, graph)
+  ensmall: {
+    name: "ensmall",
+    title: "缩小",
+    auth: isCanvas,
+    click: TreeMethods.canvasEnSmall,
   },
-  // offsetX and offsetY include the padding of the parent container
-  // 需要加上父级容器的 padding-left 16 与自身偏移量 10
-  offsetX: 10,
-  // 需要加上父级容器的 padding-top 24 、画布兄弟元素高度、与自身偏移量 10
-  offsetY: -100,
-  // the types of items that allow the menu show up
-  // 在哪些类型的元素上响应
-  itemTypes: ['node', 'canvas'],
-});
-
-function renderCanvasMenu(evt) {
-  return `<ul>
-               <li code="enlarge">放大</li>
-               <li code="ensmall">缩小</li>
-              ${fitBtn.value ? `<li code="fit">缩放到合适大小</li>` : ``} 
-               ${centerBtn.value ? `<li code="center">缩放到屏幕中间</li>` : ``}
-               ${downloadBtn.value ? `<li code="download">下载</li>` : ``}
-           </ul>`
-}
-
-function renderNodeMenu(evt: any) {
-  const nodeData = evt.item._cfg.model;
-  let menuList = nodeMenuList.value
-  let { depth, collapse, isSubView, children } = nodeData
-  let str = menuList.map(group => {
-    return `<ul class="group">
-            ${group.map(item => {
-      if (typeof item === 'string') {
-        // 内部配置
-        let itemInfo = nodeMenuMap[item];
-        if (!itemInfo) return '';
-        if (depth === 0 && ['add-parent', 'add-sibling', 'delete'].indexOf(item) != -1) return ''
-        if (item === 'collapse' && (collapse || children.length === 0)) return ''
-        if (!collapse && item === 'expand') return ''
-        if (!isSubView && depth === 0 && item === 'only-show-current') return ''
-        if (isSubView && depth === 0 && item === 'only-show-current') itemInfo = nodeMenuMap['back-parent']
-        nodeMenuClickList[itemInfo.name] = itemInfo.click;
-        let hotkey = hotkeys.value.filter(item => item.name === itemInfo.name)[0]
-        if (hotkey) {
-          return `<li code="Node" name="${itemInfo.name}"><div code="Node" name="${itemInfo.name}">${itemInfo.title}</div><div class="small-tip" code="Node" name="${itemInfo.name}">${hotkey.control ? `${hotkey.control}+` : ''}${hotkey.key}</div></li>`
-        } else {
-          return `<li code="Node" name="${itemInfo.name}">${itemInfo.title}</li>`
-        }
-      } else if (typeof item === 'object' && item.title) {
-        // 外部配置
-        nodeMenuClickList[item.name] = item.click;
-        return `<li code="Node" name="${item.name}">${item.title}</li>`
-      } else {
-        return ''
-      }
-    }).join('')}
-        </ul>`
-  }).join('')
-  return str
-}
-
-function handleMenuClick(target, item, graph) {
-  if (target.getAttribute('code') === 'enlarge') {
-    graph.zoom(1.2, { x: graph.getWidth() / 2, y: graph.getHeight() / 2 });
-  } else if (target.getAttribute('code') === 'ensmall') {
-    graph.zoom(0.8, { x: graph.getWidth() / 2, y: graph.getHeight() / 2 });
-  } else if (target.getAttribute('code') === 'fit') {
-    graph.layout(true)
-  } else if (target.getAttribute('code') === 'center') {
-    graph.fitCenter()
-    graph.zoomTo(scaleRatio.value, {
-      x: graph.getWidth() / 2,
-      y: graph.getHeight() / 2
-    })
-  } else if (target.getAttribute('code') === 'download') {
-    graph.downloadFullImage('mindmap_' + Date.now(), 'image/jpeg', {
-      backgroundColor: '#ddd',
-      padding: [30, 15, 15, 15],
+  fit: {
+    name: "fit",
+    title: "缩放到合适大小",
+    auth: isCanvas,
+    click: TreeMethods.canvasFitFill,
+  },
+  center: {
+    name: "center",
+    title: "缩放到屏幕中间",
+    auth: isCanvas,
+    click: TreeMethods.canvasFitCenter,
+  },
+  download: {
+    name: "download",
+    title: "下载",
+    auth: isCanvas,
+    click: TreeMethods.downloadJepg,
+  },
+};
+export const renderMenu = (evt): string => {
+  let { menuList } = window.mindTreeConfig.propsConfig;
+  // step1: 过滤出外部传入的对象，添加到nodeMenuMap
+  menuList
+    .filter((item) => isObject(item))
+    .forEach((item) => {
+      nodeMenuMap[item.name] = item;
     });
-  } else if (target.getAttribute('code') === 'Node') {
-    let name = target.getAttribute('name');
-    if (name) {
-      nodeMenuClickList[name](item.get('model'), item, graph)
-    }
+  // step2: 校验权限进行渲染
+  return `<ul>${Object.keys(nodeMenuMap)
+    .filter((item) =>
+      nodeMenuMap[item].auth ? nodeMenuMap[item].auth(evt) : true
+    ) // 权限验证
+    .map((item) => nodeMenuMap[item]) // 获取数据
+    .map((item) => ` <li code="${item.name}">${item.title}</li>`) // 渲染
+    .join("")}</ul>`;
+};
+
+export function handleMenuClick(target, item) {
+  let name = target.getAttribute("name");
+  if (name) {
+    nodeMenuMap[name]?.click();
   }
 }
-
-export default contextMenu

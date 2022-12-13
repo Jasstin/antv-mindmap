@@ -24,8 +24,10 @@ import {
   isDragging,
   setIsDragging,
   hotkeys,
+  isCurrentConnect,
 } from "../variable";
 import emitter from "../mitt";
+import { createEdge } from "../utils/showMoveEdge";
 // pc端自定义行为
 G6.registerBehavior("edit-mindmap-pc", {
   selectNodeId: null,
@@ -54,7 +56,10 @@ G6.registerBehavior("edit-mindmap-pc", {
     const node = evt.item;
     const model = evt.item.get("model");
     const name = evt.target.get("action");
-    if (name === "expand") {
+    if (isCurrentConnect.value) {
+      // 如果当前处于联系模式，则创建连接线
+      createEdge(model.id);
+    } else if (name === "expand") {
       expand(model.id);
     } else if (name === "collapse") {
       collapse(model.id);
@@ -712,7 +717,6 @@ G6.registerBehavior("edit-mindmap-mobile", {
   showDragDiv(clientX, clientY, showLine, parentId) {
     const tree = globalTree.value;
     const { x, y } = tree.getPointByClient(clientX, clientY);
-    console.log(">>>>>drag", x, y);
     const model = {
       id: "moveNode",
       label: "",

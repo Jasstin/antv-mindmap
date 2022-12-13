@@ -1,120 +1,113 @@
-import editInput from "../editInput";
-import { addData, addParent, addSibling, copy, deleteNode, paste, createACopy, cut, unDo, reDo, edit } from "./methods";
-var isMac = function () {
-  return /macintosh|mac os x/i.test(navigator.userAgent);
-}();
-var defaultHotKey = [
+import { isMac } from "../utils/testDevice";
+import * as TreeMethods from "./methods";
+const defaultHotKey = [
   {
-    key: 'Enter',
-    label: '插入同级节点',
+    key: "Enter",
+    label: "插入同级节点",
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addSibling(selectedNodes[0], "")
+      TreeMethods.addSibling(selectedNodes[0], "");
     },
-    name: 'add-sibling', // 右键菜单匹配值
+    name: "add-sibling", // 右键菜单匹配值
   },
   {
-    key: 'Tab',
-    label: '插入子节点',
+    key: "Tab",
+    label: "插入子节点",
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addData(selectedNodes[0], "")
+      TreeMethods.addData(selectedNodes[0], "");
     },
-    name: 'add', // 右键菜单匹配值
+    name: "add", // 右键菜单匹配值
   },
   {
-    key: 'Tab',
-    control: 'shift',
-    label: '插入父节点',
+    key: "Tab",
+    control: "shift",
+    label: "插入父节点",
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      addParent(selectedNodes[0], "")
+      TreeMethods.addParent(selectedNodes[0], "");
     },
-    name: 'add-parent', // 右键菜单匹配值
+    name: "add-parent", // 右键菜单匹配值
   },
   {
-    key: 'c',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '复制',
+    key: "c",
+    control: isMac ? "cmd" : "ctrl",
+    label: "复制",
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      copy(selectedNodes)
+      TreeMethods.copy(selectedNodes);
     },
-    name: 'copy', // 右键菜单匹配值
+    name: "copy", // 右键菜单匹配值
   },
   {
-    key: 'x',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '剪切',
+    key: "x",
+    control: isMac ? "cmd" : "ctrl",
+    label: "剪切",
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      cut(selectedNodes)
+      TreeMethods.cut(selectedNodes);
     },
-    name: 'cut', // 右键菜单匹配值
+    name: "cut", // 右键菜单匹配值
   },
   {
-    key: 'v',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '粘贴',
+    key: "v",
+    control: isMac ? "cmd" : "ctrl",
+    label: "粘贴",
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      paste(selectedNodes[0])
+      TreeMethods.paste(selectedNodes[0]);
     },
-    name: 'paste', // 右键菜单匹配值
+    name: "paste", // 右键菜单匹配值
   },
   {
-    key: 'd',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '创建副本',
-    name: 'create-a-copy', // 右键菜单匹配值
+    key: "d",
+    control: isMac ? "cmd" : "ctrl",
+    label: "创建副本",
+    name: "create-a-copy", // 右键菜单匹配值
     Event: function (selectedNodes) {
       if (selectedNodes?.length != 1) return;
-      createACopy(selectedNodes[0])
+      TreeMethods.createACopy(selectedNodes[0]);
     },
   },
   {
-    key: 'z',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '撤销操作',
-    name: 'revert', // 右键菜单匹配值
+    key: "z",
+    control: isMac ? "cmd" : "ctrl",
+    label: "撤销操作",
+    name: "revert", // 右键菜单匹配值
     Event: function (selectedNodes) {
-      unDo()
+      TreeMethods.unDo();
     },
   },
   {
-    key: 'y',
-    control: isMac ? 'cmd' : 'ctrl',
-    label: '重新操作',
-    name: 'redo', // 右键菜单匹配值
+    key: "y",
+    control: isMac ? "cmd" : "ctrl",
+    label: "重新操作",
+    name: "redo", // 右键菜单匹配值
     Event: function (selectedNodes) {
-      reDo()
+      TreeMethods.reDo();
     },
   },
   {
-    key: 'Backspace',
-    label: '删除',
-    Event: function (selectedNodes) {
-      if (!selectedNodes?.length) return;
-      selectedNodes.forEach(nodeId => {
-        deleteNode(nodeId)
-      })
-    },
-    name: 'delete', // 右键菜单匹配值
-  },
-  {
-    key: ' ',
-    label: '编辑',
+    key: "Backspace",
+    label: "删除",
     Event: function (selectedNodes) {
       if (!selectedNodes?.length) return;
-      selectedNodes.forEach(nodeId => {
-        edit(nodeId)
-        let timer = setTimeout(() => {
-          editInput._input?.focus();
-          clearTimeout(timer)
-        }, 300)
-      })
+      selectedNodes.forEach((nodeId) => {
+        TreeMethods.deleteNode(nodeId);
+      });
     },
-    name: 'edit', // 右键菜单匹配值
+    name: "delete", // 右键菜单匹配值
   },
-]
-export default defaultHotKey
+  {
+    key: " ",
+    label: "编辑",
+    Event: function (selectedNodes) {
+      if (!selectedNodes?.length) return;
+      selectedNodes.forEach((nodeId) => {
+        TreeMethods.edit(nodeId);
+      });
+    },
+    name: "edit", // 右键菜单匹配值
+  },
+];
+export default defaultHotKey;

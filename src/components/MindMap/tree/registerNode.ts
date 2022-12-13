@@ -10,6 +10,7 @@ import {
   hoverStrokeColor,
   activeStrokeColor,
   isCurrentEdit,
+  isCurrentConnect,
 } from "../variable";
 
 enum textBaseline {
@@ -22,11 +23,13 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const {
     style: { width, height, opacity = 1 },
     _children,
+    side,
   } = cfg;
+  const isLeft = side === "left";
   const fontSize = 14;
   const text = {
     add: "+",
-    collapse: "<",
+    collapse: isLeft ? ">" : "<",
     expand: _children.length + "" || "0",
   }[type];
   const widthHeight = Util.getTextSize(text, fontSize);
@@ -34,7 +37,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const r = widthHeight[0] / 2 + 4;
   const lineStyle = isExpand
     ? {
-        x: width + 1,
+        x: isLeft ? -1 - 10 : width + 1,
         y: height / 2 - 1,
         width: 10,
         height: 2,
@@ -54,7 +57,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const textColor = isExpand ? themeColor.value : fontColor_root.value;
   const visible = isExpand ? true : false;
   const circleStyle = {
-    x: width + lineStyle.width + r + 3,
+    x: isLeft ? -lineStyle.width - r - 3 : width + lineStyle.width + r + 3,
     y: height / 2,
     r,
     fill,
@@ -64,7 +67,9 @@ function drawHandleBtn(group: IGroup, cfg, type) {
     opacity,
   };
   const textStyle = {
-    x: width + lineStyle.width + r - widthHeight[0] / 2 + 3,
+    x: isLeft
+      ? -lineStyle.width - r - widthHeight[0] / 2 - 3
+      : width + lineStyle.width + r - widthHeight[0] / 2 + 3,
     y: height / 2 - r / 2 - 4,
     text,
     fill: textColor,
@@ -290,8 +295,11 @@ function handleNodeSelected(state, node) {
   let addBtn = getAddBtn(group);
   let collapseBtn = getCollapseBtn(group);
   collapseBtn?.hide();
-  // 非折叠状态显示添加按钮
-  if (!(node.get("model").collapse && node.get("model")._children.length)) {
+  // 非折叠状态显示添加按钮,联系模式下不显示添加
+  if (
+    !(node.get("model").collapse && node.get("model")._children.length) &&
+    !isCurrentConnect.value
+  ) {
     addBtn?.[state ? "show" : "hide"]();
   }
   if (isCurrentEdit.value) addBtn?.hide();
@@ -312,11 +320,22 @@ G6.registerNode("mindmap-node", {
     if (name === "hover") handleNodeHover(state, node);
     if (name === "selected") handleNodeSelected(state, node);
   },
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
+  getAnchorPoints(cfg) {
+    if (cfg.side === "left") {
+      return [
+        [1, 0.5],
+        [0.5, 0],
+        [0, 0.5],
+        [0.5, 1],
+      ];
+    } else {
+      return [
+        [0, 0.5],
+        [0.5, 0],
+        [1, 0.5],
+        [0.5, 1],
+      ];
+    }
   },
 });
 // dom节点
@@ -334,45 +353,5 @@ G6.registerNode("dom-node", {
       [0, 0.5],
       [1, 0.5],
     ];
-  },
-});
-G6.registerEdge("hvh", {
-  draw(cfg, group) {
-    if (!cfg || !group) return;
-    const startPoint = cfg.startPoint;
-    const endPoint = cfg.endPoint;
-    let dist = endPoint.y < startPoint.y ? 10 : -10;
-    if (endPoint.y === startPoint.y) {
-      dist = 0;
-    }
-    const shape = group.addShape("path", {
-      attrs: {
-        cursor: "pointer",
-        stroke: branchColor.value,
-        lineWidth: branch.value,
-        opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
-        path: [
-          ["M", startPoint.x, startPoint.y],
-          ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
-          [
-            "L",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y) + dist,
-          ],
-          [
-            "Q",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y),
-            endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
-            endPoint.y,
-          ], // 三分之二处
-          ["L", endPoint.x, endPoint.y],
-        ],
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any value you want
-      name: "path-shape",
-      zIndex: 0,
-    });
-    return shape;
   },
 });

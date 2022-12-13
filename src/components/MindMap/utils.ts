@@ -3,13 +3,17 @@ import G6 from "@antv/g6";
 /**
  * 文本超出显示……
  * **/
-export const fittingString = (str: string, maxWidth: number, fontSize: number) => {
-  const ellipsis = '...';
+export const fittingString = (
+  str: string,
+  maxWidth: number,
+  fontSize: number
+) => {
+  const ellipsis = "...";
   const ellipsisLength = G6.Util.getTextSize(ellipsis, fontSize)[0];
   let currentWidth = 0;
   let res = str;
-  const pattern = new RegExp('[\u4E00-\u9FA5]+'); // distinguish the Chinese charactors and letters
-  str.split('').forEach((letter, i) => {
+  const pattern = new RegExp("[\u4E00-\u9FA5]+"); // distinguish the Chinese charactors and letters
+  str.split("").forEach((letter, i) => {
     if (currentWidth > maxWidth - ellipsisLength) return;
     if (pattern.test(letter)) {
       // Chinese charactors
@@ -27,14 +31,18 @@ export const fittingString = (str: string, maxWidth: number, fontSize: number) =
 /**
  * 文本超出换行
  * */
-export const wrapString = (str: string, maxWidth: number, fontSize: number): { line: number, text: string, width: number } => {
+export const wrapString = (
+  str: string,
+  maxWidth: number,
+  fontSize: number
+): { line: number; text: string; width: number } => {
   let currentWidth = 0;
-  const pattern = new RegExp('[\u4E00-\u9FA5]+'); // distinguish the Chinese charactors and letters
-  const lineGroup = []
-  let firstIndex = 0
-  let rowWidth = 0
-  str = str.replace(/\s/g, '')
-  str.split('').forEach((letter, i, array) => {
+  const pattern = new RegExp("[\u4E00-\u9FA5]+"); // distinguish the Chinese charactors and letters
+  const lineGroup = [];
+  let firstIndex = 0;
+  let rowWidth = 0;
+  str = str.replace(/\s/g, "");
+  str.split("").forEach((letter, i, array) => {
     if (pattern.test(letter)) {
       // Chinese charactors
       currentWidth += fontSize;
@@ -44,18 +52,34 @@ export const wrapString = (str: string, maxWidth: number, fontSize: number): { l
     }
     if (currentWidth > maxWidth) {
       if (currentWidth > rowWidth) {
-        rowWidth = currentWidth
+        rowWidth = currentWidth;
       }
-      lineGroup.push(str.slice(firstIndex, i))
+      lineGroup.push(str.slice(firstIndex, i));
       currentWidth = 0;
-      firstIndex = i
+      firstIndex = i;
     } else if (i === array.length - 1) {
       if (currentWidth > rowWidth) {
-        rowWidth = currentWidth
+        rowWidth = currentWidth;
       }
-      lineGroup.push(str.slice(firstIndex, i + 1))
+      lineGroup.push(str.slice(firstIndex, i + 1));
     }
   });
-  return { line: lineGroup.length, text: lineGroup.join('\n'), width: Math.ceil(rowWidth) }
+  return {
+    line: lineGroup.length,
+    text: lineGroup.join("\n"),
+    width: Math.ceil(rowWidth),
+  };
 };
-window.wrapString = wrapString
+window.wrapString = wrapString;
+/**
+ * 获取富文本内容高度
+ */
+export const getWrapperHeight = (str: string, maxWidth: number) => {
+  var oDiv = document.createElement("div");
+  oDiv.innerHTML = str;
+  document.body.append(oDiv);
+  oDiv.style.cssText = `width:${maxWidth}px`;
+  const height = oDiv.offsetHeight;
+  oDiv.remove();
+  return height;
+};

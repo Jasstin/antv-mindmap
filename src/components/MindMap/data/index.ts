@@ -1,5 +1,5 @@
-import { InputData, NodeData } from "../interface";
-import { fittingString, wrapString } from "../utils";
+import { InputData, NodeData } from "../type/interface";
+import { fittingString, wrapString, getWrapperHeight } from "../utils";
 import {
   globalFontSize,
   maxFontCount,
@@ -14,8 +14,9 @@ import {
   placeholderText,
 } from "../variable";
 export const buildNodeStyle = (
-  { name = placeholderText, desc = "", depth, iconPath, nodeStyle },
-  config
+  { name = placeholderText, desc = "", depth, iconPath, nodeStyle, side },
+  config,
+  parent
 ) => {
   name === "" && (name = placeholderText);
   const isSvg = config.renderer === "svg";
@@ -34,7 +35,7 @@ export const buildNodeStyle = (
   const nameLineHeight = fontSize + paddingV;
   const nameHeight = nameLineHeight * nameLine + paddingV; // 标题高度
   const descHeight = isSvg
-    ? 300
+    ? getWrapperHeight(desc, size)
     : (fontSize - 2 + paddingV) * descLine + paddingV; // 描述内容高度 如果是富文本固定为300
   const imageIconWidth = iconPath ? nameHeight : 0; // 标题icon宽度 =  标题高度
   const height = nameHeight + (desc ? descHeight : 0); // 节点高度
@@ -52,6 +53,7 @@ export const buildNodeStyle = (
     desc: isSvg ? desc : wrapDesc,
     iconPath,
     type: isSvg ? "dom-node" : "mindmap-node",
+    side: depth < 2 ? side || parent.side || "right" : parent.side, // 根节点与二级节点如果自身没有side，则从父级集成，如果父级没有，则默认为right("H"),二级以下节点继承自父节点
     style: Object.assign(
       {},
       {
@@ -101,7 +103,7 @@ class IMData {
       children: [],
       _children: [],
       rawData: isInit ? rawData : rawData?.rawData,
-      ...buildNodeStyle({ ...rawData, depth }, this.config),
+      ...buildNodeStyle({ ...rawData, depth }, this.config, parent || {}),
     };
     if (rawChildren) {
       rawChildren

@@ -1,10 +1,12 @@
 import IMData, { buildNodeStyle } from "../data/index";
-import { InputData } from "../interface";
+import { InputData } from "../type/inputData";
 import {
   globalTree,
   isCurrentEdit,
   setIsCurrentEdit,
   closeEditInput,
+  isCurrentConnect,
+  setIsCurrentConnect,
 } from "../variable";
 import { TreeGraph } from "@antv/g6";
 import History from "../data/history";
@@ -12,7 +14,7 @@ import EditInput from "../editInput";
 import { INode } from "@antv/g6-core/lib/interface/item";
 import emitter from "../mitt";
 import { pushData, popData } from "./clipboard";
-
+import { showMoveEdge, hideMoveEdge } from "../utils/showMoveEdge";
 /***
  * data 为History栈里面的历史数据
  */
@@ -35,12 +37,12 @@ export const addData = (
   rePaint();
   if (data && editNow) edit(data.id);
 };
-export const addParent = (id: string, rawData: string | InputData) => {
+export const addParent = (id: string, rawData: string | InputData = "") => {
   let data = IMData.addParent(id, rawData);
   rePaint();
   if (data) edit(data.id);
 };
-export const addSibling = (id: string, rawData: string | InputData) => {
+export const addSibling = (id: string, rawData: string | InputData = "") => {
   let data = IMData.addSibling(id, rawData);
   rePaint();
   if (data) edit(data.id);
@@ -198,4 +200,56 @@ export const createACopy = (id) => {
   let d = findData(id);
   paste(findData(id).parentId);
   rePaint();
+};
+export const addEdge = (id) => {
+  /***
+   * Todo:
+   * 1. 开启联系模式
+   * 2. 创建线条，线条起点为点击的节点,终点为创建的节点
+   * 4. 鼠标移动时更新线条展示
+   * 5. 点击另一个节点时，判断当前联系模式是否开启
+   * 6. 如果开启，更新线条的终点，联系模式关闭
+   * 7. 创建联系功能关闭
+   */
+  //  创建连线的功能在behaviors
+  if (isCurrentConnect.value) return;
+  const tree = globalTree.value;
+  setIsCurrentConnect(true); // 开启联系模式
+  tree.refreshItem(id); // 联系模式不现实加号
+  window.onmousemove = (ev) => {
+    showMoveEdge(ev.clientX, ev.clientY, id); // 创建线条，更新线条
+  };
+  window.onmouseup = () => {
+    window.onmousemove = null;
+    hideMoveEdge(); // 隐藏线条
+    setIsCurrentConnect(false); // 关闭联系模式
+  };
+};
+export const canvasEnLarge = () => {
+  const graph = window.mindTree;
+  graph.zoom(1.2, { x: graph.getWidth() / 2, y: graph.getHeight() / 2 });
+};
+export const canvasEnSmall = () => {
+  const graph = window.mindTree;
+  graph.zoom(0.8, { x: graph.getWidth() / 2, y: graph.getHeight() / 2 });
+};
+export const canvasFitFill = () => {
+  const graph = window.mindTree;
+  graph.layout(true);
+};
+export const canvasFitCenter = () => {
+  const graph = window.mindTree;
+  const { scaleRatio } = window.mindTreeConfig.propsConfig;
+  graph.fitCenter();
+  graph.zoomTo(scaleRatio.value, {
+    x: graph.getWidth() / 2,
+    y: graph.getHeight() / 2,
+  });
+};
+export const downloadJepg = () => {
+  const graph = window.mindTree;
+  graph.downloadFullImage("mindmap_" + Date.now(), "image/jpeg", {
+    backgroundColor: "#ddd",
+    padding: [30, 15, 15, 15],
+  });
 };

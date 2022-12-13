@@ -1,144 +1,38 @@
 import G6, { GraphData, TreeGraph, TreeGraphData } from "@antv/g6";
 import IMData from "../data";
-import contextMenu from "../menu";
-import { NodeData, InputData } from "../interface";
-import { mindmap, toolbar, tooltip } from "../plugins";
+import { renderMenu, handleMenuClick } from "../menu";
+import { NodeData } from "../type/NodeData";
+import { InputData } from "../type/inputData";
+import { layoutConfig } from "../type/layoutConfig";
 import { isMobile } from "../utils/testDevice";
-import {
-  branch,
-  branchColor,
-  changeBranch,
-  changeBranchColor,
-  changeCenterBtn,
-  changeDownloadBtn,
-  changeFitBtn,
-  changeLeafFontColor,
-  changeLeafThemeColor,
-  changeRootFontColor,
-  changeScaleRatio,
-  changeSubFontColor,
-  changeSubThemeColor,
-  changeThemeColor,
-  changeTimetravel,
-  changeCloseEditInput,
-  globalTree,
-  lineType,
-  paddingH,
-  paddingV,
-  setGlobalTree,
-  setLineType,
-} from "../variable";
-import "./registerNode"; // 自定义节点形状
-import "./registerBehavior";
-import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
-const { Util } = G6;
-
-interface Window {
-  mindTree?: TreeGraph;
-}
-
-interface layoutConfig {
-  xGap?: number;
-  yGap?: number;
-  direction?: string;
-  sharpCorner?: boolean; // 直角边框
-  branch?: number;
-  branchColor?: string;
-  themeColor?: string;
-  rootFontColor?: string;
-  subThemeColor?: string;
-  subFontColor?: string;
-  scaleExtent?: string;
-  leafThemeColor?: string;
-  leafFontColor?: string;
-  scaleRatio?: number;
-  tooltip?: boolean;
-  edit?: boolean;
-  drag?: boolean;
-  zoom?: boolean;
-  centerBtn?: boolean;
-  fitBtn?: boolean;
-  downloadBtn?: boolean;
-  timetravel?: boolean;
-  mindmap?: boolean;
-  addNodeBtn?: boolean;
-  collapseBtn?: boolean;
-  watchResize?: boolean;
-  closeEditInput?: boolean;
-  renderer?: string;
-}
-
-interface Variable {
-  branch?: number;
-  branchColor?: string;
-  rootFontColor?: string;
-  subFontColor?: string;
-  subThemeColor?: string;
-  themeColor?: string;
-  timetravel?: boolean;
-  centerBtn?: boolean;
-  fitBtn?: boolean;
-  downloadBtn?: boolean;
-  scaleRatio?: number;
-  lineType?: string;
-  leafThemeColor?: string;
-  leafFontColor?: string;
-  closeEditInput?: boolean;
-}
-
+import getAnchorByDirection from "../utils/getAnchorByDirection";
+import withCss from "../utils/withCss";
+import * as TreeMethods from "./methods";
 class Tree {
   container: HTMLElement | null;
+  containerId: string;
   data: NodeData | GraphData | TreeGraphData | undefined;
   tree: TreeGraph | null;
 
   constructor(containerId: string, data: InputData | InputData[]) {
     this.container = document.getElementById(containerId);
+    this.containerId = containerId;
     this.data = data;
     this.tree = null;
+    Object.assign(this, TreeMethods); // 树图方法
   }
-
-  createLayoutConfig(layoutConfig?: layoutConfig) {
-    if (layoutConfig) {
-      let {
-        branch,
-        branchColor,
-        rootFontColor,
-        subFontColor,
-        subThemeColor,
-        themeColor,
-        leafThemeColor,
-        leafFontColor,
-        timetravel,
-        centerBtn,
-        fitBtn,
-        downloadBtn,
-        scaleRatio,
-        closeEditInput,
-      } = layoutConfig;
-      this.changeVariable({
-        branch,
-        branchColor,
-        rootFontColor,
-        subFontColor,
-        subThemeColor,
-        themeColor,
-        timetravel,
-        centerBtn,
-        fitBtn,
-        downloadBtn,
-        scaleRatio,
-        leafThemeColor,
-        leafFontColor,
-        lineType: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
-        closeEditInput,
-      });
-    }
+  prepareConfig(layoutConfig: layoutConfig = {}) {
+    const propsConfig = {
+      ...layoutConfig,
+      direction: layoutConfig.direction || "H",
+      lineType: layoutConfig?.sharpCorner ? "polyline" : "cubic-horizontal",
+    };
     const config = {
-      width: this.container?.scrollWidth,
-      height: this.container?.scrollHeight ?? 0 - 20,
+      width: propsConfig.containerWidth,
+      height: propsConfig.containerHeight,
       layout: {
-        type: "compactBox",
-        direction: "H",
+        type: "mindmap",
+        direction: propsConfig.direction,
         getHeight: (node: NodeData) => {
           return node.style.height;
         },
@@ -151,164 +45,102 @@ class Tree {
         getHGap: () => {
           return layoutConfig?.xGap || 30;
         },
-        getSide: (node: INode) => {
-          return "right";
+        getSide: (node: NodeData) => {
+          return node.data.side;
         },
       },
       defaultEdge: {
-        type: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
+        type: propsConfig.lineType,
+        ...getAnchorByDirection(propsConfig.direction),
         style: {
-          lineWidth: branch.value,
-          stroke: branchColor.value,
+          lineWidth: propsConfig.branch,
+          stroke: propsConfig.branchColor,
+          radius: 10, // 拐弯处的圆角弧度，若不设置则为直角,折线类型生效
         },
       },
-      scaleRatio: layoutConfig?.scaleRatio || 1,
+      scaleRatio: propsConfig?.scaleRatio || 1,
       modes: {
-        default: [],
-        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc"],
+        mobile: ["edit-mindmap-mobile"],
+        editPc: [
+          "edit-mindmap-pc",
+          "my-shortcut",
+          "double-finger-drag-canvas",
+          "drag-canvas",
+        ],
       },
-      plugins: [] as any,
+      plugins: [
+        new G6.Minimap({
+          size: [100, 100],
+          className: "mindmap-miniGap",
+          viewportClassName: "mindmap-miniGap-viewPort",
+          type: "delegate",
+          delegateStyle: {
+            fill: propsConfig.themeColor,
+            stroke: propsConfig.themeColor,
+          },
+        }),
+        new G6.Menu({
+          getContent: renderMenu,
+          handleMenuClick,
+          offsetX: 10, // 需要加上父级容器的 padding-left 16 与自身偏移量 10
+          offsetY: -100, // 需要加上父级容器的 padding-top 24 、画布兄弟元素高度、与自身偏移量 10
+          itemTypes: ["node", "canvas"], // 在哪些类型的元素上响应
+        }),
+      ] as any,
       groupByTypes: false,
+      renderer: propsConfig.renderer || "canvas",
     };
-    const plugins = [];
-    plugins.push(toolbar());
-    if (layoutConfig?.mindmap) {
-      plugins.push(mindmap());
-    }
-    if (layoutConfig?.edit) {
-      plugins.push(contextMenu());
-    }
-    config.plugins = plugins;
-    return config;
+    const mindTreeConfig = {
+      propsConfig,
+      config,
+    };
+    return mindTreeConfig;
   }
 
   async init(layoutConfig?: layoutConfig) {
-    if (!this.container) return;
-    const config = this.createLayoutConfig(layoutConfig);
-    IMData.setConfig({ renderer: layoutConfig.renderer });
-    const data = IMData.init(
-      this.data instanceof Array ? this.data[0] : this.data,
-      true
-    );
+    const { config, propsConfig } = this.prepareConfig(layoutConfig);
+    if (!this.container) {
+      //  如果没有容器元素，则按照传入的id名称进行创建
+      const oDiv = document.createElement("div");
+      oDiv.id = this.containerId;
+      withCss(oDiv, {
+        width: propsConfig.containerWidth + "px" || "100%",
+        height: propsConfig.containerHeight + "px" || "100%",
+      });
+      document.body.appendChild(oDiv);
+      this.container = oDiv;
+    }
+    const inputData = this.data instanceof Array ? this.data[0] : this.data;
+    const data = IMData.init(inputData, true);
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,
       animate: false,
-      renderer: layoutConfig.renderer || "canvas",
     });
     tree.data(data);
-    this.tree = tree;
-    tree.layout();
+    tree.changeSize(this.container.offsetWidth, this.container.offsetHeight);
     tree.fitCenter();
     tree.zoomTo(config.scaleRatio, {
       x: tree.getWidth() / 2,
       y: tree.getHeight() / 2,
     });
+    tree.setMode(isMobile() ? "mobile" : "editPc");
+    tree.layout();
     tree.setAutoPaint(true);
-    this.enableFeature(layoutConfig);
-    let global = window as Window;
-    global.mindTree = tree;
-    global.mindTree.version = "2.0.0";
-    setGlobalTree(tree);
-    this.bindEvent(tree);
-    return tree;
+    this.tree = tree;
+    window.mindTree = tree;
+    window.mindTreeConfig = { propsConfig, config };
+    return this;
   }
 
-  changeSize(width, height) {
-    this.tree.changeSize(width, height);
-    this.tree.fitCenter();
-  }
-
-  bindEvent(tree) {}
-
-  enableFeature(layoutConfig?: layoutConfig) {
-    if (layoutConfig?.tooltip) {
-      this.addBehaviors(tooltip);
-    }
-    if (layoutConfig?.edit) {
-      this.changeEditMode(true);
-      this.addBehaviors("my-shortcut");
-    }
-    if (layoutConfig?.drag) {
-      this.addBehaviors("drag-canvas");
-    }
-    if (layoutConfig?.zoom) {
-      this.addBehaviors("double-finger-drag-canvas");
-    }
-  }
-
-  changeVariable({
-    branch,
-    branchColor,
-    rootFontColor,
-    subFontColor,
-    subThemeColor,
-    themeColor,
-    timetravel,
-    centerBtn,
-    fitBtn,
-    downloadBtn,
-    scaleRatio,
-    lineType,
-    leafThemeColor,
-    leafFontColor,
-    closeEditInput,
-  }: Variable) {
-    branch && changeBranch(branch);
-    branchColor && changeBranchColor(branchColor);
-    rootFontColor && changeRootFontColor(rootFontColor);
-    subFontColor && changeSubFontColor(subFontColor);
-    subThemeColor && changeSubThemeColor(subThemeColor);
-    themeColor && changeThemeColor(themeColor);
-    timetravel && changeTimetravel(timetravel);
-    centerBtn && changeCenterBtn(centerBtn);
-    fitBtn && changeFitBtn(fitBtn);
-    downloadBtn && changeDownloadBtn(downloadBtn);
-    scaleRatio && changeScaleRatio(scaleRatio);
-    lineType && setLineType(lineType);
-    leafThemeColor && changeLeafThemeColor(leafThemeColor);
-    leafFontColor && changeLeafFontColor(leafFontColor);
-    closeEditInput && changeCloseEditInput(closeEditInput);
-  }
-
-  changeLayout(layoutConfig?: layoutConfig) {
-    const config = this.createLayoutConfig(layoutConfig);
-    this.tree?.updateLayout(config);
-  }
-
-  addBehaviors(behavior: any, modeType?: string) {
-    if (modeType) {
-      this.tree?.addBehaviors(behavior, modeType);
-    } else {
-      this.tree?.addBehaviors(behavior, "default");
-      this.tree?.addBehaviors(behavior, "edit");
-    }
-  }
-
-  removeBehaviors(behavior: any, modeType: string) {
-    if (modeType) {
-      this.tree?.removeBehaviors(behavior, modeType);
-    } else {
-      this.tree?.removeBehaviors(behavior, "default");
-      this.tree?.removeBehaviors(behavior, "edit");
-    }
-  }
-
-  changeEditMode(edit: boolean) {
-    if (edit) {
-      this.tree?.setMode("edit");
-    } else {
-      this.tree?.setMode("default");
-    }
-  }
-
-  reBuild(layoutConfig?: layoutConfig) {
-    this.tree?.destroy();
-    this.init(layoutConfig);
+  registerHotKey(hotkeys) {
+    //  Todo：可以修改快捷键是否开启以及对应的快捷键
   }
 
   destroy() {
     this.tree?.destroy();
+    delete window.mindTree;
+    delete window.mindTreeConfig;
   }
 }
 

@@ -1,4 +1,4 @@
-import {NodeData} from "../interface";
+import {NodeData} from "../type/interface";
 
 class History {
     data: NodeData[] | [] = []

@@ -61,3 +61,6 @@ export const changehotKeyList = (val: []) => (hotkeys.value = val);
 export const closeEditInput = ref(false);
 export const changeCloseEditInput = (val: boolean) =>
   (closeEditInput.value = val);
+export const isCurrentConnect = ref(false); // 当前是否为联系模式
+export const setIsCurrentConnect = (val: boolean) =>
+  (isCurrentConnect.value = val);

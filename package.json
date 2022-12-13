@@ -12,7 +12,7 @@
     "lib": "vite build --config vite-lib.config.ts && tsc --project tsconfig.lib.json"
   },
   "dependencies": {
-    "@antv/g6": "^4.6.4",
+    "@antv/g6": "^4.7.16",
     "@babel/types": "^7.18.7",
     "color": "^4.2.3",
     "lodash": "^4.17.21",

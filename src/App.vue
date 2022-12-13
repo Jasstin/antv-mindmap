@@ -41,7 +41,7 @@
       :onDragEnd="onDragEnd"
       :closeEditInput="true"
       :onEdit="handleOnEdit"
-      renderer="svg"
+      direction="H"
     >
     </mindmap>
     <div class="right-bottom">
@@ -131,7 +131,7 @@ export default defineComponent({
       branchColor: { type: "color", value: "#ff0f00", desc: "线条颜色" },
       xGap: {
         type: "range",
-        value: 10,
+        value: 30,
         desc: "节点横向间距",
         min: 10,
         max: 100,
@@ -213,6 +213,7 @@ export default defineComponent({
       ["add-sibling", "add", "add-parent"],
       ["edit", "delete", "collapse", "expand"],
       ["only-show-current", "show-parent"],
+      ["add-edge"],
       [
         {
           title: "查看节点详情",
@@ -249,7 +250,6 @@ export default defineComponent({
     };
   },
   mounted() {
-    console.log(this.$refs.mindMapRef.editNode);
     let timer = setTimeout(() => {
       this.data = learn;
       clearTimeout(timer);
