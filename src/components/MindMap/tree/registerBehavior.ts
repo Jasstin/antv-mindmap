@@ -394,10 +394,12 @@ G6.registerBehavior("double-finger-drag-canvas", {
         y: point.y,
       });
     } else {
-      const x = ev.deltaX || ev.movementX;
+      let x = ev.deltaX || ev.movementX;
       let y = ev.deltaY || ev.movementY;
       if (!y && navigator.userAgent.indexOf("Firefox") > -1)
         y = (-ev.wheelDelta * 125) / 3;
+      if (Math.abs(x) < 10 || Math.abs(y) > Math.abs(x)) x = 0;
+      if (Math.abs(y) < 10 || Math.abs(x) > Math.abs(y)) y = 0;
       graph.translate(-x, -y);
     }
     ev.preventDefault();
