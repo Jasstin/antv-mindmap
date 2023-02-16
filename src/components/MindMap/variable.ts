@@ -61,3 +61,6 @@ export const changehotKeyList = (val: []) => (hotkeys.value = val);
 export const closeEditInput = ref(false);
 export const changeCloseEditInput = (val: boolean) =>
   (closeEditInput.value = val);
+export const controlMoveDirection = ref(false);
+export const changeControlMoveDirection = (val: boolean) =>
+  (controlMoveDirection.value = val);

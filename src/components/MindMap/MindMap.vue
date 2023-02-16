@@ -92,6 +92,8 @@ export default {
     onEdit: Function,
     // 绘图方式
     renderer: String,
+    // 控制画布移动方向
+    controlMoveDirection: Boolean,
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

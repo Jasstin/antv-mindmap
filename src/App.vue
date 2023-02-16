@@ -41,6 +41,7 @@
       :onDragEnd="onDragEnd"
       :closeEditInput="false"
       :onEdit="handleOnEdit"
+      :controlMoveDirection="true"
     >
     </mindmap>
     <div class="right-bottom">
