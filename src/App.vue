@@ -41,7 +41,6 @@
       :onDragEnd="onDragEnd"
       :closeEditInput="true"
       :onEdit="handleOnEdit"
-      renderer="svg"
     >
     </mindmap>
     <div class="right-bottom">
