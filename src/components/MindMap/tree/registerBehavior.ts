@@ -60,9 +60,6 @@ G6.registerBehavior("edit-mindmap-pc", {
       collapse(model.id);
     } else if (name === "add") {
       addData(model?.id as string, "", true);
-    } else if (node.hasState("selected")) {
-      // 判断如果当前节点时选中节点，那么编辑节点
-      edit(model.id);
     } else {
       selectNode(model.id, !model.isCurrentSelected);
     }

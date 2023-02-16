@@ -39,7 +39,7 @@
       :onCancelSelected="handleCancelSelected"
       :onAfterEdit="handleAfterEdit"
       :onDragEnd="onDragEnd"
-      :closeEditInput="true"
+      :closeEditInput="false"
       :onEdit="handleOnEdit"
     >
     </mindmap>
