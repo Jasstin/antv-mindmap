@@ -274,7 +274,11 @@ G6.registerBehavior("edit-mindmap-pc", {
       for (let i = 0, len = parentNode.children.length; i < len; i++) {
         let node = parentNode.children[i];
         if (node.id === this.dragNodeId) continue;
-        if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
+        if (
+          this.nodePosition[node.id].clientY +
+            this.nodePosition[node.id].height / 2 <
+          this.upClientInfo[1]
+        ) {
           index++;
         } else {
           break;
