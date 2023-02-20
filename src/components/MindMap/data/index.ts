@@ -15,7 +15,7 @@ import {
 } from "../variable";
 export const buildNodeStyle = (
   { name = placeholderText, desc = "", depth, iconPath, nodeStyle },
-  config
+  config = { renderer: "canvas" }
 ) => {
   name === "" && (name = placeholderText);
   const isSvg = config.renderer === "svg";
