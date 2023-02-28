@@ -64,3 +64,6 @@ export const changeCloseEditInput = (val: boolean) =>
 export const controlMoveDirection = ref(false);
 export const changeControlMoveDirection = (val: boolean) =>
   (controlMoveDirection.value = val);
+export const defaultAppendNode = ref(false);
+export const changeDefaultAppendNode = (val: boolean) =>
+  (defaultAppendNode.value = val);

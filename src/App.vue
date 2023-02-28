@@ -42,6 +42,7 @@
       :closeEditInput="false"
       :onEdit="handleOnEdit"
       :controlMoveDirection="true"
+      :defaultAppendNode="true"
     >
     </mindmap>
     <div class="right-bottom">

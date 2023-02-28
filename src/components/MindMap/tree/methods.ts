@@ -5,6 +5,7 @@ import {
   isCurrentEdit,
   setIsCurrentEdit,
   closeEditInput,
+  defaultAppendNode,
 } from "../variable";
 import { TreeGraph } from "@antv/g6";
 import History from "../data/history";
@@ -81,7 +82,11 @@ export const edit = (id: string, clear = false) => {
       nodeData: findData(id),
     });
     let _name = name.replace(/\s/g, "");
-    update(id, _name === "" ? oldName : _name);
+    if (defaultAppendNode.value) {
+      update(id, _name === "" ? oldName : _name);
+    } else {
+      deleteNode(id);
+    }
     EditInput.hideInput();
     let timer = setTimeout(() => {
       clearTimeout(timer);

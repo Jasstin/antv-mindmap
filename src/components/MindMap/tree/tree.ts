@@ -28,6 +28,7 @@ import {
   setGlobalTree,
   setLineType,
   changeControlMoveDirection,
+  changeDefaultAppendNode,
 } from "../variable";
 import "./registerNode"; // 自定义节点形状
 import "./registerBehavior";
@@ -68,6 +69,7 @@ interface layoutConfig {
   closeEditInput?: boolean;
   renderer?: string;
   controlMoveDirection?: boolean;
+  defaultAppendNode: boolean;
 }
 
 interface Variable {
@@ -87,6 +89,7 @@ interface Variable {
   leafFontColor?: string;
   closeEditInput?: boolean;
   controlMoveDirection?: boolean;
+  defaultAppendNode: boolean;
 }
 
 class Tree {
@@ -118,6 +121,7 @@ class Tree {
         scaleRatio,
         closeEditInput,
         controlMoveDirection,
+        defaultAppendNode,
       } = layoutConfig;
       this.changeVariable({
         branch,
@@ -136,6 +140,7 @@ class Tree {
         lineType: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
         closeEditInput,
         controlMoveDirection,
+        defaultAppendNode,
       });
     }
     const config = {
@@ -259,6 +264,7 @@ class Tree {
     leafFontColor,
     closeEditInput,
     controlMoveDirection,
+    defaultAppendNode,
   }: Variable) {
     branch && changeBranch(branch);
     branchColor && changeBranchColor(branchColor);
@@ -276,6 +282,7 @@ class Tree {
     leafFontColor && changeLeafFontColor(leafFontColor);
     closeEditInput && changeCloseEditInput(closeEditInput);
     controlMoveDirection && changeControlMoveDirection(controlMoveDirection);
+    defaultAppendNode && changeDefaultAppendNode(defaultAppendNode);
   }
 
   changeLayout(layoutConfig?: layoutConfig) {

@@ -109,7 +109,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   const changehotKeyList = (val) => hotkeys.value = val;
   const closeEditInput = vue.ref(false);
   const changeCloseEditInput = (val) => closeEditInput.value = val;
-  const buildNodeStyle = ({ name = placeholderText, desc = "", depth, iconPath, nodeStyle }, config) => {
+  const controlMoveDirection = vue.ref(false);
+  const changeControlMoveDirection = (val) => controlMoveDirection.value = val;
+  const defaultAppendNode = vue.ref(false);
+  const changeDefaultAppendNode = (val) => defaultAppendNode.value = val;
+  const buildNodeStyle = ({ name = placeholderText, desc = "", depth, iconPath, nodeStyle }, config = { renderer: "canvas" }) => {
     name === "" && (name = placeholderText);
     const isSvg = config.renderer === "svg";
     const fontSize = globalFontSize[depth] || 12;
@@ -634,7 +638,11 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
         nodeData: findData(id)
       });
       let _name = name.replace(/\s/g, "");
-      update(id, _name === "" ? oldName : _name);
+      if (defaultAppendNode.value) {
+        update(id, _name === "" ? oldName : _name);
+      } else {
+        deleteNode(id);
+      }
       EditInput$1.hideInput();
       let timer = setTimeout(() => {
         clearTimeout(timer);
@@ -1322,7 +1330,7 @@ ${timetravel.value ? `
     },
     clickNode(evt) {
       evt.currentTarget;
-      const node = evt.item;
+      evt.item;
       const model = evt.item.get("model");
       const name = evt.target.get("action");
       if (name === "expand") {
@@ -1331,8 +1339,6 @@ ${timetravel.value ? `
         collapse(model.id);
       } else if (name === "add") {
         addData(model == null ? void 0 : model.id, "", true);
-      } else if (node.hasState("selected")) {
-        edit(model.id);
       } else {
         selectNode(model.id, !model.isCurrentSelected);
       }
@@ -1514,7 +1520,7 @@ ${timetravel.value ? `
           let node = parentNode.children[i];
           if (node.id === this.dragNodeId)
             continue;
-          if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
+          if (this.nodePosition[node.id].clientY + this.nodePosition[node.id].height / 2 < this.upClientInfo[1]) {
             index++;
           } else {
             break;
@@ -1606,6 +1612,8 @@ ${timetravel.value ? `
         wheel: "onWheel"
       };
     },
+    reCalcDir: true,
+    timer: null,
     onWheel: function onWheel(ev) {
       const graph = globalTree.value;
       if (ev.ctrlKey) {
@@ -1622,10 +1630,24 @@ ${timetravel.value ? `
           y: point.y
         });
       } else {
-        const x = ev.deltaX || ev.movementX;
+        let direction = "all";
+        let x = ev.deltaX || ev.movementX;
         let y = ev.deltaY || ev.movementY;
+        if (controlMoveDirection.value) {
+          direction = Math.abs(x) < Math.abs(y) ? "v" : "h";
+          this.reCalcDir = false;
+          clearTimeout(this.timer);
+          this.timer = setTimeout(() => {
+            this.reCalcDir = true;
+          }, 1e3);
+        }
         if (!y && navigator.userAgent.indexOf("Firefox") > -1)
           y = -ev.wheelDelta * 125 / 3;
+        if (direction === "h") {
+          y = 0;
+        } else if (direction === "v") {
+          x = 0;
+        }
         graph.translate(-x, -y);
       }
       ev.preventDefault();
@@ -1984,7 +2006,9 @@ ${timetravel.value ? `
           fitBtn: fitBtn2,
           downloadBtn: downloadBtn2,
           scaleRatio: scaleRatio2,
-          closeEditInput: closeEditInput2
+          closeEditInput: closeEditInput2,
+          controlMoveDirection: controlMoveDirection2,
+          defaultAppendNode: defaultAppendNode2
         } = layoutConfig;
         this.changeVariable({
           branch: branch2,
@@ -2001,7 +2025,9 @@ ${timetravel.value ? `
           leafThemeColor,
           leafFontColor,
           lineType: (layoutConfig == null ? void 0 : layoutConfig.sharpCorner) ? "hvh" : "cubic-horizontal",
-          closeEditInput: closeEditInput2
+          closeEditInput: closeEditInput2,
+          controlMoveDirection: controlMoveDirection2,
+          defaultAppendNode: defaultAppendNode2
         });
       }
       const config = {
@@ -2116,7 +2142,9 @@ ${timetravel.value ? `
       lineType: lineType2,
       leafThemeColor,
       leafFontColor,
-      closeEditInput: closeEditInput2
+      closeEditInput: closeEditInput2,
+      controlMoveDirection: controlMoveDirection2,
+      defaultAppendNode: defaultAppendNode2
     }) {
       branch2 && changeBranch(branch2);
       branchColor2 && changeBranchColor(branchColor2);
@@ -2133,6 +2161,8 @@ ${timetravel.value ? `
       leafThemeColor && changeLeafThemeColor(leafThemeColor);
       leafFontColor && changeLeafFontColor(leafFontColor);
       closeEditInput2 && changeCloseEditInput(closeEditInput2);
+      controlMoveDirection2 && changeControlMoveDirection(controlMoveDirection2);
+      defaultAppendNode2 && changeDefaultAppendNode(defaultAppendNode2);
     }
     changeLayout(layoutConfig) {
       var _a;
@@ -2364,7 +2394,9 @@ ${timetravel.value ? `
       onAfterEdit: Function,
       onDragEnd: Function,
       onEdit: Function,
-      renderer: String
+      renderer: String,
+      controlMoveDirection: Boolean,
+      defaultAppendNode: Boolean
     },
     mounted() {
       this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

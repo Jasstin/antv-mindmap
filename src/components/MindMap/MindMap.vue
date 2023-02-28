@@ -94,6 +94,8 @@ export default {
     renderer: String,
     // 控制画布移动方向
     controlMoveDirection: Boolean,
+    // 节点是否自动添加到画布上
+    defaultAppendNode: Boolean,
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

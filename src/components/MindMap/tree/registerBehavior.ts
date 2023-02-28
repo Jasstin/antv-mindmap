@@ -379,7 +379,8 @@ G6.registerBehavior("double-finger-drag-canvas", {
       wheel: "onWheel",
     };
   },
-
+  reCalcDir: true,
+  timer: null,
   onWheel: function onWheel(ev) {
     const graph = globalTree.value;
     if (ev.ctrlKey) {
@@ -396,13 +397,23 @@ G6.registerBehavior("double-finger-drag-canvas", {
         y: point.y,
       });
     } else {
+      let direction = "all";
       let x = ev.deltaX || ev.movementX;
       let y = ev.deltaY || ev.movementY;
+      if (controlMoveDirection.value) {
+        direction = Math.abs(x) < Math.abs(y) ? "v" : "h";
+        this.reCalcDir = false;
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+          this.reCalcDir = true;
+        }, 1000);
+      }
       if (!y && navigator.userAgent.indexOf("Firefox") > -1)
         y = (-ev.wheelDelta * 125) / 3;
-      if (controlMoveDirection.value) {
-        if (Math.abs(x) < 10 || Math.abs(y) > Math.abs(x)) x = 0;
-        if (Math.abs(y) < 10 || Math.abs(x) > Math.abs(y)) y = 0;
+      if (direction === "h") {
+        y = 0;
+      } else if (direction === "v") {
+        x = 0;
       }
       graph.translate(-x, -y);
     }
