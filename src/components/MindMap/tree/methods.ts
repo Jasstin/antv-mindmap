@@ -84,8 +84,6 @@ export const edit = (id: string, clear = false) => {
     let _name = name.replace(/\s/g, "");
     if (defaultAppendNode.value) {
       update(id, _name === "" ? oldName : _name);
-    } else {
-      deleteNode(id);
     }
     EditInput.hideInput();
     let timer = setTimeout(() => {
