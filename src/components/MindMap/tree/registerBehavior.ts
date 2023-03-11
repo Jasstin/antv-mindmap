@@ -34,6 +34,7 @@ G6.registerBehavior("edit-mindmap-pc", {
   nodePosition: {},
   dragStatus: "",
   upClientInfo: [],
+  lastClickTime: 0,
   getEvents() {
     return {
       "node:click": "clickNode",
@@ -62,6 +63,8 @@ G6.registerBehavior("edit-mindmap-pc", {
     } else if (name === "add") {
       addData(model?.id as string, "", true);
     } else {
+      if (Date.now() - this.lastClickTime < 500) return; //  如果500ms内连续点击了两次为双击行为，不做任何处理
+      this.lastClickTime = Date.now();
       selectNode(model.id, !model.isCurrentSelected);
     }
   },
