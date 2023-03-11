@@ -5,11 +5,199 @@
     "children": [
       {
         "name": "2-1",
-        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ"
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ",
+        "collapse": true,
+        "children": [
+          {
+            "name": "2-1",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ"
+          },
+          {
+            "name": "2-2",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          }
+        ]
       },
       {
         "name": "2-2",
-        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+        "children": [
+          {
+            "name": "2-1",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ",
+            "children": [
+              {
+                "name": "2-1",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ"
+              },
+              {
+                "name": "2-2",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "name": "2-2",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          }
+        ]
+      },
+      {
+        "name": "2-3",
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+        "collapse": true,
+        "nodeStyle": {
+          "FontColor": "yellow",
+          "FillColor": "blue"
+        },
+        "children": [
+          {
+            "name": "2-1",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ",
+            "children": [
+              {
+                "name": "2-1",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*0HC-SawWYUoAAAAAAAAAAABkARQnAQ"
+              },
+              {
+                "name": "2-2",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              },
+              {
+                "name": "2-3",
+                "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+                "nodeStyle": {
+                  "FontColor": "yellow",
+                  "FillColor": "blue"
+                }
+              }
+            ]
+          },
+          {
+            "name": "2-2",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ"
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          },
+          {
+            "name": "2-3",
+            "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+            "nodeStyle": {
+              "FontColor": "yellow",
+              "FillColor": "blue"
+            }
+          }
+        ]
+      },
+      {
+        "name": "2-3",
+        "iconPath": "https://gw.alipayobjects.com/mdn/rms_8fd2eb/afts/img/A*sxK0RJ1UhNkAAAAAAAAAAABkARQnAQ",
+        "nodeStyle": {
+          "FontColor": "yellow",
+          "FillColor": "blue"
+        }
       },
       {
         "name": "2-3",

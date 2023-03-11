@@ -147,7 +147,7 @@ class Tree {
       width: this.container?.scrollWidth,
       height: this.container?.scrollHeight ?? 0 - 20,
       layout: {
-        type: "compactBox",
+        type: "mindmap",
         direction: "H",
         getHeight: (node: NodeData) => {
           return node.style.height;
