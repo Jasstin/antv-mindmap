@@ -11,6 +11,7 @@ import {
   activeStrokeColor,
   isCurrentEdit,
 } from "../variable";
+import { expand } from "./methods";
 
 enum textBaseline {
   top = "top",
@@ -23,7 +24,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
     style: { width, height, opacity = 1 },
     _children,
   } = cfg;
-  const fontSize = 14;
+  const fontSize = type === "expand" ? 10 : 14;
   const text = {
     add: "+",
     collapse: "<",
@@ -65,7 +66,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   };
   const textStyle = {
     x: width + lineStyle.width + r - widthHeight[0] / 2 + 3,
-    y: height / 2 - r / 2 - 4,
+    y: height / 2 - r / 2 - 4 + (type === "expand" ? 2 : 0),
     text,
     fill: textColor,
     fontSize,
