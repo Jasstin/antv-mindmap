@@ -43,6 +43,7 @@ class EditInput {
         FontColor,
         stroke,
         nameLineHeight,
+        fontWeight
       },
     } = nodeData._cfg?.model;
     const Tree = globalTree.value;
@@ -60,18 +61,18 @@ class EditInput {
       "box-sizing": `border-box`,
       "font-size": `${fontSize}px`,
       "text-align": "left",
-      "padding-top": `${paddingV / 2}px`,
+      "padding-top": `0`,
       "padding-left": `${paddingH - stroke}px`,
       "border-radius": `${radius}px`,
       zIndex: 1,
       overflow: `hidden`,
       resize: `none`,
       outline: `none`,
-      "font-weight": 600,
+      "font-weight": fontWeight,
       color: FontColor,
       background: FillColor,
       border: `${stroke}px solid ${activeStrokeColor.value}`,
-      "line-height": nameLineHeight + "px",
+      "line-height": `${height - stroke}px`,
     });
     NodeInput.innerText = placeholderText === name ? "" : name;
     document.body.style["--placeholderText"] = placeholderText;

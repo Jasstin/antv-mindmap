@@ -10,68 +10,66 @@ import {
   hoverStrokeColor,
   activeStrokeColor,
   isCurrentEdit,
+  handleBtnAreaWidth,
 } from "../variable";
-import { expand } from "./methods";
+import Shape from "../nodeTemplate/draw/shape";
+import getTextBounds from "../nodeTemplate/utils/getTextBounds";
 
-enum textBaseline {
-  top = "top",
-}
 
-const { Util } = G6;
 
 function drawHandleBtn(group: IGroup, cfg, type) {
   const {
     style: { width, height, opacity = 1 },
     _children,
   } = cfg;
-  const fontSize = type === "expand" ? 10 : 14;
+  const isExpand = type === "expand";
+  const visible = isExpand ? true : false;
+  const textColor = isExpand ? themeColor.value : fontColor_root.value;
   const text = {
     add: "+",
     collapse: "<",
     expand: _children.length + "" || "0",
   }[type];
-  const widthHeight = Util.getTextSize(text, fontSize);
-  const isExpand = type === "expand";
-  const r = widthHeight[0] / 2 + 4;
   const lineStyle = isExpand
     ? {
-        x: width + 1,
-        y: height / 2 - 1,
-        width: 10,
-        height: 2,
-        fill: themeColor.value,
-        opacity,
-      }
-    : { width: 0 };
-  const handleStyle = {
-    x: width,
-    y: 0,
-    width: widthHeight[0] + lineStyle.width + r + 3,
-    height,
-    fill: "transparent",
-  };
-  const fill = isExpand ? "transparent" : themeColor.value;
-  const stroke = isExpand ? themeColor.value : "transparent";
-  const textColor = isExpand ? themeColor.value : fontColor_root.value;
-  const visible = isExpand ? true : false;
-  const circleStyle = {
-    x: width + lineStyle.width + r + 3,
-    y: height / 2,
-    r,
-    fill,
-    stroke,
-    lineWidth: 2,
-    cursor: "pointer",
-    opacity,
-  };
+      x: width,
+      y: height / 2,
+      width: 10,
+      height: 2,
+      fill: themeColor.value,
+      opacity,
+    }
+    : {
+      x: width,
+      y: 0,
+      width: 20,
+      height,
+      fill: 'transparent',
+      opacity,
+    };
   const textStyle = {
-    x: width + lineStyle.width + r - widthHeight[0] / 2 + 3,
-    y: height / 2 - r / 2 - 4 + (type === "expand" ? 2 : 0),
     text,
     fill: textColor,
-    fontSize,
-    fontWeight: 600,
-    textBaseline: textBaseline.top,
+    cursor: "pointer",
+    opacity,
+    fontSize: 14,
+    lineHeight: 18
+  };
+  const maxWidthSize = handleBtnAreaWidth - lineStyle.width;
+  const fill = isExpand ? "transparent" : themeColor.value;
+  const stroke = isExpand ? themeColor.value : "transparent";
+  const { width: textWidth, height: textHeight } = getTextBounds(text, textStyle, maxWidthSize)
+  const startX = width + (isExpand ? lineStyle.width : 3);
+  const startY = height / 2 - textHeight / 2;
+  const size = textWidth + 5;
+  const BgStyle = {
+    x: startX,
+    y: startY,
+    radius: 7,
+    width: size,
+    height: textHeight,
+    fill,
+    stroke,
     cursor: "pointer",
     opacity,
   };
@@ -81,10 +79,15 @@ function drawHandleBtn(group: IGroup, cfg, type) {
     capture: true,
     action: type,
   });
-  container?.addShape("rect", { attrs: lineStyle });
-  container?.addShape("rect", { attrs: handleStyle });
-  container?.addShape("circle", { attrs: circleStyle, action: type });
-  container?.addShape("text", { attrs: textStyle, action: type });
+  const newNode = new Shape(container);
+  newNode.Rect("line", lineStyle, { action: type });
+  newNode.Rect("action-bg", BgStyle, { action: type });
+  newNode.Text("action-text", {
+    x: startX + size / 2,
+    y: startY + 1,
+    textAlign: 'center',
+    ...textStyle
+  }, 400, { action: type });
 }
 
 function getAttribute(cfg) {
@@ -93,7 +96,6 @@ function getAttribute(cfg) {
       width,
       height,
       nameHeight,
-      nameLineHeight,
       fontSize,
       descFontSize,
       descHeight,
@@ -103,11 +105,10 @@ function getAttribute(cfg) {
       stroke,
       strokeColor,
       imageIconWidth,
+      fontWeight, descFontWeight
     },
   } = cfg;
   const RectStyle = {
-    x: 0,
-    y: 0,
     width,
     height,
     radius,
@@ -118,27 +119,23 @@ function getAttribute(cfg) {
     opacity,
   };
   const TextStyle = {
-    x: paddingH + imageIconWidth,
-    y: paddingV,
+    x: paddingH,
     text: cfg?.label,
     fill: FontColor,
-    fontSize: fontSize,
-    textBaseline: textBaseline.top,
+    fontSize,
     cursor: "pointer",
-    fontWeight: 600,
-    lineHeight: nameLineHeight,
+    fontWeight,
     opacity,
+    textIndent: imageIconWidth,
   };
   const IconStyle = {
     x: paddingH,
-    y: 0,
     opacity,
     img: cfg.iconPath,
     width: imageIconWidth,
     height: imageIconWidth,
   };
   const DescWrapper = {
-    x: 0,
     y: nameHeight,
     width,
     height: descHeight,
@@ -150,14 +147,13 @@ function getAttribute(cfg) {
     opacity,
   };
   const DescText = {
-    x: paddingV,
-    y: paddingV + nameHeight,
+    x: paddingH,
+    y: nameHeight,
     text: cfg?.desc,
     fill: FontColor,
     fontSize: descFontSize,
-    textBaseline: textBaseline.top,
+    fontWeight: descFontWeight,
     cursor: "pointer",
-    lineHeight: paddingV + descFontSize,
     opacity,
   };
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
@@ -194,45 +190,23 @@ function getStyle(cfg) {
 function buildCanvasNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
     getAttribute(cfg);
+  const maxNodeWidth = cfg.style.maxWidth;
   const { depth, collapse } = cfg;
-  const container = group?.addShape("rect", {
-    attrs: RectStyle,
-    name: `wrapper`,
-    zIndex: 0,
-    draggable: depth > 0,
-  }) as IShape;
-  group?.addShape("image", {
-    attrs: IconStyle,
-    name: `icon`,
-    zIndex: 1,
-    draggable: depth > 0,
-  });
-  group?.addShape("text", {
-    attrs: TextStyle,
-    name: `title`,
-    zIndex: 1,
-    draggable: depth > 0,
-  });
-  if (cfg.desc) {
-    group?.addShape("rect", {
-      attrs: DescWrapper,
-      name: `desc-wrapper`,
-      zIndex: 0,
-      draggable: depth > 0,
-    });
-    group?.addShape("text", {
-      attrs: DescText,
-      name: `desc`,
-      zIndex: 1,
-      draggable: depth > 0,
-    });
-  }
+  const newNode = new Shape(group);
+  const rest = { draggable: depth > 0 }
+  const Wrapper = newNode.Rect('wrapper', RectStyle, rest)
+  newNode.inner()
+  newNode.Image('icon', IconStyle, rest)
+  newNode.Text('title', TextStyle, maxNodeWidth, rest)
+  newNode.inner()
+  newNode.Rect('desc-wrapper', DescWrapper, rest)
+  newNode.Text('desc', DescText, maxNodeWidth, rest)
   //  绘制操作按钮
   drawHandleBtn(group, cfg, "add");
   if (cfg.children.length > 0 || cfg._children.length > 0) {
     drawHandleBtn(group, cfg, collapse ? "expand" : "collapse");
   }
-  return container;
+  return Wrapper;
 }
 function buildDomNode(cfg, group) {
   const { depth } = cfg;
@@ -241,14 +215,11 @@ function buildDomNode(cfg, group) {
       width: cfg.style.width,
       height: cfg.style.height,
       html: `<div style=${getStyle(cfg)}>
-      <p style="margin:0;display:flex;align-items:center"><img src="${
-        cfg.iconPath
-      }" style="width:${cfg.style.imageIconWidth}px;height:${
-        cfg.style.imageIconWidth
-      }px"/>${cfg.name}</p>
-      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${
-        cfg.desc
-      }</div>
+      <p style="margin:0;display:flex;align-items:center"><img src="${cfg.iconPath
+        }" style="width:${cfg.style.imageIconWidth}px;height:${cfg.style.imageIconWidth
+        }px"/>${cfg.name}</p>
+      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${cfg.desc
+        }</div>
       </div>`,
     },
     name: `wrapper`,

@@ -1,5 +1,6 @@
 import { InputData, NodeData } from "../interface";
-import { fittingString, wrapString } from "../utils";
+import { defaultIconStyle, defaultTextStyle } from "../nodeTemplate/constant";
+import getTextBounds from "../nodeTemplate/utils/getTextBounds";
 import {
   globalFontSize,
   maxFontCount,
@@ -12,33 +13,23 @@ import {
   fontColor_leaf,
   fontColor_root,
   placeholderText,
+  globalFontWeight,
 } from "../variable";
 export const buildNodeStyle = (
   { name = placeholderText, desc = "", depth, iconPath, nodeStyle },
   config = { renderer: "canvas" }
 ) => {
   name === "" && (name = placeholderText);
-  const isSvg = config.renderer === "svg";
   const fontSize = globalFontSize[depth] || 12;
-  const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
-  let {
-    text: wrapName,
-    line: nameLine,
-    width: nameWidth,
-  } = wrapString(name, size, fontSize); // 标题换行
-  const {
-    text: wrapDesc,
-    line: descLine,
-    width: descWidth,
-  } = wrapString(desc, size, fontSize - 2); // 描述换行
-  const nameLineHeight = fontSize + paddingV;
-  const nameHeight = nameLineHeight * nameLine + paddingV; // 标题高度
-  const descHeight = isSvg
-    ? 300
-    : (fontSize - 2 + paddingV) * descLine + paddingV; // 描述内容高度 如果是富文本固定为300
-  const imageIconWidth = iconPath ? nameHeight : 0; // 标题icon宽度 =  标题高度
-  const height = nameHeight + (desc ? descHeight : 0); // 节点高度
-  nameWidth += imageIconWidth; // 添加标题icon
+  const fontWeight = globalFontWeight[depth] || 400;
+  const descFontWeight = 400;
+  const maxNodeSize = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
+  const descFontSize = fontSize - 2; // 描述比标题小两个字号
+  const imageIconWidth = iconPath ? defaultIconStyle.height : 0; // icon 图片的宽度
+  const { width: nameWidth, line: nameLine } = getTextBounds(name, { text: name, fontSize, fontWeight, textIndent: imageIconWidth }, maxNodeSize) // 标题
+  const { width: descWidth, line: descLine } = getTextBounds(desc, { text: desc, fontSize: descFontSize, fontWeight: descFontWeight }, maxNodeSize) // 描述
+  const oneLineHeight = defaultTextStyle.lineHeight;
+  const height = oneLineHeight * (nameLine + descLine);
   const FillColor =
     [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] ||
     themeColor_leaf.value; // 背景颜色
@@ -46,27 +37,28 @@ export const buildNodeStyle = (
     [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] ||
     fontColor_leaf.value; // 字体颜色
   const obj = {
-    label: wrapName,
-    name: wrapName,
+    label: name,
+    name,
     fullName: name,
-    desc: isSvg ? desc : wrapDesc,
+    desc: desc,
     iconPath,
-    type: isSvg ? "dom-node" : "mindmap-node",
+    type: "mindmap-node",
     style: Object.assign(
       {},
       {
         fontSize,
-        descFontSize: fontSize - 2,
-        descHeight,
-        width: Math.max(nameWidth, descWidth) + paddingH * 2, //  标题宽度与描述宽度取最大值
-        maxWidth: size,
+        fontWeight,
+        descFontSize,
+        width: Math.max(nameWidth, descWidth) + paddingH * 2,
+        maxWidth: maxNodeSize,
         height,
-        nameHeight,
         FillColor,
         FontColor,
         stroke: 2,
         strokeColor: "transparent",
-        nameLineHeight,
+        nameHeight: oneLineHeight * nameLine,
+        descHeight: oneLineHeight * descLine,
+        descFontWeight,
         imageIconWidth,
       },
       nodeStyle

@@ -29,11 +29,11 @@ import {
   setLineType,
   changeControlMoveDirection,
   changeDefaultAppendNode,
+  handleBtnAreaWidth,
 } from "../variable";
 import "./registerNode"; // 自定义节点形状
 import "./registerBehavior";
 import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
-const { Util } = G6;
 
 interface Window {
   mindTree?: TreeGraph;
@@ -153,7 +153,7 @@ class Tree {
           return node.style.height;
         },
         getWidth: (node: NodeData) => {
-          return node.style.width;
+          return node.style.width + handleBtnAreaWidth;
         },
         getVGap: () => {
           return layoutConfig?.yGap || 10;
