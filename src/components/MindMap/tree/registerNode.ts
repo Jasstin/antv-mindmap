@@ -135,12 +135,13 @@ function getAttribute(cfg) {
     width: imageIconWidth,
     height: imageIconWidth,
   };
+  console.log(`>>>>desc`, descHeight);
   const DescWrapper = {
     y: nameHeight,
     width,
     height: descHeight,
     radius: [0, 0, radius, radius],
-    fill: "rgba(255,255,255,0.3)",
+    fill: descHeight ? "rgba(255,255,255,0.3)" : "transparent",
     cursor: "pointer",
     stroke: "transparent",
     lineWidth: 2,
