@@ -135,7 +135,6 @@ function getAttribute(cfg) {
     width: imageIconWidth,
     height: imageIconWidth,
   };
-  console.log(`>>>>desc`, descHeight);
   const DescWrapper = {
     y: nameHeight,
     width,
