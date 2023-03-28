@@ -14,7 +14,9 @@ import {
 } from "../variable";
 import Shape from "../nodeTemplate/draw/shape";
 import getTextBounds from "../nodeTemplate/utils/getTextBounds";
-
+import { isSafari, isWin } from "../utils/testDevice";
+// startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
+const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
 
 function drawHandleBtn(group: IGroup, cfg, type) {
@@ -82,9 +84,11 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const newNode = new Shape(container);
   newNode.Rect("line", lineStyle, { action: type });
   newNode.Rect("action-bg", BgStyle, { action: type });
+  //  safari 浏览器中< 和+ 还需要再上移1px，才会看到居中
+  const diffY2 = !isExpand ? -1 : 0;
   newNode.Text("action-text", {
     x: startX + size / 2,
-    y: startY + 1,
+    y: startY + diffY + diffY2,
     textAlign: 'center',
     ...textStyle
   }, 400, { action: type });
@@ -120,6 +124,7 @@ function getAttribute(cfg) {
   };
   const TextStyle = {
     x: paddingH,
+    y: diffY+(isWin?-1:0),
     text: cfg?.label,
     fill: FontColor,
     fontSize,
