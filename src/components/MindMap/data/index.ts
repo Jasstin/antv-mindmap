@@ -19,7 +19,7 @@ export const buildNodeStyle = (
   parent
 ) => {
   name === "" && (name = placeholderText);
-  const isSvg = config.renderer === "svg";
+  const isSvg = false;
   const fontSize = globalFontSize[depth] || 12;
   const size = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
   let {

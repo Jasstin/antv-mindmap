@@ -319,39 +319,5 @@ G6.registerNode("mindmap-node", {
   setState(name, state, node) {
     if (name === "hover") handleNodeHover(state, node);
     if (name === "selected") handleNodeSelected(state, node);
-  },
-  getAnchorPoints(cfg) {
-    if (cfg.side === "left") {
-      return [
-        [1, 0.5],
-        [0.5, 0],
-        [0, 0.5],
-        [0.5, 1],
-      ];
-    } else {
-      return [
-        [0, 0.5],
-        [0.5, 0],
-        [1, 0.5],
-        [0.5, 1],
-      ];
-    }
-  },
-});
-// dom节点
-G6.registerNode("dom-node", {
-  draw(cfg, group): IShape {
-    const container = buildDomNode(cfg, group);
-    return container;
-  },
-  setState(name, state, node) {
-    if (name === "hover") handleNodeHover(state, node);
-    if (name === "selected") handleNodeSelected(state, node);
-  },
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
-  },
+  }
 });

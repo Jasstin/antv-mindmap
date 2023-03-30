@@ -1,22 +1,20 @@
-import G6, { GraphData, TreeGraph, TreeGraphData } from "@antv/g6";
+import G6, { TreeGraph } from "@antv/g6";
 import IMData from "../data";
-import { renderMenu, handleMenuClick } from "../menu";
 import { NodeData } from "../type/NodeData";
-import { InputData } from "../type/inputData";
-import { layoutConfig } from "../type/layoutConfig";
-import { isMobile } from "../utils/testDevice";
+import { branch, branchColor } from "../variable";
+import { deepMix } from '@antv/util';
 import "./registerNode"; // 自定义节点形状
 import "./registerBehavior";
-import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
-import { branch, branchColor, handleBtnAreaWidth } from "../variable";
-import { deepMix } from '@antv/util';
 
+const CURRENT_VERSION = '4.0.0';
 class Tree {
   tree: TreeGraph | null;
   constructor(cfg, extraConfig) {
     if (!cfg.container) throw new Error('[mindTree]: invalid container');
     const config = deepMix({}, this.getDefaultCfg(), cfg);
     const tree = new G6.TreeGraph(config);
+    tree.set('extraConfig', extraConfig);
+    tree.set('currentVersion', CURRENT_VERSION)
     this.tree = tree;
   }
 
@@ -24,7 +22,7 @@ class Tree {
     return {
       layout: {
         type: "mindmap",
-        direction: propsConfig.direction,
+        direction: 'H',
         getHeight: (node: NodeData) => {
           return node.style.height;
         },
@@ -44,16 +42,16 @@ class Tree {
       defaultEdge: {
         type: "hvh",
         style: {
-          lineWidth: propsConfig.branch,
-          stroke: propsConfig.branchColor,
+          lineWidth: branch,
+          stroke: branchColor,
           radius: 10, // 拐弯处的圆角弧度，若不设置则为直角,折线类型生效
+          offset: 10
         },
       },
       groupByTypes: false,
       animate: false,
     }
   }
-
   render(data) {
     const tree = this.tree
     const _data = IMData.init(
@@ -66,8 +64,6 @@ class Tree {
   }
   destroy() {
     this.tree?.destroy();
-    delete window.mindTree;
-    delete window.mindTreeConfig;
   }
 }
 
