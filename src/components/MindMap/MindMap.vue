@@ -11,7 +11,6 @@ import Tree from "./tree/tree";
 import { tooltip } from "./plugins";
 import {
   changeNodeMenuList,
-  setGlobalTree,
   changehotKeyList,
 } from "./variable";
 import EditInput from "./editInput";
@@ -29,11 +28,6 @@ import {
 } from "./tree/methods";
 import emitter from "./mitt";
 import defaultHotKey from "./tree/hotkeys";
-const isArray = (arg) =>
-  Object.prototype.toString.call(arg).toLowerCase().indexOf("array") > 5;
-const isObject = (arg) =>
-  Object.prototype.toString.call(arg).toLowerCase() === "[object object]";
-let tree;
 export default {
   props: {
     // 脑图数据
@@ -93,7 +87,16 @@ export default {
     // 绘图方式
     renderer: String,
   },
+  data(){
+    return {
+      tree:null
+    }
+  },
   mounted() {
+    this.tree = new Tree({
+      container:"mxs-mindmap_container"
+    },{}) as any;
+    EditInput.init("node-input");
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);
     this.$props.onExpand && emitter.on("onExpand", this.$props.onExpand);
     this.$props.onCollapse && emitter.on("onCollapse", this.$props.onCollapse);
@@ -105,46 +108,12 @@ export default {
     this.$props.onCancelSelected &&
       emitter.on("onCancelSelected", this.$props.onCancelSelected);
     this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
-    this.changeCanvasSize();
-    window.addEventListener("resize", this.changeCanvasSize);
   },
   beforeUnmount() {
-    this.$props.onAdd && emitter.off("onAdd", this.$props.onAdd);
-    this.$props.onExpand && emitter.off("onExpand", this.$props.onExpand);
-    this.$props.onCollapse && emitter.off("onCollapse", this.$props.onCollapse);
-    this.$props.onSelectedNode &&
-      emitter.off("onSelectedNode", this.$props.onSelectedNode);
-    this.$props.onAfterEdit &&
-      emitter.off("onAfterEdit", this.$props.onAfterEdit);
-    this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
-    this.$props.onCancelSelected &&
-      emitter.off("onCancelSelected", this.$props.onCancelSelected);
-    this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
-    window.removeEventListener("resize", this.changeCanvasSize);
-    tree.destroy();
-    tree = null;
+    this.tree?.destroy();
+    this.tree = null;
   },
   methods: {
-    changeCanvasSize() {
-      this.$nextTick(() => {
-        const height = this.$el.parentNode.offsetHeight;
-        const width = this.$el.offsetWidth;
-        this.$el.style.height = height + "px";
-        if (tree) {
-          tree.changeSize(width, height);
-        }
-      });
-    },
-    treeInit() {
-      const { modelValue } = this.$props;
-      this.$nextTick(() => {
-        tree = new Tree("mxs-mindmap_container", modelValue);
-        tree.init(this.$props);
-      });
-    },
-    inputInit() {
-      EditInput.init("node-input");
-    },
     add: addData,
     update,
     deleteNode,
@@ -159,54 +128,12 @@ export default {
   watch: {
     "$props.modelValue": {
       handler(val) {
-        if (isArray(val) && !val.length) return;
-        if (isObject(val) && !Object.keys(val).length) return;
-        this.treeInit();
-        this.inputInit();
+        if(val && val.length){
+          this.tree.render(val);
+        }
       },
       immediate: true,
     },
-    "$props.tooltip": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors(tooltip);
-        } else {
-          tree.removeBehaviors("tooltip");
-        }
-      },
-    },
-    "$props.edit": {
-      handler(val) {
-        tree.changeEditMode(val);
-      },
-    },
-    "$props.drag": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("drag-canvas");
-        } else {
-          tree.removeBehaviors("drag-canvas");
-        }
-      },
-    },
-    "$props.zoom": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("zoom-canvas");
-        } else {
-          tree.removeBehaviors("zoom-canvas");
-        }
-      },
-    },
-    centerBtn(val) {},
-    fitBtn(val) {},
-    downloadBtn(val) {},
-    timetravel(val) {},
-    mindmap(val) {},
-    addNodeBtn(val) {},
-    collapseBtn(val) {},
-    fisheye(val) {},
-    watchResize(val) {},
     nodeMenu: {
       handler(val) {
         changeNodeMenuList(val);
