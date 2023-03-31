@@ -1,0 +1,9 @@
+export const CURRENT_VERSION = '4.0.0'; // 当前版本
+export const V_GAP = 10;
+export const H_GAP = 30;
+export const LAUOUT_TYPE = 'mindmap';
+export const LAUOUT_DIRECTION = 'H';
+export const EDGE_TYPE = 'hvh';
+export const EDGE_LINE_WIDTH = 2;
+export const EDGE_LINE_COLOR = 'rgb(19, 128, 255)';
+export const EDGE_RADIUS = 10;
