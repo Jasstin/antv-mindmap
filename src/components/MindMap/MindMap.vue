@@ -14,7 +14,7 @@ export default {
     yGap: { type: Number, default: 10 },
     branch: {
       type: Number,
-      default: 1,
+      default: 2,
       validator: (val: number) => val >= 1 && val <= 6,
     },
     branchColor: {

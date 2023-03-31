@@ -6,7 +6,7 @@
 </template>
 <script lang="ts">
 import Mindmap from "./components/MindMap";
-import learnData from './learn.json';
+import { data } from './learn';
 
 export default {
   name: "App",
@@ -15,7 +15,7 @@ export default {
   },
   data() {
     return {
-      modelValue: learnData
+      modelValue: data
     }
   }
 };
