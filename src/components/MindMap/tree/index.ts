@@ -4,7 +4,7 @@ import { NodeData } from "../type/NodeData";
 import { branch, branchColor } from "../variable";
 import { deepMix } from '@antv/util';
 import "./registerNode"; // 自定义节点形状
-import "./registerBehavior";
+import "./behavior";
 
 const CURRENT_VERSION = '4.0.0';
 class Tree {

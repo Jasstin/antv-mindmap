@@ -3,7 +3,7 @@
 </template>
 <script lang="ts">
 import { PropType } from "vue";
-import Tree from "./tree/tree";
+import Tree from "./tree";
 import getCenterPointById from './utils/getCenterPointById';
 export default {
   props: {
@@ -36,6 +36,7 @@ export default {
       default: [0.1, 8],
     },
     scaleRatio: { type: Number, default: 1 },
+    controlMoveDirection: { type: Boolean, default: true },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -83,6 +84,12 @@ export default {
         getHGap: () => {
           return this.$props.xGap;
         }
+      },
+      modes: {
+        default: [{
+          type: 'double-finger-drag-canvas',
+          controlMoveDirection: this.$props.controlMoveDirection // 控制只允许横滑或者竖滑
+        }, 'drag-canvas']
       },
       defaultEdge: {
         style: {
