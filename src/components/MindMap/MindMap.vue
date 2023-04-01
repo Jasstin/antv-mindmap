@@ -5,6 +5,9 @@
 import { PropType } from "vue";
 import Tree from "./tree";
 import getCenterPointById from './utils/getCenterPointById';
+import resizeObserver from './utils/resizeObserver';
+import { TreeGraph } from '@antv/g6';
+import throttle from 'lodash/throttle';
 export default {
   props: {
     // 脑图数据
@@ -89,7 +92,7 @@ export default {
         default: [{
           type: 'double-finger-drag-canvas',
           controlMoveDirection: this.$props.controlMoveDirection // 控制只允许横滑或者竖滑
-        }, 'drag-canvas']
+        }, 'drag-canvas', 'drag-node']
       },
       defaultEdge: {
         style: {
@@ -115,12 +118,15 @@ export default {
     if (this.$props.modelValue) {
       tree.render(this.$props.modelValue);
     }
-    const originTree = tree.tree;
+    const originTree = tree.tree as TreeGraph;
     const [minZoom, maxZoom] = this.$props.scaleExtent;
     originTree.setMinZoom(minZoom);
     originTree.setMaxZoom(maxZoom);
     const { x, y } = getCenterPointById(this.id)
     originTree.zoomTo(this.$props.scaleRatio, { x, y });
+    resizeObserver(this.id, throttle(({ width, height }) => {
+      originTree.changeSize(width, height)
+    }, 1000))
     window.mindTree = originTree;
   },
   beforeUnmount() {

@@ -238,29 +238,7 @@ function buildCanvasNode(cfg, group) {
   }
   return container;
 }
-function buildDomNode(cfg, group) {
-  const { depth } = cfg;
-  const container = group?.addShape("dom", {
-    attrs: {
-      width: cfg.style.width,
-      height: cfg.style.height,
-      html: `<div style=${getStyle(cfg)}>
-      <p style="margin:0;display:flex;align-items:center"><img src="${
-        cfg.iconPath
-      }" style="width:${cfg.style.imageIconWidth}px;height:${
-        cfg.style.imageIconWidth
-      }px"/>${cfg.name}</p>
-      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${
-        cfg.desc
-      }</div>
-      </div>`,
-    },
-    name: `wrapper`,
-    zIndex: 0,
-    draggable: depth > 0,
-  });
-  return container;
-}
+
 
 const getNode = (group, name) =>
   group.get("children").filter((t) => t.get("name") === name)[0];
