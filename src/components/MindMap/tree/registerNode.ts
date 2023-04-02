@@ -67,8 +67,8 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const BgStyle = {
     x: startX,
     y: startY,
-    radius: 7,
-    width: size,
+    radius: 9,
+    width: size<textHeight?textHeight:size,
     height: textHeight,
     fill,
     stroke,
@@ -87,7 +87,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   //  safari 浏览器中< 和+ 还需要再上移1px，才会看到居中
   const diffY2 = !isExpand ? -1 : 0;
   newNode.Text("action-text", {
-    x: startX + size / 2,
+    x: startX + size / 2 + (size<textHeight?(textHeight-size)/2:0),
     y: startY + diffY + diffY2,
     textAlign: 'center',
     ...textStyle

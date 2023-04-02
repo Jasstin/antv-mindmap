@@ -153,7 +153,7 @@ class Tree {
           return node.style.height;
         },
         getWidth: (node: NodeData) => {
-          return node.style.width + handleBtnAreaWidth;
+          return node.style.width;
         },
         getVGap: () => {
           return layoutConfig?.yGap || 10;
