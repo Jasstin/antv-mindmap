@@ -235,7 +235,7 @@ function buildDomNode(cfg, group) {
 }
 
 const getNode = (group, name) =>
-  group.get("children").filter((t) => t.get("name") === name)[0];
+  group.findAllByName(name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
 const getWrapper = (group) => getNode(group, "wrapper");
 const getAddBtn = (group) => getNode(group, "add");
@@ -273,9 +273,7 @@ function handleNodeSelected(state, node) {
   }
   if (isCurrentEdit.value) addBtn?.hide();
   // 设置节点边框颜色
-  let wrapper = group
-    .get("children")
-    .filter((t) => t.get("name") === "wrapper")[0];
+  let wrapper = getWrapper(group);
   wrapper?.attr("stroke", state ? activeStrokeColor.value : "transparent");
 }
 
