@@ -1,4 +1,4 @@
-import { IGroup, IShape } from "@antv/g6";
+import { IGroup, IShape, ModelConfig } from "@antv/g6";
 import { registerNode } from "@antv/g6-core";
 registerNode('mindmapNode',{
   options:{
@@ -17,6 +17,7 @@ registerNode('mindmapNode',{
    * 关于 keyShape 可参考文档 核心概念-节点/边/Combo-图形 Shape 与 keyShape
    */
   drawShape(cfg, group: IGroup): IShape {
+     console.log(`>>>>drawShape`,cfg,group)
     let keyShape = group.addShape('rect', {
       attrs: {
         width: 200,
@@ -24,8 +25,16 @@ registerNode('mindmapNode',{
         fill:'blue'
       }
     })
-    console.log(`>>>>>`,keyShape);
     return keyShape;
-  }
+  },
+  /**
+   * 绘制完成后的操作，便于用户继承现有的节点、边
+   * @param cfg
+   * @param group
+   * @param keyShape
+   */
+  afterDraw(cfg?: ModelConfig, group?: IGroup, keyShape?: IShape) {
+    console.log(`>>>>afterDraw`,cfg,group,keyShape)
+  },
 });
 
