@@ -1,9 +1,8 @@
 import G6, { TreeGraph } from "@antv/g6";
 import { deepMix } from '@antv/util';
-import "./registerNode"; // 自定义节点形状
-import "./behavior";
 import { CURRENT_VERSION,LAUOUT_DIRECTION, LAUOUT_TYPE } from "./contast";
-
+import "./behavior";
+import "./element";
 
 class Tree {
   tree: TreeGraph | null;
