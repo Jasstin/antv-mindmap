@@ -41,6 +41,7 @@ class Tree {
         id: 'node_root',
         type: 'rect',
         label: 'root',
+        visible:false,
         children: data
       }
     } else {
