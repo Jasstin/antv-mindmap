@@ -16,7 +16,7 @@ import {
   globalFontWeight,
 } from "../variable";
 export const buildNodeStyle = (
-  { name = placeholderText, desc = "", depth, iconPath, nodeStyle },
+  { name = placeholderText, desc = "", depth, iconPath, nodeStyle, branchColor, visible = true, beforeWidth = 10, afterWidth = 10 },
   config = { renderer: "canvas" }
 ) => {
   name === "" && (name = placeholderText);
@@ -60,6 +60,10 @@ export const buildNodeStyle = (
         descHeight: oneLineHeight * descLine,
         descFontWeight,
         imageIconWidth,
+        branchColor,
+        visible,
+        beforeWidth,
+        afterWidth
       },
       nodeStyle
     ),
@@ -93,7 +97,7 @@ class IMData {
       children: [],
       _children: [],
       rawData: isInit ? rawData : rawData?.rawData,
-      ...buildNodeStyle({ ...rawData, depth }, this.config),
+      ...buildNodeStyle({ ...Object.assign({}, rawData, rawData.style || {}), depth }, this.config),
     };
     if (rawChildren) {
       rawChildren
@@ -120,8 +124,19 @@ class IMData {
     return data;
   }
 
-  init(d: InputData, isInit = false) {
-    this.data = this.createMdataFromData(d, "0", null, isInit);
+  init(d: InputData | InputData[], isInit = false) {
+    let _data = {};
+    if (d instanceof Array) {
+      _data = {
+        name: 'root',
+        children: d,
+        visible: false,
+        branchColor: 'transparent'
+      }
+    } else {
+      _data = d;
+    }
+    this.data = this.createMdataFromData(_data, "0", null, isInit);
     return this.data;
   }
   setConfig(config) {

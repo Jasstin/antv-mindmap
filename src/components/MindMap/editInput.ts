@@ -14,6 +14,8 @@ function buildStyle(obj) {
   return res;
 }
 
+const diffX = -1;
+const diffY = -1;
 class EditInput {
   _input: HTMLInputElement | null = null;
   _id: string;
@@ -43,7 +45,8 @@ class EditInput {
         FontColor,
         stroke,
         nameLineHeight,
-        fontWeight
+        fontWeight,
+        beforeWidth
       },
     } = nodeData._cfg?.model;
     const Tree = globalTree.value;
@@ -54,8 +57,8 @@ class EditInput {
       "transform-origin": "0 0",
       display: "block",
       position: "fixed",
-      top: `${y}px`,
-      left: `${x}px`,
+      top: `${y+diffY}px`,
+      left: `${beforeWidth+x+diffX}px`,
       width: `${width + stroke}px`,
       height: `${height + stroke}px`,
       "box-sizing": `border-box`,

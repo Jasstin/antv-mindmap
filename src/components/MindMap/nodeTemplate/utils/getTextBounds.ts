@@ -4,7 +4,7 @@ import { measureTextWidth } from '@antv/util';
 const getTextWrapHeight = (
   text: string,
   attrs: TextOptions,
-  maxWidth: number
+  maxWidth?: number
 ) => {
   if (!text) {
     return {
@@ -24,6 +24,14 @@ const getTextWrapHeight = (
     (textAttr.y || 0) + (textAttr.lineHeight! - textAttr.fontSize!) / 2;
   let y = originy;
   const getWidth = (text) => Math.ceil(measureTextWidth(text, textAttr))
+  if (!maxWidth) {
+    return {
+      width: getWidth(text) + textIndent,
+      height: textAttr.lineHeight,
+      line: 1,
+      endlineWidth: getWidth(text) + textIndent,
+    };
+  }
   splitText(text).forEach((item, index, arr) => {
     const textWidth = measureTextWidth(
       renderItems.join('') + item,

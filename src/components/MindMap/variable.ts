@@ -68,4 +68,4 @@ export const changeControlMoveDirection = (val: boolean) =>
 export const defaultAppendNode = ref(false);
 export const changeDefaultAppendNode = (val: boolean) =>
   (defaultAppendNode.value = val);
-export const handleBtnAreaWidth = 50;
+export const handleBtnAreaWidth = 10;

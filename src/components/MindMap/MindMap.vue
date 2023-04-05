@@ -96,6 +96,8 @@ export default {
     controlMoveDirection: Boolean,
     // 节点是否自动添加到画布上
     defaultAppendNode: Boolean,
+    // 是否启用交互创建边
+    createEdge: Boolean
   },
   mounted() {
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);

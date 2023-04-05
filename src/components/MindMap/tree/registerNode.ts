@@ -21,7 +21,7 @@ const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
 function drawHandleBtn(group: IGroup, cfg, type) {
   const {
-    style: { width, height, opacity = 1 },
+    style: { width, height, opacity = 1, beforeWidth },
     _children,
   } = cfg;
   const isExpand = type === "expand";
@@ -29,12 +29,12 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   const textColor = isExpand ? themeColor.value : fontColor_root.value;
   const text = {
     add: "+",
-    collapse: "<",
+    collapse: "-",
     expand: _children.length + "" || "0",
   }[type];
   const lineStyle = isExpand
     ? {
-      x: width,
+      x: beforeWidth + width,
       y: height / 2,
       width: 10,
       height: 2,
@@ -42,7 +42,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
       opacity,
     }
     : {
-      x: width,
+      x: beforeWidth + width,
       y: 0,
       width: 20,
       height,
@@ -54,21 +54,20 @@ function drawHandleBtn(group: IGroup, cfg, type) {
     fill: textColor,
     cursor: "pointer",
     opacity,
-    fontSize: 14,
+    fontSize: isExpand ? 10 : 14,
     lineHeight: 18
   };
-  const maxWidthSize = handleBtnAreaWidth - lineStyle.width;
   const fill = isExpand ? "transparent" : themeColor.value;
   const stroke = isExpand ? themeColor.value : "transparent";
-  const { width: textWidth, height: textHeight } = getTextBounds(text, textStyle, maxWidthSize)
+  const { width: textWidth, height: textHeight } = getTextBounds(text, textStyle)
   const startX = width + (isExpand ? lineStyle.width : 3);
   const startY = height / 2 - textHeight / 2;
   const size = textWidth + 5;
   const BgStyle = {
-    x: startX,
+    x: beforeWidth + startX,
     y: startY,
     radius: 9,
-    width: size<textHeight?textHeight:size,
+    width: size < textHeight ? textHeight : size,
     height: textHeight,
     fill,
     stroke,
@@ -87,7 +86,7 @@ function drawHandleBtn(group: IGroup, cfg, type) {
   //  safari 浏览器中< 和+ 还需要再上移1px，才会看到居中
   const diffY2 = !isExpand ? -1 : 0;
   newNode.Text("action-text", {
-    x: startX + size / 2 + (size<textHeight?(textHeight-size)/2:0),
+    x: beforeWidth + startX + size / 2 + (size < textHeight ? (textHeight - size) / 2 : 0),
     y: startY + diffY + diffY2,
     textAlign: 'center',
     ...textStyle
@@ -109,10 +108,20 @@ function getAttribute(cfg) {
       stroke,
       strokeColor,
       imageIconWidth,
-      fontWeight, descFontWeight
+      fontWeight, descFontWeight,
+      beforeWidth,
+      afterWidth
     },
   } = cfg;
+  const ContainerStyle = {
+    width:width+beforeWidth+afterWidth,
+    height,
+    fill: 'transparent',
+    stroke: 'transparent',
+    lineWidth: 0
+  }
   const RectStyle = {
+    x: beforeWidth,
     width,
     height,
     radius,
@@ -123,8 +132,8 @@ function getAttribute(cfg) {
     opacity,
   };
   const TextStyle = {
-    x: paddingH,
-    y: diffY+(isWin?-1:0),
+    x: beforeWidth + paddingH,
+    y: diffY + (isWin ? -1 : 0),
     text: cfg?.label,
     fill: FontColor,
     fontSize,
@@ -134,13 +143,14 @@ function getAttribute(cfg) {
     textIndent: imageIconWidth,
   };
   const IconStyle = {
-    x: paddingH,
+    x: beforeWidth + paddingH,
     opacity,
     img: cfg.iconPath,
     width: imageIconWidth,
     height: imageIconWidth,
   };
   const DescWrapper = {
+    x: beforeWidth,
     y: nameHeight,
     width,
     height: descHeight,
@@ -152,7 +162,7 @@ function getAttribute(cfg) {
     opacity,
   };
   const DescText = {
-    x: paddingH,
+    x: beforeWidth + paddingH,
     y: nameHeight,
     text: cfg?.desc,
     fill: FontColor,
@@ -161,7 +171,7 @@ function getAttribute(cfg) {
     cursor: "pointer",
     opacity,
   };
-  return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
+  return { ContainerStyle, RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
 function buildStyle(obj) {
   let res = "";
@@ -193,13 +203,14 @@ function getStyle(cfg) {
 }
 
 function buildCanvasNode(cfg, group) {
-  const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
+  const { ContainerStyle, RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
     getAttribute(cfg);
   const maxNodeWidth = cfg.style.maxWidth;
   const { depth, collapse } = cfg;
   const newNode = new Shape(group);
   const rest = { draggable: depth > 0 }
-  const Wrapper = newNode.Rect('wrapper', RectStyle, rest)
+  const keyShape = newNode.Rect('container', ContainerStyle, rest)
+  newNode.Rect('wrapper', RectStyle, rest)
   newNode.inner()
   newNode.Image('icon', IconStyle, rest)
   newNode.Text('title', TextStyle, maxNodeWidth, rest)
@@ -211,7 +222,7 @@ function buildCanvasNode(cfg, group) {
   if (cfg.children.length > 0 || cfg._children.length > 0) {
     drawHandleBtn(group, cfg, collapse ? "expand" : "collapse");
   }
-  return Wrapper;
+  return keyShape;
 }
 function buildDomNode(cfg, group) {
   const { depth } = cfg;
@@ -234,6 +245,15 @@ function buildDomNode(cfg, group) {
   return container;
 }
 
+function buildNullNode(cfg, group) {
+  const newNode = new Shape(group);
+  const res = newNode.Rect('wrapper', {
+    width: 0,
+    height: 0,
+    fill: 'transparent'
+  })
+  return res;
+}
 const getNode = (group, name) =>
   group.findAllByName(name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
@@ -280,7 +300,8 @@ function handleNodeSelected(state, node) {
 // canvas节点
 G6.registerNode("mindmap-node", {
   draw(cfg, group): IShape {
-    const container = buildCanvasNode(cfg, group);
+    const visible = cfg.style.visible;
+    const container = visible ? buildCanvasNode(cfg, group) : buildNullNode(cfg, group);
     return container;
   },
   setState(name, state, node) {
@@ -320,10 +341,12 @@ G6.registerEdge("hvh", {
     if (endPoint.y === startPoint.y) {
       dist = 0;
     }
+    const sourceNode = cfg.sourceNode;
+    const sourceNodeData = sourceNode ? sourceNode.get('model') : {};
     const shape = group.addShape("path", {
       attrs: {
         cursor: "pointer",
-        stroke: branchColor.value,
+        stroke: sourceNodeData.style.branchColor || branchColor.value,
         lineWidth: branch.value,
         opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
         path: [

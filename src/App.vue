@@ -1,49 +1,23 @@
 <template>
   <div class="container">
     <div class="left-top">
-      <a href="https://github.com/hellowuxin/vue3-mindmap" target="_blank"
-        >GitHub</a
-      >
+      <a href="https://github.com/hellowuxin/vue3-mindmap" target="_blank">GitHub</a>
     </div>
     <div class="right-top"><span>Props</span><input /></div>
-    <mindmap
-      ref="mindMapRef"
-      class="left-bottom"
-      v-model="data"
-      :branch="themeList['branch'].value"
-      :branchColor="themeList['branchColor'].value"
-      :xGap="themeList['xGap'].value"
-      :yGap="themeList['yGap'].value"
-      :themeColor="themeList['themeColor'].value"
-      :rootFontColor="themeList['rootFontColor'].value"
-      :subThemeColor="themeList['subThemeColor'].value"
-      :subFontColor="themeList['subFontColor'].value"
-      :leafThemeColor="themeList['leafThemeColor'].value"
-      :leafFontColor="themeList['leafFontColor'].value"
-      :sharp-corner="themeList['sharp-corner'].value"
-      :scale-ratio="themeList['scale-ratio'].value"
-      :tooltip="featureList['tooltip'].value"
-      :edit="featureList['edit'].value"
-      :drag="featureList['drag'].value"
-      :zoom="featureList['zoom'].value"
-      :centerBtn="featureList['centerBtn'].value"
-      :fitBtn="featureList['fitBtn'].value"
-      :downloadBtn="featureList['downloadBtn'].value"
-      :timetravel="featureList['timetravel'].value"
-      :mindmap="featureList['mindmap'].value"
-      :watchResize="featureList['watchResize'].value"
-      :nodeMenu="nodeMenuList"
-      :hotKey="hostKeyList"
-      :onAdd="handleOnAdd"
-      :onSelectedNode="handleSelectedNode"
-      :onCancelSelected="handleCancelSelected"
-      :onAfterEdit="handleAfterEdit"
-      :onDragEnd="onDragEnd"
-      :closeEditInput="false"
-      :onEdit="handleOnEdit"
-      :controlMoveDirection="true"
-      :defaultAppendNode="true"
-    >
+    <mindmap ref="mindMapRef" class="left-bottom" v-model="data" :branch="themeList['branch'].value"
+      :branchColor="themeList['branchColor'].value" :xGap="themeList['xGap'].value" :yGap="themeList['yGap'].value"
+      :themeColor="themeList['themeColor'].value" :rootFontColor="themeList['rootFontColor'].value"
+      :subThemeColor="themeList['subThemeColor'].value" :subFontColor="themeList['subFontColor'].value"
+      :leafThemeColor="themeList['leafThemeColor'].value" :leafFontColor="themeList['leafFontColor'].value"
+      :sharp-corner="themeList['sharp-corner'].value" :scale-ratio="themeList['scale-ratio'].value"
+      :tooltip="featureList['tooltip'].value" :edit="featureList['edit'].value" :drag="featureList['drag'].value"
+      :zoom="featureList['zoom'].value" :centerBtn="featureList['centerBtn'].value" :fitBtn="featureList['fitBtn'].value"
+      :downloadBtn="featureList['downloadBtn'].value" :timetravel="featureList['timetravel'].value"
+      :mindmap="featureList['mindmap'].value" :watchResize="featureList['watchResize'].value" :nodeMenu="nodeMenuList"
+      :hotKey="hostKeyList" :onAdd="handleOnAdd" :onSelectedNode="handleSelectedNode"
+      :onCancelSelected="handleCancelSelected" :onAfterEdit="handleAfterEdit" :onDragEnd="onDragEnd"
+      :closeEditInput="false" :onEdit="handleOnEdit" :controlMoveDirection="true" :defaultAppendNode="true"
+      :createEdge="true">
     </mindmap>
     <div class="right-bottom">
       <div style="font-weight: bold; font-size: 16px">样式设置</div>
@@ -51,23 +25,9 @@
         <label :for="key.toString()" style="width: 130px" :title="item.desc">{{
           key
         }}</label>
-        <input
-          type="range"
-          :name="key"
-          v-model.number="item.value"
-          :min="item.min"
-          :max="item.max"
-          :step="item.step"
-          v-if="item.type === 'range'"
-          disabled
-        />
-        <input
-          :type="item.type"
-          :name="key.toString()"
-          v-model="item.value"
-          disabled
-          v-else
-        />
+        <input type="range" :name="key" v-model.number="item.value" :min="item.min" :max="item.max" :step="item.step"
+          v-if="item.type === 'range'" disabled />
+        <input :type="item.type" :name="key.toString()" v-model="item.value" disabled v-else />
         <span class="value">{{ item.value }}</span>
       </div>
       <div style="font-weight: bold; font-size: 16px">功能设置</div>
@@ -75,23 +35,9 @@
         <label :for="key.toString()" style="width: 130px" :title="item.desc">{{
           key
         }}</label>
-        <input
-          type="range"
-          :name="key"
-          v-model.number="item.value"
-          :min="item.min"
-          :max="item.max"
-          :step="item.step"
-          v-if="item.type === 'range'"
-          :disabled="item.disabled"
-        />
-        <input
-          :type="item.type"
-          :name="key.toString()"
-          v-model="item.value"
-          :disabled="item.disabled"
-          v-else
-        />
+        <input type="range" :name="key" v-model.number="item.value" :min="item.min" :max="item.max" :step="item.step"
+          v-if="item.type === 'range'" :disabled="item.disabled" />
+        <input :type="item.type" :name="key.toString()" v-model="item.value" :disabled="item.disabled" v-else />
         <span class="value">{{ item.value }}</span>
       </div>
     </div>
@@ -132,7 +78,7 @@ export default defineComponent({
       branchColor: { type: "color", value: "#ff0f00", desc: "线条颜色" },
       xGap: {
         type: "range",
-        value: 10,
+        value: 30,
         desc: "节点横向间距",
         min: 10,
         max: 100,

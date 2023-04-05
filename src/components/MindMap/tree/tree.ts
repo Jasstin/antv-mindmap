@@ -30,6 +30,7 @@ import {
   changeControlMoveDirection,
   changeDefaultAppendNode,
   handleBtnAreaWidth,
+  themeColor,
 } from "../variable";
 import "./registerNode"; // 自定义节点形状
 import "./registerBehavior";
@@ -70,6 +71,7 @@ interface layoutConfig {
   renderer?: string;
   controlMoveDirection?: boolean;
   defaultAppendNode: boolean;
+  createEdge?:boolean;
 }
 
 interface Variable {
@@ -196,10 +198,7 @@ class Tree {
     if (!this.container) return;
     const config = this.createLayoutConfig(layoutConfig);
     IMData.setConfig({ renderer: layoutConfig.renderer });
-    const data = IMData.init(
-      this.data instanceof Array ? this.data[0] : this.data,
-      true
-    );
+    const data = IMData.init(this.data);
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,
@@ -244,6 +243,22 @@ class Tree {
     }
     if (layoutConfig?.zoom) {
       this.addBehaviors("double-finger-drag-canvas");
+    }
+    if (layoutConfig?.createEdge) {
+      this.addBehaviors({
+        type: 'create-edge',
+        key: 'shift',
+        edgeConfig: {
+          type: 'cubic',
+          style: {
+            stroke: themeColor.value,
+            lineWidth: 2,
+            lineDash: [5, 10]
+            // ... // 其它边样式配置
+          },
+          // ... // 其它边配置
+        },
+      })
     }
   }
 

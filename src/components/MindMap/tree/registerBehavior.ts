@@ -46,6 +46,7 @@ G6.registerBehavior("edit-mindmap-pc", {
       "node:contextmenu": "selectNode",
       "canvas:click": "clickCanvas",
       "canvas:touchend": "clickCanvas",
+      "edge:click":"clickEdge"
     };
   },
   clickCanvas(evt) {
@@ -67,6 +68,14 @@ G6.registerBehavior("edit-mindmap-pc", {
       this.lastClickTime = Date.now();
       selectNode(model.id, !model.isCurrentSelected);
     }
+  },
+  clickEdge(evt){
+    const node = evt.item.get('sourceNode');
+    const tree = evt.currentTarget;
+    if (isDragging.value) return;
+    tree.setItemState(node, "hover", true);
+    node.toFront();
+    tree.paint();
   },
   selectNode(evt) {
     const model = evt.item.get("model");
