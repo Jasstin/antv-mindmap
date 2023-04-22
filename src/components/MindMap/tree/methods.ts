@@ -14,7 +14,8 @@ import EditInput from "../editInput";
 import { INode } from "@antv/g6-core/lib/interface/item";
 import emitter from "../mitt";
 import { pushData, popData } from "./clipboard";
-import { showMoveEdge, hideMoveEdge } from "../utils/showMoveEdge";
+import data from "../data/index";
+
 /***
  * data 为History栈里面的历史数据
  */
@@ -98,6 +99,7 @@ export const update = (id: string, name: any) => {
 };
 export const selectNode = (id: string, selected: boolean) => {
   cancelAllSelect();
+  console.log(`>>>>data`,data);
   globalTree.value.setItemState(id, "selected", selected);
   selected && emitter.emit("onSelectedNode", findData(id));
 };

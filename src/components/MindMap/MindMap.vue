@@ -1,67 +1,35 @@
 <template>
   <div>
     <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1" />
-    <div id="node-input" contenteditable="true" tabIndex="2" />
   </div>
 </template>
 <script lang="ts">
 import "./css/Mindmap.scss";
-import { PropType } from "vue";
 import Tree from "./tree/tree";
-import { tooltip } from "./plugins";
-import {
-  changeNodeMenuList,
-  setGlobalTree,
-  changehotKeyList,
-} from "./variable";
-import EditInput from "./editInput";
-import {
-  addData,
-  update,
-  deleteNode,
-  deleteOneNode,
-  expand,
-  collapse,
-  addSibling,
-  addParent,
-  findData,
-  edit,
-} from "./tree/methods";
-import emitter from "./mitt";
-import defaultHotKey from "./tree/hotkeys";
-const isArray = (arg) =>
-  Object.prototype.toString.call(arg).toLowerCase().indexOf("array") > 5;
-const isObject = (arg) =>
-  Object.prototype.toString.call(arg).toLowerCase() === "[object object]";
-let tree;
+import { TreeGraph } from '@antv/g6';
 export default {
   props: {
     // 脑图数据
     modelValue: { required: true },
     // 绘制所需的变量
-    xGap: { type: Number, default: 18 },
-    yGap: { type: Number, default: 84 },
+    xGap: { type: Number, default: 16 },
+    yGap: { type: Number, default: 5 },
     branch: {
       type: Number,
-      default: 1,
+      default: 2.5,
       validator: (val: number) => val >= 1 && val <= 6,
     },
     branchColor: {
       type: String,
     },
+    direction: { type: String, default: "LR" },
+    sharpCorner: { type: Boolean, default: true },
     themeColor: { type: String, default: "rgb(19,128,255)" },
     rootFontColor: { type: String, default: "#fff" },
     subThemeColor: { type: String, default: "rgba(245,245,245,1)" },
     subFontColor: { type: String, default: "#333" },
-    leafThemeColor: { type: String, default: "transparent" },
+    leafThemeColor: { type: String, default: "rgba(245,245,245,1)" },
     leafFontColor: { type: String, default: "#333" },
-    direction: { type: String, default: "LR" },
-    sharpCorner: Boolean,
-    scaleExtent: {
-      type: Object as PropType<[number, number]>,
-      default: [0.1, 8],
-    },
-    scaleRatio: { type: Number, default: 1 },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -93,142 +61,56 @@ export default {
     // 绘图方式
     renderer: String,
   },
+  data() {
+    return {
+      tree: void 0 as any
+    }
+  },
   mounted() {
-    this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);
-    this.$props.onExpand && emitter.on("onExpand", this.$props.onExpand);
-    this.$props.onCollapse && emitter.on("onCollapse", this.$props.onCollapse);
-    this.$props.onSelectedNode &&
-      emitter.on("onSelectedNode", this.$props.onSelectedNode);
-    this.$props.onAfterEdit &&
-      emitter.on("onAfterEdit", this.$props.onAfterEdit);
-    this.$props.onDragEnd && emitter.on("onDragEnd", this.$props.onDragEnd);
-    this.$props.onCancelSelected &&
-      emitter.on("onCancelSelected", this.$props.onCancelSelected);
-    this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
-    this.changeCanvasSize();
-    window.addEventListener("resize", this.changeCanvasSize);
-  },
-  beforeUnmount() {
-    this.$props.onAdd && emitter.off("onAdd", this.$props.onAdd);
-    this.$props.onExpand && emitter.off("onExpand", this.$props.onExpand);
-    this.$props.onCollapse && emitter.off("onCollapse", this.$props.onCollapse);
-    this.$props.onSelectedNode &&
-      emitter.off("onSelectedNode", this.$props.onSelectedNode);
-    this.$props.onAfterEdit &&
-      emitter.off("onAfterEdit", this.$props.onAfterEdit);
-    this.$props.onDragEnd && emitter.off("onDragEnd", this.$props.onDragEnd);
-    this.$props.onCancelSelected &&
-      emitter.off("onCancelSelected", this.$props.onCancelSelected);
-    this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
-    window.removeEventListener("resize", this.changeCanvasSize);
-    tree.destroy();
-    tree = null;
-  },
-  methods: {
-    changeCanvasSize() {
-      this.$nextTick(() => {
-        const height = this.$el.parentNode.offsetHeight;
-        const width = this.$el.offsetWidth;
-        this.$el.style.height = height + "px";
-        if (tree) {
-          tree.changeSize(width, height);
-        }
-      });
-    },
-    treeInit() {
-      const { modelValue } = this.$props;
-      this.$nextTick(() => {
-        tree = new Tree("mxs-mindmap_container", modelValue);
-        tree.init(this.$props);
-      });
-    },
-    inputInit() {
-      EditInput.init("node-input");
-    },
-    add: addData,
-    update,
-    deleteNode,
-    deleteOneNode,
-    expand,
-    collapse,
-    addSibling,
-    addParent,
-    find: findData,
-    editNode: edit,
+    this.tree = new Tree({
+      container: "mxs-mindmap_container",
+      layout: {
+        direction: this.$props.direction,
+        getVGap: () => {
+          return this.$props.yGap;
+        },
+        getHGap: () => {
+          return this.$props.xGap;
+        },
+      },
+      defaultEdge: {
+        type: this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
+        lineWidth: this.$props.branch,
+        stroke: this.$props.branchColor,
+        lineAppendWidth: this.$props.branch + this.$props.yGap / 2
+      }
+    });
+    const tree = this.tree.tree as TreeGraph;
+    tree.set('globalTheme', {
+      themeColor: this.$props.themeColor,
+      rootFontColor: this.$props.rootFontColor,
+      subThemeColor: this.$props.subThemeColor,
+      subFontColor: this.$props.subFontColor,
+      leafThemeColor: this.$props.leafFontColor,
+      leafFontColor: this.$props.leafFontColor
+    });
+    if (this.$props.modelValue) {
+      this.tree.render(this.$props.modelValue);
+    }
+    tree.addBehaviors({
+      type: 'double-finger-drag-canvas',
+      controlMoveDirection: this.$props.controlMoveDirection
+    }, 'default')
   },
   watch: {
     "$props.modelValue": {
       handler(val) {
-        if (isArray(val) && !val.length) return;
-        if (isObject(val) && !Object.keys(val).length) return;
-        this.treeInit();
-        this.inputInit();
+        if (!val) return console.log(`[mindTree wran]: 没有数据传入`);
+        if (!this.tree) return;
+        this.tree.render(val);
       },
       immediate: true,
-    },
-    "$props.tooltip": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors(tooltip);
-        } else {
-          tree.removeBehaviors("tooltip");
-        }
-      },
-    },
-    "$props.edit": {
-      handler(val) {
-        tree.changeEditMode(val);
-      },
-    },
-    "$props.drag": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("drag-canvas");
-        } else {
-          tree.removeBehaviors("drag-canvas");
-        }
-      },
-    },
-    "$props.zoom": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("zoom-canvas");
-        } else {
-          tree.removeBehaviors("zoom-canvas");
-        }
-      },
-    },
-    centerBtn(val) {},
-    fitBtn(val) {},
-    downloadBtn(val) {},
-    timetravel(val) {},
-    mindmap(val) {},
-    addNodeBtn(val) {},
-    collapseBtn(val) {},
-    fisheye(val) {},
-    watchResize(val) {},
-    nodeMenu: {
-      handler(val) {
-        changeNodeMenuList(val);
-      },
-      immediate: true,
-    },
-    hotKey: {
-      handler(val) {
-        changehotKeyList(
-          val
-            .filter((i) => i.enabled == null || i.enabled === true)
-            .map((item) => {
-              return (
-                defaultHotKey.filter(
-                  (i) => i.name === item || i.name === item.name
-                )[0] || { key: null }
-              );
-            })
-        );
-      },
-      immediate: true,
-    },
+    }
   },
 };
 </script>

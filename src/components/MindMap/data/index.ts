@@ -130,8 +130,21 @@ class IMData {
     return data;
   }
 
-  init(d: InputData, isInit = false) {
-    this.data = this.createMdataFromData(d, "0", null, isInit);
+  init(d: InputData | InputData[], isInit = false) {
+    let _data = {};
+    if (d instanceof Array && d.length>1) {
+      _data = {
+        name: 'root',
+        children: d,
+        visible: false,
+        branchColor: 'transparent'
+      }
+    } else if(d instanceof Array){
+      _data = d[0]
+    }else {
+      _data = d;
+    }
+    this.data = this.createMdataFromData(_data, "0", null, isInit);
     return this.data;
   }
   setConfig(config) {

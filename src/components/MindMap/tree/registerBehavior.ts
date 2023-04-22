@@ -1,31 +1,4 @@
 import G6 from "@antv/g6";
-import {
-  cancelAllSelect,
-  edit,
-  expand,
-  findData,
-  moveData,
-  selectNode,
-  getSelectedNodes,
-  collapse,
-  addData,
-} from "./methods";
-import {
-  branch,
-  branchColor,
-  globalFontSize,
-  globalTree,
-  maxFontCount,
-  paddingH,
-  radius,
-  themeColor,
-  lineType,
-  isCurrentEdit,
-  isDragging,
-  setIsDragging,
-  hotkeys,
-  isCurrentConnect,
-} from "../variable";
 import emitter from "../mitt";
 import { createEdge } from "../utils/showMoveEdge";
 // pc端自定义行为
@@ -46,6 +19,7 @@ G6.registerBehavior("edit-mindmap-pc", {
       "node:contextmenu": "selectNode",
       "canvas:click": "clickCanvas",
       "canvas:touchend": "clickCanvas",
+      "edge:click": "clickEdge"
     };
   },
   clickCanvas(evt) {
@@ -71,6 +45,14 @@ G6.registerBehavior("edit-mindmap-pc", {
     } else {
       selectNode(model.id, !model.isCurrentSelected);
     }
+  },
+  clickEdge(evt) {
+    const node = evt.item.get('sourceNode');
+    const tree = evt.currentTarget;
+    if (isDragging.value) return;
+    tree.setItemState(node, "hover", true);
+    node.toFront();
+    tree.paint();
   },
   selectNode(evt) {
     const model = evt.item.get("model");
@@ -279,7 +261,11 @@ G6.registerBehavior("edit-mindmap-pc", {
       for (let i = 0, len = parentNode.children.length; i < len; i++) {
         let node = parentNode.children[i];
         if (node.id === this.dragNodeId) continue;
-        if (this.nodePosition[node.id].clientY < this.upClientInfo[1]) {
+        if (
+          this.nodePosition[node.id].clientY +
+          this.nodePosition[node.id].height / 2 <
+          this.upClientInfo[1]
+        ) {
           index++;
         } else {
           break;
@@ -377,14 +363,20 @@ G6.registerBehavior("edit-mindmap-pc", {
 });
 
 G6.registerBehavior("double-finger-drag-canvas", {
+  reCalcDir: true,
+  timer: null,
+  getDefaultCfg() {
+    return {
+      controlMoveDirection: false
+    }
+  },
   getEvents: function getEvents() {
     return {
       wheel: "onWheel",
     };
   },
-
   onWheel: function onWheel(ev) {
-    const graph = globalTree.value;
+    const graph = this.get('graph');
     if (ev.ctrlKey) {
       const canvas = graph.get("canvas");
       const point = canvas.getPointByClient(ev.clientX, ev.clientY);
@@ -401,6 +393,14 @@ G6.registerBehavior("double-finger-drag-canvas", {
     } else {
       const x = ev.deltaX || ev.movementX;
       let y = ev.deltaY || ev.movementY;
+      if (this.get('controlMoveDirection')) {
+        direction = Math.abs(x) < Math.abs(y) ? "v" : "h";
+        this.reCalcDir = false;
+        clearTimeout(this.timer);
+        this.timer = setTimeout(() => {
+          this.reCalcDir = true;
+        }, 1000);
+      }
       if (!y && navigator.userAgent.indexOf("Firefox") > -1)
         y = (-ev.wheelDelta * 125) / 3;
       graph.translate(-x, -y);
@@ -441,13 +441,7 @@ G6.registerBehavior("my-shortcut", {
       handler = [];
     }
     if (isCurrentEdit.value) return;
-    if (!handler.length) {
-      //  未识别到快捷键键入
-      let selectNodeId = getSelectedNodes()[0];
-      if (selectNodeId) {
-        edit(selectNodeId, true);
-      }
-    } else {
+    if (handler.length) {
       // 识别到快捷键，处理快捷键
       evt.preventDefault(); // 禁止默认事件
       handler[0].Event.call(this, getSelectedNodes());

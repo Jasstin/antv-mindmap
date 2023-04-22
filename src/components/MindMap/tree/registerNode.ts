@@ -1,17 +1,10 @@
 import G6, { IGroup, IShape } from "@antv/g6";
-import {
-  themeColor,
-  radius,
-  paddingH,
-  paddingV,
-  branch,
-  branchColor,
-  fontColor_root,
-  hoverStrokeColor,
-  activeStrokeColor,
-  isCurrentEdit,
-  isCurrentConnect,
-} from "../variable";
+import { globalTheme } from "../nodeTemplate/constant";
+import Shape from "../nodeTemplate/draw/shape";
+import getTextBounds from "../nodeTemplate/utils/getTextBounds";
+import { isSafari, isWin } from "../utils/testDevice";
+// startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
+const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
 enum textBaseline {
   top = "top",
@@ -92,6 +85,23 @@ function drawHandleBtn(group: IGroup, cfg, type) {
 }
 
 function getAttribute(cfg) {
+  name === "" && (name = placeholderText);
+  const fontSize = globalFontSize[depth] || 12;
+  const fontWeight = globalFontWeight[depth] || 400;
+  const descFontWeight = 400;
+  const maxNodeSize = fontSize * maxFontCount + paddingH * 2; // 节点最多显示12个字
+  const descFontSize = fontSize - 2; // 描述比标题小两个字号
+  const imageIconWidth = iconPath ? defaultIconStyle.height : 0; // icon 图片的宽度
+  const { width: nameWidth, line: nameLine } = getTextBounds(name, { text: name, fontSize, fontWeight, textIndent: imageIconWidth }, maxNodeSize) // 标题
+  const { width: descWidth, line: descLine } = getTextBounds(desc, { text: desc, fontSize: descFontSize, fontWeight: descFontWeight }, maxNodeSize) // 描述
+  const oneLineHeight = defaultTextStyle.lineHeight;
+  const height = oneLineHeight * (nameLine + descLine);
+  const FillColor =
+    [themeColor.value, themeColor_sub.value, themeColor_leaf.value][depth] ||
+    themeColor_leaf.value; // 背景颜色
+  const FontColor =
+    [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] ||
+    fontColor_leaf.value; // 字体颜色
   const {
     style: {
       width,
@@ -166,34 +176,6 @@ function getAttribute(cfg) {
   };
   return { RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
-function buildStyle(obj) {
-  let res = "";
-  for (let key in obj) {
-    res += `${key}:${obj[key]};`;
-  }
-  return res;
-}
-function getStyle(cfg) {
-  const {
-    style: { fontSize, FillColor, FontColor, stroke, nameLineHeight },
-  } = cfg;
-  return buildStyle({
-    width: "100%",
-    height: "100%",
-    display: "block",
-    "box-sizing": `border-box`,
-    "font-size": `${fontSize}px`,
-    "text-align": "left",
-    "border-radius": `${radius}px`,
-    "z-index": 1,
-    overflow: `hidden`,
-    "font-weight": 600,
-    color: FontColor,
-    background: FillColor,
-    border: `${stroke}px solid ${activeStrokeColor.value}`,
-    "line-height": nameLineHeight + "px",
-  });
-}
 
 function buildCanvasNode(cfg, group) {
   const { RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
@@ -238,30 +220,15 @@ function buildCanvasNode(cfg, group) {
   }
   return container;
 }
-function buildDomNode(cfg, group) {
-  const { depth } = cfg;
-  const container = group?.addShape("dom", {
-    attrs: {
-      width: cfg.style.width,
-      height: cfg.style.height,
-      html: `<div style=${getStyle(cfg)}>
-      <p style="margin:0;display:flex;align-items:center"><img src="${
-        cfg.iconPath
-      }" style="width:${cfg.style.imageIconWidth}px;height:${
-        cfg.style.imageIconWidth
-      }px"/>${cfg.name}</p>
-      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${
-        cfg.desc
-      }</div>
-      </div>`,
-    },
-    name: `wrapper`,
-    zIndex: 0,
-    draggable: depth > 0,
-  });
-  return container;
+function buildNullNode(cfg, group) {
+  const newNode = new Shape(group);
+  const res = newNode.Rect('wrapper', {
+    width: 0,
+    height: 0,
+    fill: 'transparent'
+  })
+  return res;
 }
-
 const getNode = (group, name) =>
   group.get("children").filter((t) => t.get("name") === name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
@@ -313,35 +280,8 @@ function handleNodeSelected(state, node) {
 // canvas节点
 G6.registerNode("mindmap-node", {
   draw(cfg, group): IShape {
-    const container = buildCanvasNode(cfg, group);
-    return container;
-  },
-  setState(name, state, node) {
-    if (name === "hover") handleNodeHover(state, node);
-    if (name === "selected") handleNodeSelected(state, node);
-  },
-  getAnchorPoints(cfg) {
-    if (cfg.side === "left") {
-      return [
-        [1, 0.5],
-        [0.5, 0],
-        [0, 0.5],
-        [0.5, 1],
-      ];
-    } else {
-      return [
-        [0, 0.5],
-        [0.5, 0],
-        [1, 0.5],
-        [0.5, 1],
-      ];
-    }
-  },
-});
-// dom节点
-G6.registerNode("dom-node", {
-  draw(cfg, group): IShape {
-    const container = buildDomNode(cfg, group);
+    const hide = cfg.hide;
+    const container = hide ? buildNullNode(cfg, group):buildCanvasNode(cfg, group);
     return container;
   },
   setState(name, state, node) {
@@ -353,5 +293,47 @@ G6.registerNode("dom-node", {
       [0, 0.5],
       [1, 0.5],
     ];
+  },
+});
+G6.registerEdge("mindmap-line", {
+  draw(cfg, group) {
+    if (!cfg || !group) return;
+    const startPoint = cfg.startPoint;
+    const endPoint = cfg.endPoint;
+    let dist = endPoint.y < startPoint.y ? 10 : -10;
+    if (endPoint.y === startPoint.y) {
+      dist = 0;
+    }
+    const sourceNode = cfg.sourceNode;
+    const sourceNodeData = sourceNode ? sourceNode.get('model') : {};
+    const shape = group.addShape("path", {
+      attrs: {
+        cursor: "pointer",
+        stroke: sourceNodeData.style.branchColor || branchColor.value,
+        lineWidth: branch.value,
+        opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
+        path: [
+          ["M", startPoint.x, startPoint.y],
+          ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
+          [
+            "L",
+            endPoint.x / 3 + (2 / 3) * startPoint.x,
+            startPoint.y + (endPoint.y - startPoint.y) + dist,
+          ],
+          [
+            "Q",
+            endPoint.x / 3 + (2 / 3) * startPoint.x,
+            startPoint.y + (endPoint.y - startPoint.y),
+            endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
+            endPoint.y,
+          ], // 三分之二处
+          ["L", endPoint.x, endPoint.y],
+        ],
+      },
+      // must be assigned in G6 3.3 and later versions. it can be any value you want
+      name: "path-shape",
+      zIndex: 0,
+    });
+    return shape;
   },
 });
