@@ -465,13 +465,7 @@ G6.registerBehavior("my-shortcut", {
       handler = [];
     }
     if (isCurrentEdit.value) return;
-    if (!handler.length) {
-      //  未识别到快捷键键入
-      let selectNodeId = getSelectedNodes()[0];
-      if (selectNodeId) {
-        edit(selectNodeId, true);
-      }
-    } else {
+    if (handler.length) {
       // 识别到快捷键，处理快捷键
       evt.preventDefault(); // 禁止默认事件
       handler[0].Event.call(this, getSelectedNodes());

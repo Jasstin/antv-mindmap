@@ -21,7 +21,6 @@ export const rePaint = (stack = true) => {
   let tree: TreeGraph | null = globalTree.value as TreeGraph;
   if (!IMData.data) return;
   tree?.data(IMData.data);
-  console.log(`>>>data`,IMData.data);
   if (stack) {
     History.push(IMData.data);
   }
@@ -44,6 +43,7 @@ export const addParent = (id: string, rawData: string | InputData) => {
 };
 export const addSibling = (id: string, rawData: string | InputData) => {
   let data = IMData.addSibling(id, rawData);
+  emitter.emit("onAdd", data);
   rePaint();
   if (data) edit(data.id);
 };

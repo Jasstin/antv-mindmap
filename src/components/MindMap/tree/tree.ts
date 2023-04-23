@@ -198,7 +198,7 @@ class Tree {
     if (!this.container) return;
     const config = this.createLayoutConfig(layoutConfig);
     IMData.setConfig({ renderer: layoutConfig.renderer });
-    const data = IMData.init(this.data);
+    const data = IMData.init(this.data,true);
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,

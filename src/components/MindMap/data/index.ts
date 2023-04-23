@@ -126,14 +126,16 @@ class IMData {
 
   init(d: InputData | InputData[], isInit = false) {
     let _data = {};
-    if (d instanceof Array) {
+    if (d?.length>1) {
       _data = {
         name: 'root',
         children: d,
         visible: false,
         branchColor: 'transparent'
       }
-    } else {
+    } else if(d?.length==1) {
+      _data = d[0];
+    }else{
       _data = d;
     }
     this.data = this.createMdataFromData(_data, "0", null, isInit);
