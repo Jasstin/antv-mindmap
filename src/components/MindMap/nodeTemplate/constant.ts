@@ -9,15 +9,5 @@ export const defaultTextStyle = {
 };
 
 export const defaultIconStyle = {
-  height: 25,
-  width: 25,
-}
-
-export const globalTheme = {
-  themeColor: 'rgb(19,128,255)',
-  rootFontColor: '#fff',
-  subThemeColor: 'rgba(245,245,245,1)',
-  subFontColor: '#333',
-  leafThemeColor: 'rgba(245,245,245,1)',
-  leafFontColor: '#333'
+  height: 25
 }
