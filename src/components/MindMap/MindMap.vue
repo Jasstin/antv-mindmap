@@ -5,6 +5,10 @@
 import "./css/Mindmap.scss";
 import Tree from "./tree/tree";
 import { TreeGraph } from '@antv/g6';
+import resizeObserver from "./utils/resizeObserver";
+import throttle from 'lodash/throttle';
+import { PropType } from "vue";
+import getCenterPointById from "./utils/getCenterPointById";
 export default {
   props: {
     // 脑图数据
@@ -29,6 +33,11 @@ export default {
     subFontColor: { type: String, default: "#333" },
     leafThemeColor: { type: String, default: "rgba(245,245,245,1)" },
     leafFontColor: { type: String, default: "#333" },
+    scaleExtent: {
+      type: Object as PropType<[number, number]>,
+      default: [0.1, 8],
+    },
+    scaleRatio: { type: Number, default: 1 },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -62,12 +71,13 @@ export default {
   },
   data() {
     return {
+      id: "mxs-mindmap_container",
       tree: void 0 as any
     }
   },
   mounted() {
     this.tree = new Tree({
-      container: "mxs-mindmap_container",
+      container: this.id,
       layout: {
         direction: this.$props.direction,
         getVGap: () => {
@@ -80,9 +90,7 @@ export default {
           return data.data.info?.side || index % 2 === 0 ? 'right' : 'left'
         }
       },
-      defaultNode: {
-        type: 'circle'
-      },
+      defaultNode: { type: 'circle' },
       defaultEdge: {
         type: !this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
         style: {
@@ -93,6 +101,14 @@ export default {
       }
     });
     const tree = this.tree.tree as TreeGraph;
+    const [minZoom, maxZoom] = this.$props.scaleExtent;
+    tree.setMinZoom(minZoom);
+    tree.setMaxZoom(maxZoom);
+    const { x, y } = getCenterPointById(this.id)
+    tree.zoomTo(this.$props.scaleRatio, { x, y });
+    resizeObserver(this.id, throttle(({ width, height }) => {
+      tree.changeSize(width, height)
+    }, 1000))
     tree.set('globalTheme', {
       themeColor: this.$props.themeColor,
       rootFontColor: this.$props.rootFontColor,

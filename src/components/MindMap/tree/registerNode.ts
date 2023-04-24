@@ -1,8 +1,19 @@
-import G6, { IShape } from "@antv/g6";
 import { defaultIconStyle, defaultTextStyle, globalTheme } from "../nodeTemplate/constant";
 import Shape from "../nodeTemplate/draw/shape";
 import getTextBounds from "../nodeTemplate/utils/getTextBounds";
 import { isSafari, isWin } from "../utils/testDevice";
+
+import { IGroup, IShape } from '@antv/g-base';
+import {
+  registerNode,
+  Item,
+  NodeConfig,
+  ShapeStyle,
+  ShapeOptions,
+  BaseGlobal as Global,
+  UpdateType,
+} from '@antv/g6-core';
+import { deepMix } from '@antv/util';
 // startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
 const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
@@ -35,6 +46,41 @@ export function getStyle(text, icon, depth) {
   }
 }
 
+registerNode('mindmap-node', {
+  // 自定义节点时的配置
+  options: {
+    size: Global.defaultNode.size,
+    style: {
+      x: 0,
+      y: 0,
+      stroke: Global.defaultNode.style.stroke,
+      fill: Global.defaultNode.style.fill,
+      lineWidth: Global.defaultNode.style.lineWidth,
+    },
+    labelCfg: {
+      style: {
+        fill: Global.nodeLabel.style.fill,
+        fontSize: Global.nodeLabel.style.fontSize,
+        fontFamily: Global.windowFontFamily
+      },
+    },
+    // 节点中icon配置
+    icon: {
+      // 是否显示icon，值为 false 则不渲染icon
+      show: false,
+      // icon的地址，字符串类型
+      img: 'https://gw.alipayobjects.com/zos/bmw-prod/5d015065-8505-4e7a-baec-976f81e3c41d.svg',
+      width: 20,
+      height: 20,
+    },
+    stateStyles: {
+      ...Global.nodeStateStyles,
+    },
+  },
+  shapeType: 'mindmap-node',
+  // 文本位置
+  labelPosition: 'center',
+})
 
 function buildCanvasNode(cfg, group) {
   const { info, depth } = cfg;

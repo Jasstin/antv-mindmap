@@ -23,18 +23,12 @@ class Tree {
         type: "mindmap",
         direction: 'H',
         getHeight: (node: NodeData) => {
-          if(node.info){
-            return getStyle(node.info.title,node.info.icon,0).height;
-          }else{
-            return 0
-          }
+          const height = node.info?getStyle(node.info.title,node.info.icon,0).height:0;
+          return height;
         },
         getWidth: (node: NodeData) => {
-          if(node.info){
-            return getStyle(node.info.title,node.info.icon,0).width;
-          }else{
-            return 0
-          }
+          const width = node.info?getStyle(node.info.title,node.info.icon,0).width:0;
+          return width;
         },
         getVGap: () => {
           return 10;

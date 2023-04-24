@@ -18,7 +18,7 @@ export const globalTheme = {
   themeColor:'rgb(19,128,255)',
   themeColor_sub:'#eee',
   themeColor_leaf:'#eee',
-  fontColor_root:'#333',
+  fontColor_root:'#fff',
   fontColor_sub:'#333',
   fontColor_leaf:'#333',
   maxFontSize:16,
