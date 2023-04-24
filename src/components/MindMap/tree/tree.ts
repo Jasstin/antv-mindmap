@@ -20,7 +20,7 @@ class Tree {
     const config = deepMix({
       layout: {
         type: "mindmap",
-        direction: propsConfig.direction,
+        direction: 'H',
         getHeight: (node: NodeData) => {
           return 80;
         },
@@ -41,19 +41,19 @@ class Tree {
         type:'mindmap-node'
       },
       modes: {
-        default: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", 'my-shortcut', 'drag-canvas', layoutConfig.createEdge ? {
-          type: 'create-edge',
-          key: 'shift',
-          edgeConfig: {
-            type: 'cubic',
-            style: {
-              lineWidth: 2,
-              lineDash: [5, 10]
-              // ... // 其它边样式配置
-            },
-            // ... // 其它边配置
-          },
-        } : ''],
+        // default: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", 'my-shortcut', 'drag-canvas', layoutConfig.createEdge ? {
+        //   type: 'create-edge',
+        //   key: 'shift',
+        //   edgeConfig: {
+        //     type: 'cubic',
+        //     style: {
+        //       lineWidth: 2,
+        //       lineDash: [5, 10]
+        //       // ... // 其它边样式配置
+        //     },
+        //     // ... // 其它边配置
+        //   },
+        // } : ''],
       },
       groupByTypes: false,
       animate: false,
@@ -73,11 +73,12 @@ class Tree {
       renderData = rootData;
     }else if(data?.length === 1){
       renderData = data[0]
-    }else if(data instanceof Object){
-      renderData = data
+    }else if(!data?.length){
+      return;
     }else{
       console.log(`[mindTree warn]: 数据格式错误`);
     }
+    console.log(`>>>>renderData`,renderData);
     this.tree.data(renderData);
     this.tree.layout(true);
   }

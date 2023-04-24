@@ -1,7 +1,5 @@
 <template>
-  <div>
-    <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1" />
-  </div>
+  <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1" />
 </template>
 <script lang="ts">
 import "./css/Mindmap.scss";
@@ -69,6 +67,7 @@ export default {
   mounted() {
     this.tree = new Tree({
       container: "mxs-mindmap_container",
+      renderer: 'svg',
       layout: {
         direction: this.$props.direction,
         getVGap: () => {

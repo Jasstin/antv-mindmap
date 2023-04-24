@@ -9,5 +9,20 @@ export const defaultTextStyle = {
 };
 
 export const defaultIconStyle = {
+  width:25,
   height: 25
+}
+
+export const globalTheme = {
+  maxWidth:300,
+  themeColor:'rgb(19,128,255)',
+  themeColor_sub:'#eee',
+  themeColor_leaf:'#eee',
+  fontColor_root:'#333',
+  fontColor_sub:'#333',
+  fontColor_leaf:'#333',
+  maxFontSize:16,
+  borderRadius:4,
+  paddingTop: 0,
+  paddingLeft: 0 
 }
