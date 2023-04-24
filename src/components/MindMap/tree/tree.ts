@@ -7,6 +7,7 @@ import "./registerNode"; // 自定义节点形状
 import "./registerBehavior";
 import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
 import { deepMix } from '@antv/util';
+import { getStyle } from "./registerNode";
 interface Window {
   mindTree?: TreeGraph;
 }
@@ -22,20 +23,25 @@ class Tree {
         type: "mindmap",
         direction: 'H',
         getHeight: (node: NodeData) => {
-          return 80;
+          if(node.info){
+            return getStyle(node.info.title,node.info.icon,0).height;
+          }else{
+            return 0
+          }
         },
         getWidth: (node: NodeData) => {
-          return 80;
+          if(node.info){
+            return getStyle(node.info.title,node.info.icon,0).width;
+          }else{
+            return 0
+          }
         },
         getVGap: () => {
           return 10;
         },
         getHGap: () => {
           return 30;
-        },
-        getSide: (node: NodeData) => {
-          return node.data.side;
-        },
+        }
       },
       defaultNode:{
         type:'mindmap-node'

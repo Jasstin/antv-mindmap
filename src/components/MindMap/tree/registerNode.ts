@@ -1,4 +1,4 @@
-import G6, { Graph, IGroup, IShape } from "@antv/g6";
+import G6, { IShape } from "@antv/g6";
 import { defaultIconStyle, defaultTextStyle, globalTheme } from "../nodeTemplate/constant";
 import Shape from "../nodeTemplate/draw/shape";
 import getTextBounds from "../nodeTemplate/utils/getTextBounds";
@@ -6,11 +6,7 @@ import { isSafari, isWin } from "../utils/testDevice";
 // startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
 const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
-enum textBaseline {
-  top = "top",
-}
-
-function getStyle(text, icon, depth) {
+export function getStyle(text, icon, depth) {
   const _depth = Math.min(depth, 2);
   const fontSize = globalTheme['maxFontSize'] - 2 * _depth;
   const fontWeight = [600, 400, 400][_depth];
@@ -43,52 +39,16 @@ function getStyle(text, icon, depth) {
 function buildCanvasNode(cfg, group) {
   const { info, depth } = cfg;
   const style = getStyle(info.title, info.icon, depth);
-  console.log(`>>>>style`,style)
-  const container = group?.addShape("rect", {
-    attrs: {
-      x: 0,
-      y: 0,
-      width: style.width,
-      height: style.height,
-      radius: style.borderRadius,
-      fill: style.background,
-      cursor: "pointer",
-    },
-    name: `wrapper`,
-    zIndex: 0,
-    draggable: depth > 0,
-  }) as IShape;
+  const newNode = new Shape(group);
+  const rest = { draggable: depth > 0 }
+  const keyShape = newNode.Rect('container', { width: style.width, height: style.height }, rest)
+  newNode.Rect('wrapper', { width: style.width, height: style.height, radius: style.borderRadius, fill: style.background, cursor: 'pointer' }, rest)
+  newNode.inner()
   if (info.icon) {
-    group?.addShape("image", {
-      attrs: {
-        x: style.paddingLeft,
-        y: style.paddingTop,
-        img: info.icon,
-        width: style.imageIconWidth,
-        height: style.imageIconHeight,
-      },
-      name: `icon`,
-      zIndex: 1,
-      draggable: depth > 0,
-    });
+    newNode.Image('icon', { width: style.imageIconWidth, height: style.imageIconHeight, img: info.icon, x: style.paddingLeft, y: style.paddingTop, cursor: 'pointer' }, rest)
   }
-  group?.addShape("text", {
-    attrs: {
-      x: style.paddingLeft,
-      y: style.paddingTop,
-      text: info.title,
-      fill: style.color,
-      fontSize: style.fontSize,
-      textBaseline:'top',
-      cursor: "pointer",
-      fontWeight: style.fontWeight,
-      lineHeight: style.lineHeight,
-    },
-    name: `title`,
-    zIndex: 1,
-    draggable: depth > 0,
-  });
-  return container;
+  newNode.Text('title', { x: style.paddingLeft, y: diffY + (isWin ? -1 : 0), text: info.title, fill: style.color, fontSize: style.fontSize, fontWeight: style.fontWeight, textIndent: style.imageIconWidth, cursor: 'pointer' }, style.maxWidth, rest)
+  return keyShape;
 }
 function buildNullNode(cfg, group) {
   const newNode = new Shape(group);
@@ -119,6 +79,8 @@ G6.registerEdge("mindmap-line", {
     }
     const shape = group.addShape("path", {
       attrs: {
+        stroke: 'blue',
+        lineWidth: 1,
         cursor: "pointer",
         path: [
           ["M", startPoint.x, startPoint.y],

@@ -24,5 +24,5 @@ export const globalTheme = {
   maxFontSize:16,
   borderRadius:4,
   paddingTop: 0,
-  paddingLeft: 0 
+  paddingLeft: 3
 }
