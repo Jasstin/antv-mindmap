@@ -78,8 +78,10 @@ class EditInput {
       "line-height": `${height - stroke}px`,
     });
     NodeInput.innerText = placeholderText === name ? "" : name;
+    NodeInput.value = placeholderText === name ? "" : name;
     document.body.style["--placeholderText"] = placeholderText;
     NodeInput.classList[name === placeholderText ? "add" : "remove"]("empty");
+    NodeInput.placeholder = placeholderText;
   }
   changeStyle({ style: { width, stroke, height } }) {
     let NodeInput = this._input;
@@ -144,14 +146,14 @@ class EditInput {
     // Todo: 支持设置光标位置
     if (!this._input) return;
     this._input.focus();
-    try {
-      let timer = setTimeout(() => {
-        this.moveCursor(this._input.innerText.length); // 光标在末尾
-        clearTimeout(timer);
-      }, 0);
-    } catch (e) {
-      console.log(e);
-    }
+    // try {
+    //   let timer = setTimeout(() => {
+    //     this.moveCursor(this._input.innerText.length); // 光标在末尾
+    //     clearTimeout(timer);
+    //   }, 0);
+    // } catch (e) {
+    //   console.log(e);
+    // }
   }
 }
 
