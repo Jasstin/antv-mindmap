@@ -36,7 +36,7 @@ export const buildNodeStyle = (
   const FontColor =
     [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] ||
     fontColor_leaf.value; // 字体颜色
-  if (depth > 2) {
+  if (depth >= 2) {
     beforeWidth = 0;
     afterWidth = 0;
   }
