@@ -1,4 +1,4 @@
-import { defaultIconStyle, defaultTextStyle, globalTheme } from "../nodeTemplate/constant";
+import { __assign, __rest } from "tslib";
 import Shape from "../nodeTemplate/draw/shape";
 import getTextBounds from "../nodeTemplate/utils/getTextBounds";
 import { isSafari, isWin } from "../utils/testDevice";
@@ -17,62 +17,44 @@ import { deepMix } from '@antv/util';
 // startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
 const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
-export function getStyle(text, icon, depth) {
-  const _depth = Math.min(depth, 2);
-  const fontSize = globalTheme['maxFontSize'] - 2 * _depth;
-  const fontWeight = [600, 400, 400][_depth];
-  const maxNodeSize = globalTheme.maxWidth;
-  const imageIconWidth = icon ? defaultIconStyle.width : 0;
-  const { width, line } = getTextBounds(text, { text, fontSize, fontWeight, textIndent: imageIconWidth }, maxNodeSize);
-  const oneLineHeight = defaultTextStyle.lineHeight;
-  const height = oneLineHeight * line;
-  const fillColor = [globalTheme.themeColor, globalTheme.themeColor_sub, globalTheme.themeColor_leaf][_depth];
-  const fontColor = [globalTheme.fontColor_root, globalTheme.fontColor_sub, globalTheme.fontColor_leaf][_depth];
-  const { borderRadius, paddingTop, paddingLeft } = globalTheme;
-  return {
-    width: width + paddingLeft * 2 + imageIconWidth,
-    height: height + paddingTop * 2,
-    background: fillColor,
-    color: fontColor,
-    fontSize,
-    fontWeight,
-    maxWidth: maxNodeSize,
-    paddingLeft: paddingLeft,
-    borderRadius,
-    paddingTop,
-    lineHeight: oneLineHeight,
-    imageIconWidth,
-    imageIconHeight: defaultIconStyle.height
-  }
-}
-
 registerNode('mindmap-node', {
   // 自定义节点时的配置
   options: {
-    size: Global.defaultNode.size,
+    size: 300,
+    lineHeight: 25,
+    paddingTop: 0,
+    paddingLeft: 3,
+    iconMarginRight: 3,
+    beforeWidth: 5,
+    afterWidth: 5,
     style: {
-      x: 0,
-      y: 0,
       stroke: Global.defaultNode.style.stroke,
       fill: Global.defaultNode.style.fill,
-      lineWidth: Global.defaultNode.style.lineWidth,
+      radius: 4
     },
     labelCfg: {
       style: {
         fill: Global.nodeLabel.style.fill,
-        fontSize: Global.nodeLabel.style.fontSize,
-        fontFamily: Global.windowFontFamily
+        fontSize: 16,
+        fontFamily: '"Microsoft YaHei", "PingFang SC", "Microsoft JhengHei", sans-serif',
+        fontStyle: 'normal',
+        fontWeight: 400,
       },
     },
     // 节点中icon配置
     icon: {
       // 是否显示icon，值为 false 则不渲染icon
-      show: false,
+      show: true,
       // icon的地址，字符串类型
-      img: 'https://gw.alipayobjects.com/zos/bmw-prod/5d015065-8505-4e7a-baec-976f81e3c41d.svg',
       width: 20,
       height: 20,
     },
+    // 连接点，默认为左右
+    // anchorPoints: [{ x: 0, y: 0.5 }, { x: 1, y: 0.5 }]
+    anchorPoints: [
+      [0, 0.5],
+      [1, 0.5],
+    ],
     stateStyles: {
       ...Global.nodeStateStyles,
     },
@@ -80,76 +62,135 @@ registerNode('mindmap-node', {
   shapeType: 'mindmap-node',
   // 文本位置
   labelPosition: 'center',
-})
+  drawShape(cfg: NodeConfig, group: IGroup): IShape {
+    const { icon: defaultIcon = {}, size, beforeWidth, afterWidth } = this.mergeStyle || this.getOptions(cfg) as NodeConfig;
+    const nodeData = cfg.info as { title: string, icon: string };
+    const depth = cfg.depth as number;
+    const icon = deepMix({}, defaultIcon, { img: nodeData.icon });
+    const wrapper = `${this.type}-keyShape`;
+    const bg = `${this.type}-background`;
+    const newNodeFn = new Shape(group);
+    const rest = { draggable: depth > 0 };
+    const [width, height] = this.getSize(cfg);
+    group['shapeMap'][wrapper] = newNodeFn.Rect(wrapper, { x: 0, y: 0, width: width + beforeWidth + afterWidth, height: height, fill: 'transparent' }, rest);
+    group['shapeMap'][bg] = newNodeFn.Rect(bg, this.getBgStyle!(cfg), rest);
+    const { show, img } = icon;
+    const iconName = `${this.type}-icon`;
+    const labelName = `${this.type}-label`;
+    if (show && img) {
+      group['shapeMap'][iconName] = newNodeFn.Image('icon', this.getIconStyle!(cfg), rest);
+    }
+    group['shapeMap'][labelName] = newNodeFn.Text('title', this.getLabelStyle!(cfg), size, rest)
+    return group['shapeMap'][wrapper];
+  },
+  getSize: function getSize(cfg) {
+    var { size: maxNodeSize, labelCfg, icon: defaultIcon, paddingLeft, paddingTop, lineHeight, iconMarginRight } = (this.mergeStyle || this.getOptions(cfg));
+    const nodeData = cfg.info as { title: string, icon: string };
+    const icon = deepMix({}, defaultIcon, { img: nodeData.icon });
+    const { show, img, width: imgWidth } = icon;
+    const { fontSize, fontWeight } = labelCfg.style;
+    const iconWidth = (show && img) ? imgWidth + iconMarginRight : 0;
+    const { width, line } = getTextBounds(nodeData.title, { text: nodeData.title, fontSize, fontWeight, textIndent: iconWidth }, maxNodeSize);
+    return [width + paddingLeft * 2, lineHeight * line + paddingTop * 2]
+  },
+  /**
+   * 获取节点的样式，供基于该节点自定义时使用
+   * @param {Object} cfg 节点数据模型
+   * @return {Object} 节点的样式
+   */
+  getBgStyle: function getShapeStyle(cfg) {
+    const { style, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+    const [width, height] = this.getSize(cfg);
+    var styles = __assign({
+      x: beforeWidth,
+      y: 0,
+      width,
+      height,
+    }, style);
 
-function buildCanvasNode(cfg, group) {
-  const { info, depth } = cfg;
-  const style = getStyle(info.title, info.icon, depth);
-  const newNode = new Shape(group);
-  const rest = { draggable: depth > 0 }
-  const keyShape = newNode.Rect('container', { width: style.width, height: style.height }, rest)
-  newNode.Rect('wrapper', { width: style.width, height: style.height, radius: style.borderRadius, fill: style.background, cursor: 'pointer' }, rest)
-  newNode.inner()
-  if (info.icon) {
-    newNode.Image('icon', { width: style.imageIconWidth, height: style.imageIconHeight, img: info.icon, x: style.paddingLeft, y: style.paddingTop, cursor: 'pointer' }, rest)
-  }
-  newNode.Text('title', { x: style.paddingLeft, y: diffY + (isWin ? -1 : 0), text: info.title, fill: style.color, fontSize: style.fontSize, fontWeight: style.fontWeight, textIndent: style.imageIconWidth, cursor: 'pointer' }, style.maxWidth, rest)
-  return keyShape;
-}
-function buildNullNode(cfg, group) {
-  const newNode = new Shape(group);
-  const res = newNode.Rect('wrapper', {
-    width: 0,
-    height: 0,
-    fill: 'transparent'
-  })
-  return res;
-}
+    return styles;
+  },
+  /**
+   * 获取节点的样式，供基于该节点自定义时使用
+   * @param {Object} cfg 节点数据模型
+   * @return {Object} 节点的样式
+   */
+  getIconStyle: function getIconStyle(cfg) {
+    const { icon, lineHeight, paddingLeft, paddingTop, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+    var styles = __assign({
+      height: Math.min(lineHeight, icon.height),
+      x: paddingLeft + beforeWidth,
+      y: paddingTop + Math.max((lineHeight - icon.height) / 2, 0),
+      cursor: 'pointer'
+    }, icon);
+
+    return styles;
+  },
+  /**
+   * 获取节点的样式，供基于该节点自定义时使用
+   * @param {Object} cfg 节点数据模型
+   * @return {Object} 节点的样式
+   */
+  getLabelStyle: function getLabelStyle(cfg) {
+    const { labelCfg, paddingLeft, icon, iconMarginRight, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+    const info = cfg.info as { title: string, icon: string };
+    const { show, img, width: iconWidth } = icon;
+    var styles = __assign({
+      x: paddingLeft + beforeWidth,
+      y: diffY + (isWin ? -1 : 0),
+      text: info.title,
+      textIndent: (show && img) ? iconWidth + iconMarginRight : 0,
+      cursor: 'pointer'
+    }, labelCfg.style);
+
+    return styles;
+  },
+}, 'single-node');
 
 // canvas节点
-G6.registerNode("mindmap-node", {
-  draw(cfg, group): IShape {
-    const hide = cfg.hide || !cfg.info;
-    const container = hide ? buildNullNode(cfg, group) : buildCanvasNode(cfg, group);
-    return container;
-  }
-});
-G6.registerEdge("mindmap-line", {
-  draw(cfg, group) {
-    if (!cfg || !group) return;
-    const startPoint = cfg.startPoint;
-    const endPoint = cfg.endPoint;
-    let dist = endPoint.y < startPoint.y ? 10 : -10;
-    if (endPoint.y === startPoint.y) {
-      dist = 0;
-    }
-    const shape = group.addShape("path", {
-      attrs: {
-        stroke: 'blue',
-        lineWidth: 1,
-        cursor: "pointer",
-        path: [
-          ["M", startPoint.x, startPoint.y],
-          ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
-          [
-            "L",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y) + dist,
-          ],
-          [
-            "Q",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y),
-            endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
-            endPoint.y,
-          ], // 三分之二处
-          ["L", endPoint.x, endPoint.y],
-        ],
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any value you want
-      name: "path-shape",
-      zIndex: 0,
-    });
-    return shape;
-  },
-});
+// G6.registerNode("mindmap-node", {
+//   draw(cfg, group): IShape {
+//     const hide = cfg.hide || !cfg.info;
+//     const container = hide ? buildNullNode(cfg, group) : buildCanvasNode(cfg, group);
+//     return container;
+//   }
+// });
+// G6.registerEdge("mindmap-line", {
+//   draw(cfg, group) {
+//     if (!cfg || !group) return;
+//     const startPoint = cfg.startPoint;
+//     const endPoint = cfg.endPoint;
+//     let dist = endPoint.y < startPoint.y ? 10 : -10;
+//     if (endPoint.y === startPoint.y) {
+//       dist = 0;
+//     }
+//     const shape = group.addShape("path", {
+//       attrs: {
+//         stroke: 'blue',
+//         lineWidth: 1,
+//         cursor: "pointer",
+//         path: [
+//           ["M", startPoint.x, startPoint.y],
+//           ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
+//           [
+//             "L",
+//             endPoint.x / 3 + (2 / 3) * startPoint.x,
+//             startPoint.y + (endPoint.y - startPoint.y) + dist,
+//           ],
+//           [
+//             "Q",
+//             endPoint.x / 3 + (2 / 3) * startPoint.x,
+//             startPoint.y + (endPoint.y - startPoint.y),
+//             endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
+//             endPoint.y,
+//           ], // 三分之二处
+//           ["L", endPoint.x, endPoint.y],
+//         ],
+//       },
+//       // must be assigned in G6 3.3 and later versions. it can be any value you want
+//       name: "path-shape",
+//       zIndex: 0,
+//     });
+//     return shape;
+//   },
+// });

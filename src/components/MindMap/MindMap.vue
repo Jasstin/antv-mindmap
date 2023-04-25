@@ -80,6 +80,9 @@ export default {
       container: this.id,
       layout: {
         direction: this.$props.direction,
+        getWidth: () => {
+          return 200
+        },
         getVGap: () => {
           return this.$props.yGap;
         },
@@ -90,7 +93,7 @@ export default {
           return data.data.info?.side || index % 2 === 0 ? 'right' : 'left'
         }
       },
-      defaultNode: { type: 'circle' },
+      // defaultNode: { type: 'rect' },
       defaultEdge: {
         type: !this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
         style: {
@@ -109,14 +112,6 @@ export default {
     resizeObserver(this.id, throttle(({ width, height }) => {
       tree.changeSize(width, height)
     }, 1000))
-    tree.set('globalTheme', {
-      themeColor: this.$props.themeColor,
-      rootFontColor: this.$props.rootFontColor,
-      subThemeColor: this.$props.subThemeColor,
-      subFontColor: this.$props.subFontColor,
-      leafThemeColor: this.$props.leafFontColor,
-      leafFontColor: this.$props.leafFontColor
-    });
     if (this.$props.modelValue) {
       this.tree.render(this.$props.modelValue);
     }

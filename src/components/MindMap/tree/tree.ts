@@ -22,14 +22,6 @@ class Tree {
       layout: {
         type: "mindmap",
         direction: 'H',
-        getHeight: (node: NodeData) => {
-          const height = node.info?getStyle(node.info.title,node.info.icon,0).height:0;
-          return height;
-        },
-        getWidth: (node: NodeData) => {
-          const width = node.info?getStyle(node.info.title,node.info.icon,0).width:0;
-          return width;
-        },
         getVGap: () => {
           return 10;
         },
@@ -37,8 +29,8 @@ class Tree {
           return 30;
         }
       },
-      defaultNode:{
-        type:'mindmap-node'
+      defaultNode: {
+        type: 'mindmap-node'
       },
       modes: {
         // default: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", 'my-shortcut', 'drag-canvas', layoutConfig.createEdge ? {
@@ -65,20 +57,19 @@ class Tree {
     const rootData = {
       name: 'root',
       visible: false,
-      children:data,
+      children: data,
       branchColor: 'transparent'
     }
     let renderData;
     if (data?.length > 2) {
       renderData = rootData;
-    }else if(data?.length === 1){
+    } else if (data?.length === 1) {
       renderData = data[0]
-    }else if(!data?.length){
+    } else if (!data?.length) {
       return;
-    }else{
+    } else {
       console.log(`[mindTree warn]: 数据格式错误`);
     }
-    console.log(`>>>>renderData`,renderData);
     this.tree.data(renderData);
     this.tree.layout(true);
   }
