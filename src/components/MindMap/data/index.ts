@@ -36,6 +36,10 @@ export const buildNodeStyle = (
   const FontColor =
     [fontColor_root.value, fontColor_sub.value, fontColor_leaf.value][depth] ||
     fontColor_leaf.value; // 字体颜色
+  if (depth > 2) {
+    beforeWidth = 0;
+    afterWidth = 0;
+  }
   const obj = {
     label: name,
     name,
@@ -126,16 +130,16 @@ class IMData {
 
   init(d: InputData | InputData[], isInit = false) {
     let _data = {};
-    if (d?.length>1) {
+    if (d?.length > 1) {
       _data = {
         name: 'root',
         children: d,
         visible: false,
         branchColor: 'transparent'
       }
-    } else if(d?.length==1) {
+    } else if (d?.length == 1) {
       _data = d[0];
-    }else{
+    } else {
       _data = d;
     }
     this.data = this.createMdataFromData(_data, "0", null, isInit);
