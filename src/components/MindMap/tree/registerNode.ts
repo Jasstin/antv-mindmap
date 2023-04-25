@@ -174,7 +174,7 @@ registerEdge("mindmap-line", {
   shapeType: 'mindmap-line',
   // 文本位置
   labelPosition: 'center',
-  drawShape(cfg: EdgeConfig, group: IGroup) {
+  draw(cfg: EdgeConfig, group: IGroup) {
     const shapeStyle = (this as any).getShapeStyle(cfg);
     const keyShape = group.addShape('path', {
       className: 'edge-shape',
@@ -194,12 +194,11 @@ registerEdge("mindmap-line", {
     const style: ShapeStyle = deepMix({}, defaultStyle, strokeStyle, cfg.style);
     const startPoint = cfg.startPoint;
     const endPoint = cfg.endPoint;
-    const path = this.getPath(startPoint, endPoint);
+    const path = this.getPath(startPoint, endPoint, cfg);
     const attrs: ShapeStyle = deepMix({}, Global.defaultEdge.style as ShapeStyle, style, {
       lineWidth: cfg.size,
       path,
     } as ShapeStyle);
-    console.log(`>>>path`, startPoint, endPoint, path, attrs);
     return attrs;
   },
   getPath(startPoint, endPoint): Array<Array<string | number>> | string {
@@ -225,4 +224,4 @@ registerEdge("mindmap-line", {
       ["L", endPoint.x, endPoint.y],
     ]
   }
-}, 'single-edge');
+});
