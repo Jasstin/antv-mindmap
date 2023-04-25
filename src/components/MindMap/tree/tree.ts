@@ -1,16 +1,7 @@
-import G6, { GraphData, TreeGraph, TreeGraphData } from "@antv/g6";
-import IMData from "../data";
-import { NodeData, InputData } from "../interface";
-import { mindmap } from "../plugins";
-import { isMobile } from "../utils/testDevice";
-import "./registerNode"; // 自定义节点形状
+import G6, { TreeGraph } from "@antv/g6";
+import "./registerNode"; // 自定义节点形状,边
 import "./registerBehavior";
-import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
 import { deepMix } from '@antv/util';
-import { getStyle } from "./registerNode";
-interface Window {
-  mindTree?: TreeGraph;
-}
 
 class Tree {
   tree

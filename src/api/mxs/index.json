@@ -5,7 +5,7 @@
     "data": {
         "info": {
             "id": "61c46a75ff5d6d8f5ffe6691",
-            "title": "模型树免费"
+            "title": "模型树·免费课"
         },
         "children": [
             {
@@ -13,7 +13,43 @@
                     "id": "640c2b503409a5b0116f7fef",
                     "title": "新建模型"
                 },
-                "children": null
+                "children": [
+                    {
+                        "info": {
+                            "id": "640c2b503409a5b0116f7fef",
+                            "title": "新建模型"
+                        },
+                        "children": null
+                    },
+                    {
+                        "info": {
+                            "id": "640c2b523409a5b0116f7ff0",
+                            "title": "新建模型"
+                        },
+                        "children": null
+                    },
+                    {
+                        "info": {
+                            "id": "640c2b543409a5b0116f7ff1",
+                            "title": "新建模型"
+                        },
+                        "children": null
+                    },
+                    {
+                        "info": {
+                            "id": "640c2b583409a5b0116f7ff2",
+                            "title": "新建模型"
+                        },
+                        "children": null
+                    },
+                    {
+                        "info": {
+                            "id": "640c2b593409a5b0116f7ff3",
+                            "title": "新建模型"
+                        },
+                        "children": null
+                    }
+                ]
             },
             {
                 "info": {

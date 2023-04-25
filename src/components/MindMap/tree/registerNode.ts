@@ -6,17 +6,19 @@ import { isSafari, isWin } from "../utils/testDevice";
 import { IGroup, IShape } from '@antv/g-base';
 import {
   registerNode,
+  registerEdge,
   Item,
   NodeConfig,
   ShapeStyle,
   ShapeOptions,
   BaseGlobal as Global,
   UpdateType,
+  EdgeConfig,
 } from '@antv/g6-core';
 import { deepMix } from '@antv/util';
 // startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
 const diffY = isSafari ? -3 : isWin ? 2 : 0;
-
+const GlobalFamily = '"Microsoft YaHei", "PingFang SC", "Microsoft JhengHei", sans-serif';
 registerNode('mindmap-node', {
   // 自定义节点时的配置
   options: {
@@ -36,7 +38,7 @@ registerNode('mindmap-node', {
       style: {
         fill: Global.nodeLabel.style.fill,
         fontSize: 16,
-        fontFamily: '"Microsoft YaHei", "PingFang SC", "Microsoft JhengHei", sans-serif',
+        fontFamily: GlobalFamily,
         fontStyle: 'normal',
         fontWeight: 400,
       },
@@ -147,50 +149,80 @@ registerNode('mindmap-node', {
   },
 }, 'single-node');
 
-// canvas节点
-// G6.registerNode("mindmap-node", {
-//   draw(cfg, group): IShape {
-//     const hide = cfg.hide || !cfg.info;
-//     const container = hide ? buildNullNode(cfg, group) : buildCanvasNode(cfg, group);
-//     return container;
-//   }
-// });
-// G6.registerEdge("mindmap-line", {
-//   draw(cfg, group) {
-//     if (!cfg || !group) return;
-//     const startPoint = cfg.startPoint;
-//     const endPoint = cfg.endPoint;
-//     let dist = endPoint.y < startPoint.y ? 10 : -10;
-//     if (endPoint.y === startPoint.y) {
-//       dist = 0;
-//     }
-//     const shape = group.addShape("path", {
-//       attrs: {
-//         stroke: 'blue',
-//         lineWidth: 1,
-//         cursor: "pointer",
-//         path: [
-//           ["M", startPoint.x, startPoint.y],
-//           ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
-//           [
-//             "L",
-//             endPoint.x / 3 + (2 / 3) * startPoint.x,
-//             startPoint.y + (endPoint.y - startPoint.y) + dist,
-//           ],
-//           [
-//             "Q",
-//             endPoint.x / 3 + (2 / 3) * startPoint.x,
-//             startPoint.y + (endPoint.y - startPoint.y),
-//             endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
-//             endPoint.y,
-//           ], // 三分之二处
-//           ["L", endPoint.x, endPoint.y],
-//         ],
-//       },
-//       // must be assigned in G6 3.3 and later versions. it can be any value you want
-//       name: "path-shape",
-//       zIndex: 0,
-//     });
-//     return shape;
-//   },
-// });
+registerEdge("mindmap-line", {
+  options: {
+    color: Global.defaultEdge.color,
+    size: Global.defaultEdge.size,
+    style: {
+      x: 0,
+      y: 0,
+      stroke: Global.defaultEdge.style.stroke,
+      lineAppendWidth: Global.defaultEdge.style.lineAppendWidth,
+    },
+    // 文本样式配置
+    labelCfg: {
+      style: {
+        fill: Global.edgeLabel.style.fill,
+        fontSize: Global.edgeLabel.style.fontSize,
+        fontFamily: GlobalFamily
+      },
+    },
+    stateStyles: {
+      ...Global.edgeStateStyles,
+    },
+  },
+  shapeType: 'mindmap-line',
+  // 文本位置
+  labelPosition: 'center',
+  drawShape(cfg: EdgeConfig, group: IGroup) {
+    const shapeStyle = (this as any).getShapeStyle(cfg);
+    const keyShape = group.addShape('path', {
+      className: 'edge-shape',
+      name: 'edge-shape',
+      attrs: shapeStyle,
+    });
+    group['shapeMap']['edge-shape'] = keyShape;
+    return keyShape;
+  },
+  getShapeStyle(cfg: EdgeConfig): ShapeStyle {
+    const { style: defaultStyle } = this.options;
+
+    const strokeStyle: ShapeStyle = {
+      stroke: cfg.color,
+    };
+
+    const style: ShapeStyle = deepMix({}, defaultStyle, strokeStyle, cfg.style);
+    const startPoint = cfg.startPoint;
+    const endPoint = cfg.endPoint;
+    const path = this.getPath(startPoint, endPoint);
+    const attrs: ShapeStyle = deepMix({}, Global.defaultEdge.style as ShapeStyle, style, {
+      lineWidth: cfg.size,
+      path,
+    } as ShapeStyle);
+    console.log(`>>>path`, startPoint, endPoint, path, attrs);
+    return attrs;
+  },
+  getPath(startPoint, endPoint): Array<Array<string | number>> | string {
+    let dist = endPoint.y < startPoint.y ? 10 : -10;
+    if (endPoint.y === startPoint.y) {
+      dist = 0;
+    }
+    return [
+      ["M", startPoint.x, startPoint.y],
+      ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
+      [
+        "L",
+        endPoint.x / 3 + (2 / 3) * startPoint.x,
+        startPoint.y + (endPoint.y - startPoint.y) + dist,
+      ],
+      [
+        "Q",
+        endPoint.x / 3 + (2 / 3) * startPoint.x,
+        startPoint.y + (endPoint.y - startPoint.y),
+        endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
+        endPoint.y,
+      ], // 三分之二处
+      ["L", endPoint.x, endPoint.y],
+    ]
+  }
+}, 'single-edge');

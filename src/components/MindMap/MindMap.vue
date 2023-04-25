@@ -25,7 +25,7 @@ export default {
       type: String,
       default: "rgb(19,128,255)"
     },
-    direction: { type: String, default: "H" },
+    direction: { type: String, default: "LR" },
     sharpCorner: { type: Boolean, default: true },
     themeColor: { type: String, default: "rgb(19,128,255)" },
     rootFontColor: { type: String, default: "#fff" },
@@ -88,14 +88,10 @@ export default {
         },
         getHGap: () => {
           return this.$props.xGap;
-        },
-        getSide: (data, index) => {
-          return data.data.info?.side || index % 2 === 0 ? 'right' : 'left'
         }
       },
-      // defaultNode: { type: 'rect' },
       defaultEdge: {
-        type: !this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
+        type: this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
         style: {
           lineWidth: this.$props.branch,
           stroke: this.$props.branchColor,
