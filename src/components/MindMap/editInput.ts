@@ -57,8 +57,8 @@ class EditInput {
       "transform-origin": "0 0",
       display: "block",
       position: "fixed",
-      top: `${y+diffY}px`,
-      left: `${beforeWidth+x+diffX}px`,
+      top: `${y + diffY}px`,
+      left: `${beforeWidth + x + diffX}px`,
       width: `${width + stroke}px`,
       height: `${height + stroke}px`,
       "box-sizing": `border-box`,
@@ -92,22 +92,26 @@ class EditInput {
     if (!this._input) return;
     this._input.addEventListener("input", (ev) => {
       let input = ev.target as HTMLInputElement;
-      if (input.innerText.length > 0) {
+      const value = input.innerText || input.value;
+      if (value.length > 0) {
         input.classList.remove("empty");
       } else {
         input.classList.add("empty");
       }
       this.handleInput(
-        this._input.innerText === "" ? placeholderText : this._input.innerText
+        value === "" ? placeholderText : value
       );
     });
-    this._input.addEventListener("blur", () => {
-      this.handleInputBlur(this._input.innerText);
+    this._input.addEventListener("blur", (ev) => {
+      let input = ev.target as HTMLInputElement;
+      const value = input.innerText || input.value;
+      this.handleInputBlur(value);
     });
     this._input.addEventListener("keydown", (ev) => {
       if (ev.key === "Enter" && !ev.shiftKey) {
         let input = ev.target as HTMLInputElement;
-        this.handleInputBlur.call(this, input.innerText);
+        const value = input.innerText || input.value;
+        this.handleInputBlur.call(this, value);
       }
     });
   }
