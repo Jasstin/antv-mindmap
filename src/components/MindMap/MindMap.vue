@@ -37,7 +37,7 @@ export default {
       type: Object as PropType<[number, number]>,
       default: [0.1, 8],
     },
-    scaleRatio: { type: Number, default: 1 },
+    scaleRatio: { type: Number, default: 0.8 },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -104,12 +104,12 @@ export default {
     tree.setMinZoom(minZoom);
     tree.setMaxZoom(maxZoom);
     const { x, y } = getCenterPointById(this.id)
-    tree.zoomTo(this.$props.scaleRatio, { x, y });
     resizeObserver(this.id, throttle(({ width, height }) => {
       tree.changeSize(width, height)
     }, 1000))
     if (this.$props.modelValue) {
       this.tree.render(this.$props.modelValue);
+      tree.zoomTo(this.$props.scaleRatio, { x, y });
     }
     tree.addBehaviors({
       type: 'double-finger-drag-canvas',
@@ -122,6 +122,8 @@ export default {
         if (!val) return console.log(`[mindTree wran]: 没有数据传入`);
         if (!this.tree) return;
         this.tree.render(val);
+        const { x, y } = getCenterPointById(this.id)
+        this.tree.tree.zoomTo(this.$props.scaleRatio, { x, y });
       },
       immediate: true,
     }
