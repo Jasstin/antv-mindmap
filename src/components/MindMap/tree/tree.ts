@@ -12,7 +12,7 @@ class Tree {
     const config = deepMix({
       layout: {
         type: "mindmap",
-        direction: 'H',
+        direction: 'LR',
         getVGap: () => {
           return 10;
         },
@@ -43,25 +43,20 @@ class Tree {
       renderer: "canvas",
     }, layoutConfig);
     this.tree = new G6.TreeGraph(config);
+    this.bindEvent()
+  }
+  bindEvent() {
+    const graph = this.tree;
+    graph.on('afterlayout', () => {
+      // 由于左右布局时根节点的连接点无法很好计算，因此会出现线连接出现在节点之上的情况，因此需要将根节点的层级置于边之上
+      const rootNode = graph.get('nodes')[0];
+      if (rootNode) {
+        rootNode.toFront();
+      }
+    })
   }
   render(data) {
-    const rootData = {
-      name: 'root',
-      visible: false,
-      children: data,
-      branchColor: 'transparent'
-    }
-    let renderData;
-    if (data?.length > 2) {
-      renderData = rootData;
-    } else if (data?.length === 1) {
-      renderData = data[0]
-    } else if (!data?.length) {
-      return;
-    } else {
-      console.log(`[mindTree warn]: 数据格式错误`);
-    }
-    this.tree.data(renderData);
+    this.tree.data(data);
     this.tree.layout(true);
   }
 }

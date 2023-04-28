@@ -51,12 +51,6 @@ registerNode('mindmap-node', {
       width: 20,
       height: 20,
     },
-    // 连接点，默认为左右
-    // anchorPoints: [{ x: 0, y: 0.5 }, { x: 1, y: 0.5 }]
-    anchorPoints: [
-      [0, 0.5],
-      [1, 0.5],
-    ],
     stateStyles: {
       ...Global.nodeStateStyles,
     },
@@ -147,81 +141,37 @@ registerNode('mindmap-node', {
 
     return styles;
   },
-}, 'single-node');
-
-registerEdge("mindmap-line", {
-  options: {
-    color: Global.defaultEdge.color,
-    size: Global.defaultEdge.size,
-    style: {
-      x: 0,
-      y: 0,
-      stroke: Global.defaultEdge.style.stroke,
-      lineAppendWidth: Global.defaultEdge.style.lineAppendWidth,
-    },
-    // 文本样式配置
-    labelCfg: {
-      style: {
-        fill: Global.edgeLabel.style.fill,
-        fontSize: Global.edgeLabel.style.fontSize,
-        fontFamily: GlobalFamily
-      },
-    },
-    stateStyles: {
-      ...Global.edgeStateStyles,
-    },
-  },
-  shapeType: 'mindmap-line',
-  // 文本位置
-  labelPosition: 'center',
-  draw(cfg: EdgeConfig, group: IGroup) {
-    const shapeStyle = (this as any).getShapeStyle(cfg);
-    const keyShape = group.addShape('path', {
-      className: 'edge-shape',
-      name: 'edge-shape',
-      attrs: shapeStyle,
-    });
-    group['shapeMap']['edge-shape'] = keyShape;
-    return keyShape;
-  },
-  getShapeStyle(cfg: EdgeConfig): ShapeStyle {
-    const { style: defaultStyle } = this.options;
-
-    const strokeStyle: ShapeStyle = {
-      stroke: cfg.color,
-    };
-
-    const style: ShapeStyle = deepMix({}, defaultStyle, strokeStyle, cfg.style);
-    const startPoint = cfg.startPoint;
-    const endPoint = cfg.endPoint;
-    const path = this.getPath(startPoint, endPoint, cfg);
-    const attrs: ShapeStyle = deepMix({}, Global.defaultEdge.style as ShapeStyle, style, {
-      lineWidth: cfg.size,
-      path,
-    } as ShapeStyle);
-    return attrs;
-  },
-  getPath(startPoint, endPoint): Array<Array<string | number>> | string {
-    let dist = endPoint.y < startPoint.y ? 10 : -10;
-    if (endPoint.y === startPoint.y) {
-      dist = 0;
+  getAnchorPoints(cfg) {
+    if (cfg.side === 'left') {
+      return [
+        [0, 0.5],
+        [1, 0.5]
+      ]
     }
     return [
-      ["M", startPoint.x, startPoint.y],
-      ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
-      [
-        "L",
-        endPoint.x / 3 + (2 / 3) * startPoint.x,
-        startPoint.y + (endPoint.y - startPoint.y) + dist,
-      ],
-      [
-        "Q",
-        endPoint.x / 3 + (2 / 3) * startPoint.x,
-        startPoint.y + (endPoint.y - startPoint.y),
-        endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
-        endPoint.y,
-      ], // 三分之二处
-      ["L", endPoint.x, endPoint.y],
+      [1, 0.5],
+      [0, 0.5]
     ]
+  },
+}, 'single-node');
+
+registerEdge('round-poly', {
+  getControlPoints: (cfg) => {
+    const { startPoint, endPoint } = cfg;
+    const isLeft = startPoint.x < endPoint.x;
+    const distance = Math.min(Math.abs(startPoint.x - endPoint.x) * 1 / 3, 30);
+    const offsetX = isLeft ? distance : -distance;
+    return [
+      startPoint,
+      {
+        x: startPoint.x + offsetX,
+        y: startPoint.y
+      },
+      {
+        x: startPoint.x + offsetX,
+        y: endPoint.y
+      },
+      endPoint
+    ];
   }
-});
+}, 'polyline')

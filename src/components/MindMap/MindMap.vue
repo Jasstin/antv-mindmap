@@ -2,13 +2,13 @@
   <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1" />
 </template>
 <script lang="ts">
-import "./css/Mindmap.scss";
 import Tree from "./tree/tree";
 import { TreeGraph } from '@antv/g6';
 import resizeObserver from "./utils/resizeObserver";
 import throttle from 'lodash/throttle';
 import { PropType } from "vue";
 import getCenterPointById from "./utils/getCenterPointById";
+import { parseData } from "./tree/handleData";
 export default {
   props: {
     // 脑图数据
@@ -25,7 +25,7 @@ export default {
       type: String,
       default: "rgb(19,128,255)"
     },
-    direction: { type: String, default: "LR" },
+    direction: { type: String, default: "H" },
     sharpCorner: { type: Boolean, default: true },
     themeColor: { type: String, default: "rgb(19,128,255)" },
     rootFontColor: { type: String, default: "#fff" },
@@ -88,11 +88,17 @@ export default {
         },
         getHGap: () => {
           return this.$props.xGap;
+        },
+        getSide: ({ data }) => {
+          return data.side || 'right'
         }
       },
       defaultEdge: {
-        type: this.$props.sharpCorner ? "mindmap-line" : "cubic-horizontal",
+        type: this.$props.sharpCorner ? "round-poly" : "cubic-horizontal",
+        sourceAnchor: 0,
+        targetAnchor: 1,
         style: {
+          radius: 8,
           lineWidth: this.$props.branch,
           stroke: this.$props.branchColor,
           lineAppendWidth: this.$props.branch + this.$props.yGap / 2
@@ -108,7 +114,7 @@ export default {
       tree.changeSize(width, height)
     }, 1000))
     if (this.$props.modelValue) {
-      this.tree.render(this.$props.modelValue);
+      this.tree.render(parseData(this.$props.modelValue));
       tree.zoomTo(this.$props.scaleRatio, { x, y });
     }
     tree.addBehaviors({
@@ -121,7 +127,7 @@ export default {
       handler(val) {
         if (!val) return console.log(`[mindTree wran]: 没有数据传入`);
         if (!this.tree) return;
-        this.tree.render(val);
+        this.tree.render(parseData(val));
         const { x, y } = getCenterPointById(this.id)
         this.tree.tree.zoomTo(this.$props.scaleRatio, { x, y });
       },
