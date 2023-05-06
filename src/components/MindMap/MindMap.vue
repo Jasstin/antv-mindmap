@@ -3,7 +3,7 @@
 </template>
 <script lang="ts">
 import Tree from "./tree/tree";
-import { TreeGraph } from '@antv/g6';
+import { TreeGraph, IGraph } from '@antv/g6';
 import resizeObserver from "./utils/resizeObserver";
 import throttle from 'lodash/throttle';
 import { PropType } from "vue";
@@ -41,24 +41,24 @@ export default {
     },
     scaleRatio: { type: Number, default: 0.8 },
     // 功能设置
-    tooltip: Boolean,
-    edit: Boolean,
-    drag: Boolean,
-    zoom: Boolean,
-    centerBtn: Boolean,
-    fitBtn: Boolean,
-    downloadBtn: Boolean,
-    timetravel: Boolean,
-    mindmap: Boolean,
-    addNodeBtn: Boolean,
-    collapseBtn: Boolean,
-    fisheye: Boolean,
-    watchResize: Boolean,
-    keyboard: Boolean,
-    ctm: Boolean, //  开启右键菜单
-    nodeMenu: Array, // 菜单配置
-    hotKey: Array, // 快捷键配置
-    closeEditInput: Boolean, // 关闭思维导图富文本编辑功能
+    // tooltip: Boolean, //废弃
+    // edit: Boolean, //废弃
+    // drag: Boolean, //废弃
+    // zoom: Boolean, //废弃
+    // centerBtn: Boolean, //废弃
+    // fitBtn: Boolean, //废弃
+    // downloadBtn: Boolean, //废弃
+    // timetravel: Boolean, //废弃
+    // mindmap: Boolean, //废弃
+    // addNodeBtn: Boolean, //废弃
+    // collapseBtn: Boolean, //废弃
+    // fisheye: Boolean, //废弃
+    // watchResize: Boolean, //废弃
+    // keyboard: Boolean, //废弃
+    // ctm: Boolean, //  开启右键菜单 //废弃
+    // nodeMenu: Array, // 菜单配置 //废弃
+    // hotKey: Array, // 快捷键配置 //废弃
+    // closeEditInput: Boolean, // 关闭思维导图富文本编辑功能
     // 钩子函数
     onAdd: Function,
     onCancelSelected: Function,
@@ -117,7 +117,6 @@ export default {
       tree.setMinZoom(minZoom);
       tree.setMaxZoom(maxZoom);
     }
-    const { x, y } = getCenterPointById(this.id)
     resizeObserver(this.id, throttle(({ width, height }) => {
       tree.changeSize(width, height)
     }, 1000))
@@ -126,12 +125,48 @@ export default {
         direction: this.$props.direction,
         getSize: (cfg) => getSize(cfg, {})
       }));
-      tree.zoomTo(this.$props.scaleRatio, { x, y });
     }
+    this.fitCenter();
+    // 两指移动放大节点
     tree.addBehaviors({
       type: 'double-finger-drag-canvas',
       controlMoveDirection: this.$props.controlMoveDirection
     }, 'default')
+  },
+  methods: {
+    fitCenter() {
+      const tree = this.tree.tree as TreeGraph;
+      const { x, y } = getCenterPointById(this.id)
+      tree.zoomTo(this.$props.scaleRatio, { x, y });
+    },
+    /**
+   * zoomOut 操作
+   */
+    zoomOut() {
+      const graph: IGraph = this.tree.tree;
+      const currentZoom = graph.getZoom();
+      const ratioOut = 1 / (1 - 0.05 * 2);
+      const maxZoom = graph.get('maxZoom');
+      const { x, y } = getCenterPointById(this.id)
+      if (ratioOut * currentZoom > maxZoom) {
+        return;
+      }
+      graph.zoomTo(currentZoom * ratioOut, { x, y });
+    },
+    /**
+     * zoomIn 操作
+     */
+    zoomIn() {
+      const graph: IGraph = this.tree.tree;
+      const currentZoom = graph.getZoom();
+      const ratioIn = 1 - 0.05 * 2;
+      const minZoom = graph.get('minZoom');
+      if (ratioIn * currentZoom < minZoom) {
+        return;
+      }
+      const { x, y } = getCenterPointById(this.id)
+      graph.zoomTo(currentZoom * ratioIn, { x, y });
+    }
   },
   watch: {
     "$props.modelValue": {
@@ -142,8 +177,7 @@ export default {
             direction: this.$props.direction,
             getSize: (cfg) => getSize(cfg, {})
           }));
-          const { x, y } = getCenterPointById(this.id)
-          this.tree.tree.zoomTo(this.$props.scaleRatio, { x, y });
+          this.fitCenter();
         }
       },
       immediate: true,
