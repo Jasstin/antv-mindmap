@@ -26,8 +26,6 @@ const defaultOptions = {
     paddingTop: 0,
     paddingLeft: 3,
     iconMarginRight: 3,
-    beforeWidth: 5,
-    afterWidth: 5,
     style: {
         stroke: Global.defaultNode.style.stroke,
         fill: Global.defaultNode.style.fill,
@@ -71,7 +69,7 @@ registerNode('mindmap-node', {
     // 文本位置
     labelPosition: 'center',
     drawShape(cfg: NodeConfig, group: IGroup): IShape {
-        const { icon: defaultIcon = {}, size, beforeWidth, afterWidth } = this.mergeStyle || this.getOptions(cfg) as NodeConfig;
+        const { icon: defaultIcon = {}, size } = this.mergeStyle || this.getOptions(cfg) as NodeConfig;
         const nodeData = cfg.info as NodeData;
         const depth = cfg.depth as number;
         const icon = deepMix({}, defaultIcon, { img: nodeData.icon });
@@ -79,9 +77,7 @@ registerNode('mindmap-node', {
         const bg = `${this.type}-background`;
         const newNodeFn = new Shape(group);
         const rest = { draggable: depth > 0 };
-        const [width, height] = cfg.size;
-        group['shapeMap'][wrapper] = newNodeFn.Rect(wrapper, { x: 0, y: 0, width: width + beforeWidth + afterWidth, height: height, fill: 'transparent' }, rest);
-        group['shapeMap'][bg] = newNodeFn.Rect(bg, this.getBgStyle!(cfg), rest);
+        group['shapeMap'][wrapper] = newNodeFn.Rect(bg, this.getBgStyle!(cfg), rest);
         const { show, img } = icon;
         const iconName = `${this.type}-icon`;
         const labelName = `${this.type}-label`;
@@ -97,10 +93,10 @@ registerNode('mindmap-node', {
      * @return {Object} 节点的样式
      */
     getBgStyle: function getShapeStyle(cfg) {
-        const { style, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+        const { style } = (this.mergeStyle || this.getOptions(cfg));
         const [width, height] = this.getSize(cfg);
         var styles = __assign({
-            x: beforeWidth,
+            x: 0,
             y: 0,
             width,
             height,
@@ -114,10 +110,10 @@ registerNode('mindmap-node', {
      * @return {Object} 节点的样式
      */
     getIconStyle: function getIconStyle(cfg) {
-        const { icon, lineHeight, paddingLeft, paddingTop, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+        const { icon, lineHeight, paddingLeft, paddingTop } = (this.mergeStyle || this.getOptions(cfg));
         var styles = __assign({
             height: Math.min(lineHeight, icon.height),
-            x: paddingLeft + beforeWidth,
+            x: paddingLeft,
             y: paddingTop + Math.max((lineHeight - icon.height) / 2, 0),
             cursor: 'pointer'
         }, icon);
@@ -130,11 +126,11 @@ registerNode('mindmap-node', {
      * @return {Object} 节点的样式
      */
     getLabelStyle: function getLabelStyle(cfg) {
-        const { labelCfg, paddingLeft, icon, iconMarginRight, beforeWidth } = (this.mergeStyle || this.getOptions(cfg));
+        const { labelCfg, paddingLeft, icon, iconMarginRight } = (this.mergeStyle || this.getOptions(cfg));
         const info = cfg.info as { title: string, icon: string };
         const { show, img, width: iconWidth } = icon;
         var styles = __assign({
-            x: paddingLeft + beforeWidth,
+            x: paddingLeft,
             y: diffY + (isWin ? -1 : 0),
             text: info.title,
             textIndent: (show && img) ? iconWidth + iconMarginRight : 0,

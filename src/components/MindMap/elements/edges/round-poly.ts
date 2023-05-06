@@ -34,7 +34,7 @@ registerEdge('round-poly', {
             start = sourceNode.get('anchorPointsCache')[0];
             end = targetNode.get('anchorPointsCache')[1];
         }
-        const distance = Math.min(Math.abs(start.x - end.x) * 1 / 3, 30);
+        const distance = Math.min(Math.abs(start.x - end.x) * 1 / 3, 40);
         const offsetX = isLeft ? distance : -distance;
         return [
             {
