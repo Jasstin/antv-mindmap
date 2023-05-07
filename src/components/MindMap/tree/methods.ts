@@ -99,9 +99,11 @@ export const update = (id: string, name: any) => {
   selectNode(id, true);
   rePaint();
 };
-export const selectNode = (id: string, selected: boolean) => {
+export const selectNode = (id: string, selected: boolean,canAddChild=true) => {
   cancelAllSelect();
-  globalTree.value.setItemState(id, "selected", selected);
+  if(canAddChild){
+    globalTree.value.setItemState(id, "selected", selected);
+  }
   selected && emitter.emit("onSelectedNode", findData(id));
 };
 export const cancelAllSelect = () => {

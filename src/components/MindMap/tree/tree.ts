@@ -176,7 +176,7 @@ class Tree {
       },
       scaleRatio: layoutConfig?.scaleRatio || 1,
       modes: {
-        default: [],
+        default: ['default-view'],
         edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc"],
       },
       plugins: [] as any,

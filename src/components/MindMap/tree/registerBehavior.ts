@@ -27,6 +27,45 @@ import {
   controlMoveDirection,
 } from "../variable";
 import emitter from "../mitt";
+G6.registerBehavior('default-view',{
+  getEvents() {
+    return {
+      "node:click": "clickNode",
+      "node:touchend": "clickNode",
+      "node:mouseover": "hoverNode",
+      "node:mouseleave": "clearHoverStatus",
+    };
+  },
+  clickNode(evt) {
+    const tree = evt.currentTarget;
+    const node = evt.item;
+    const model = evt.item.get("model");
+    const name = evt.target.get("action");
+    if (name === "expand") {
+      expand(model.id);
+    } else if (name === "collapse") {
+      collapse(model.id);
+    } else if (name === "add") {
+      addData(model?.id as string, "", true);
+    } else {
+      if (Date.now() - this.lastClickTime < 500) return; //  如果500ms内连续点击了两次为双击行为，不做任何处理
+      this.lastClickTime = Date.now();
+      selectNode(model.id, !model.isCurrentSelected,false);
+    }
+  },
+  hoverNode(evt) {
+    const { currentTarget: tree, item: node } = evt;
+    if (isDragging.value) return;
+    tree.setItemState(node, "hover", true);
+    node.toFront();
+    tree.paint();
+  },
+  clearHoverStatus(evt) {
+    let { currentTarget: tree, item: node } = evt;
+    tree.setItemState(node, "hover", false);
+    tree.paint();
+  },
+})
 // pc端自定义行为
 G6.registerBehavior("edit-mindmap-pc", {
   selectNodeId: null,
