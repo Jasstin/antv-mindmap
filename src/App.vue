@@ -22,13 +22,30 @@
       </svg>
     </li>
   </ul>
+  <div class="shadow bounceIn thin-border bgblur" ref="nodeMenuRef">
+    <ul>
+      <li code="addChild">添加子节点</li>
+      <li code="addSubling">添加兄弟节点</li>
+      <li code="deleteSelf">删除节点</li>
+      <li code="collapse">折叠节点</li>
+    </ul>
+  </div>
+  <div class="shadow bounceIn thin-border bgblur" ref="canvasMenuRef">
+    <ul>
+      <li code="zoomOut">放大</li>
+      <li code="zoomIn">缩小</li>
+      <li code="fitCenter">缩放到合适位置</li>
+      <li code="downloadPage">导出图片</li>
+      <li code="exportFile">导出文件</li>
+    </ul>
+  </div>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
 import { getData } from "./api/mxs";
 import Mindmap from "./components/MindMap";
 import './static/index.scss';
-import { ToolBar } from "@antv/g6";
+import { Menu, ToolBar } from "@antv/g6";
 export default defineComponent({
   name: "App",
   components: {
@@ -44,8 +61,30 @@ export default defineComponent({
       this.data = [res.data];
     })
     this.addToolbar();
+    this.addNodeMenu();
   },
   methods: {
+    addNodeMenu() {
+      const nodeMenuRef = this.$refs.nodeMenuRef;
+      const canvasMenuRef = this.$refs.canvasMenuRef;
+      const mindmapRef = this.$refs.mindMapRef;
+      const graph = mindmapRef.tree.tree;
+      const toolbar = new Menu({
+        className: nodeMenuRef.className,
+        getContent: (e) => {
+          const isCanvas = e?.target.isCanvas && e.target.isCanvas();
+          const Dom = isCanvas ? canvasMenuRef : nodeMenuRef
+          Dom.id = 'menu'
+          return Dom
+        },
+        itemTypes: ['node', 'canvas'],
+        handleMenuClick: (target, item) => {
+          const code = target.getAttribute('code');
+          this.handleClickCode(code);
+        }
+      });
+      graph.addPlugin(toolbar);
+    },
     addToolbar() {
       const toolbarRef = this.$refs.toolbarRef;
       const mindmapRef = this.$refs.mindMapRef;
@@ -53,20 +92,26 @@ export default defineComponent({
       const toolbar = new ToolBar({
         className: toolbarRef.className,
         getContent: () => toolbarRef,
-        handleClick: (code, graph) => {
-          if (code === 'fitCenter') {
-            // 在渲染和动画完成后调用
-            graph.fitCenter();
-            return mindmapRef.fitCenter();
-          } else if (code === 'zoomIn') {
-            return mindmapRef.zoomIn();
-          } else if (code === 'zoomOut') {
-            return mindmapRef.zoomOut();
-          }
-          toolbar.handleDefaultOperator(code, graph);
-        }
+        handleClick: this.handleClickCode
       });
       graph.addPlugin(toolbar);
+      this.toolbar = toolbar;
+    },
+    handleClickCode(code) {
+      const mindmapRef = this.$refs.mindMapRef;
+      const graph = mindmapRef.tree.tree;
+      if (code === 'fitCenter') {
+        // 在渲染和动画完成后调用
+        graph.fitCenter();
+        return mindmapRef.fitCenter();
+      } else if (code === 'zoomIn') {
+        return mindmapRef.zoomIn();
+      } else if (code === 'zoomOut') {
+        return mindmapRef.zoomOut();
+      } else if (code === 'exportFile') {
+        console.log(graph.save());
+      }
+      this.toolbar.handleDefaultOperator(code, graph);
     }
   }
 });
