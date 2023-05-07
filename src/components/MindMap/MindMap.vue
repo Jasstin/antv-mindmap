@@ -29,11 +29,27 @@ import {
 } from "./tree/methods";
 import emitter from "./mitt";
 import defaultHotKey from "./tree/hotkeys";
+import { Util } from '@antv/g6';
 const isArray = (arg) =>
   Object.prototype.toString.call(arg).toLowerCase().indexOf("array") > 5;
 const isObject = (arg) =>
   Object.prototype.toString.call(arg).toLowerCase() === "[object object]";
 let tree;
+// 深度遍历树节点，修改树对象
+export const transferTree = (tree, func, depth = 0, parent = null) => {
+  let node, list = [...tree];
+  return list.map((item, index) => {
+    node = func(item, index, depth, parent);
+    if (item.children) {
+      const children = transferTree(item.children, func, depth + 1, node);
+      if (children && children.length) {
+        node.children = children;
+      }
+    }
+    return node
+  });
+}
+let treeInited = false;
 export default {
   props: {
     // 脑图数据
@@ -111,6 +127,7 @@ export default {
     this.$props.onCancelSelected &&
       emitter.on("onCancelSelected", this.$props.onCancelSelected);
     this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
+    emitter.on('onValueChange', this.handleValueChange);
     this.changeCanvasSize();
     window.addEventListener("resize", this.changeCanvasSize);
   },
@@ -127,6 +144,7 @@ export default {
       emitter.off("onCancelSelected", this.$props.onCancelSelected);
     this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
     window.removeEventListener("resize", this.changeCanvasSize);
+    emitter.off('onValueChange', this.handleValueChange);
     tree.destroy();
     tree = null;
   },
@@ -141,11 +159,21 @@ export default {
         }
       });
     },
+    handleValueChange(data) {
+      let value = transferTree([...[data]], (node) => {
+        const info = node?.rawData?.info;
+        return info ? { ...info, title: node.fullName } : { id: void 0, title: node.fullName }
+      });
+      this.$emit('update:modelValue', value)
+    },
     treeInit() {
+      if (treeInited) return;
       const { modelValue } = this.$props;
       this.$nextTick(() => {
         tree = new Tree("mxs-mindmap_container", modelValue);
         tree.init(this.$props);
+        this.inputInit();
+        treeInited = true;
       });
     },
     inputInit() {
@@ -171,7 +199,6 @@ export default {
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
         this.treeInit();
-        this.inputInit();
       },
       immediate: true,
     },

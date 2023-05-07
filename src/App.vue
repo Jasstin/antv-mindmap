@@ -222,6 +222,11 @@ export default defineComponent({
       console.log(`>>>>onEdit`, arguments);
     },
   },
+  watch: {
+    data(val) {
+      console.log(`>>>>最新的值`, val);
+    }
+  }
 });
 </script>
 <style lang="scss">

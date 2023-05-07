@@ -77,7 +77,7 @@ class EditInput {
       border: `${stroke}px solid ${activeStrokeColor.value}`,
       "line-height": `${height - stroke}px`,
     });
-    NodeInput.innerText = placeholderText === name ? "" : name;
+    // NodeInput.innerText = placeholderText === name ? "" : name;
     NodeInput.value = placeholderText === name ? "" : name;
     document.body.style["--placeholderText"] = placeholderText;
     NodeInput.classList[name === placeholderText ? "add" : "remove"]("empty");
@@ -90,7 +90,7 @@ class EditInput {
   }
   bindEvent() {
     if (!this._input) return;
-    this._input.addEventListener("input", (ev) => {
+    this._input.oninput = (ev) => {
       let input = ev.target as HTMLInputElement;
       const value = input.innerText || input.value;
       if (value.length > 0) {
@@ -101,24 +101,24 @@ class EditInput {
       this.handleInput(
         value === "" ? placeholderText : value
       );
-    });
-    this._input.addEventListener("blur", (ev) => {
+    };
+    this._input.onblur = (ev) => {
       let input = ev.target as HTMLInputElement;
       const value = input.innerText || input.value;
       this.handleInputBlur(value);
-    });
-    this._input.addEventListener("keydown", (ev) => {
+    };
+    this._input.onkeydown = (ev) => {
       if (ev.key === "Enter" && !ev.shiftKey) {
         let input = ev.target as HTMLInputElement;
         const value = input.innerText || input.value;
         this.handleInputBlur.call(this, value);
       }
-    });
+    };
   }
   hideInput() {
     if (!this._input) return;
     this._input.style.display = "none";
-    document.getElementById("mxs-mindmap_container").focus(); // 隐藏输入框时让画布focus
+    // document.getElementById("mxs-mindmap_container").focus(); // 隐藏输入框时让画布focus
   }
   handlefocus(name: string) {
     //    methods 将会重写，用来更新节点状态

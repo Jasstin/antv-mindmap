@@ -735,7 +735,6 @@ G6.registerBehavior("edit-mindmap-mobile", {
   showDragDiv(clientX, clientY, showLine, parentId) {
     const tree = globalTree.value;
     const { x, y } = tree.getPointByClient(clientX, clientY);
-    console.log(">>>>>drag", x, y);
     const model = {
       id: "moveNode",
       label: "",

@@ -101,7 +101,9 @@ class IMData {
       children: [],
       _children: [],
       rawData: isInit ? rawData : rawData?.rawData,
-      ...buildNodeStyle({ ...Object.assign({}, rawData, rawData.style || {}), depth }, this.config),
+      ...buildNodeStyle({
+        ...Object.assign({}, rawData, rawData.style || {}, isInit ? { name: rawData.info.title || rawData.name } : { name: rawData.name }), depth
+      }, this.config),
     };
     if (rawChildren) {
       rawChildren

@@ -21,6 +21,7 @@ export const rePaint = (stack = true) => {
   let tree: TreeGraph | null = globalTree.value as TreeGraph;
   if (!IMData.data) return;
   tree?.data(IMData.data);
+  emitter.emit("onValueChange", IMData.data);
   if (stack) {
     History.push(IMData.data);
   }
