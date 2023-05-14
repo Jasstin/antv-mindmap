@@ -2,6 +2,7 @@ import treeForEach, { transferTree } from "../utils/treeForEach";
 
 interface Options {
     direction: string,
+    depth: number,
     getSize: (cfg) => [number, number]
 }
 interface InputData {
@@ -15,7 +16,7 @@ export interface NodeData {
     size: number[]
 }
 export const parseData = (data, options: Options) => {
-    const { getSize, direction = 'H' } = options || {};
+    const { getSize, direction = 'H', depth: _depth = 0 } = options || {};
     const defaultNode = { info: { title: '思维导图根节点' } }
     if (!data?.length) {
         console.log(`[mindTree warn]: 传入数据有误，需要一个数组`)
@@ -45,7 +46,7 @@ export const parseData = (data, options: Options) => {
             info: item.info,
             rawData: item.info,
             size: getSize(item),
-            depth,
+            depth: depth + _depth,
             side
         }
     })

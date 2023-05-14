@@ -166,6 +166,21 @@ export default {
       }
       const { x, y } = getCenterPointById(this.id)
       graph.zoomTo(currentZoom * ratioIn, { x, y });
+    },
+    /**
+     * 添加子节点
+     */
+    addChild(data, parent) {
+      const graph: TreeGraph = this.tree.tree;
+      const pData = parent.getModel();
+      const newNode = parseData([data], {
+        getSize: (cfg) => getSize(cfg, {})
+      });
+      if (this.$props.direction !== 'LR') {
+        newNode.side = ['left', 'right'][Math.floor(Math.random() * 2)]
+      }
+      graph.addChild(newNode, parent)
+      graph.layout()
     }
   },
   watch: {

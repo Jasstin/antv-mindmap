@@ -25,9 +25,9 @@
   <div class="shadow bounceIn thin-border bgblur" ref="nodeMenuRef">
     <ul>
       <li code="addChild">添加子节点</li>
-      <li code="addSubling">添加兄弟节点</li>
-      <li code="deleteSelf">删除节点</li>
+      <li code="delete">删除节点</li>
       <li code="collapse">折叠节点</li>
+      <li code="expand">展开节点</li>
     </ul>
   </div>
   <div class="shadow bounceIn thin-border bgblur" ref="canvasMenuRef">
@@ -74,13 +74,29 @@ export default defineComponent({
         getContent: (e) => {
           const isCanvas = e?.target.isCanvas && e.target.isCanvas();
           const Dom = isCanvas ? canvasMenuRef : nodeMenuRef
+          if (!isCanvas) {
+            const item = e?.item;
+            const expandDom = Dom?.querySelector('[code="expand"]');
+            const collapseDom = Dom?.querySelector('[code="collapse"]');
+            if (!item?.getModel().children?.length) {
+              expandDom.style.display = "none";
+              collapseDom.style.display = "none";
+            } else if (item.getModel().collapsed) {
+              expandDom.style.display = "";
+              collapseDom.style.display = "none";
+            } else {
+              collapseDom.style.display = "";
+              expandDom.style.display = "none";
+            }
+          }
+
           Dom.id = 'menu'
           return Dom
         },
         itemTypes: ['node', 'canvas'],
         handleMenuClick: (target, item) => {
           const code = target.getAttribute('code');
-          this.handleClickCode(code);
+          this.handleClickCode(code, item);
         }
       });
       graph.addPlugin(toolbar);
@@ -97,7 +113,7 @@ export default defineComponent({
       graph.addPlugin(toolbar);
       this.toolbar = toolbar;
     },
-    handleClickCode(code) {
+    handleClickCode(code, node?) {
       const mindmapRef = this.$refs.mindMapRef;
       const graph = mindmapRef.tree.tree;
       if (code === 'fitCenter') {
@@ -110,6 +126,18 @@ export default defineComponent({
         return mindmapRef.zoomOut();
       } else if (code === 'exportFile') {
         console.log(graph.save());
+      } else if (code === 'addChild') {
+        return mindmapRef.addChild({
+          info: { title: '新添加的埋点' }
+        }, node);
+      } else if (code === 'delete') {
+        graph.removeChild(node.get('id'))
+      } else if (code === 'collapse') {
+        node.getModel().collapsed = true;
+        graph.layout()
+      } else if (code === 'expand') {
+        node.getModel().collapsed = false;
+        graph.layout()
       }
       this.toolbar.handleDefaultOperator(code, graph);
     }
