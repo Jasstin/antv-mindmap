@@ -1,6 +1,5 @@
 import G6, { GraphData, TreeGraph, TreeGraphData } from "@antv/g6";
 import IMData from "../data";
-import contextMenu from "../menu";
 import { NodeData, InputData } from "../interface";
 import { mindmap, toolbar, tooltip } from "../plugins";
 import { isMobile } from "../utils/testDevice";
@@ -36,6 +35,7 @@ import "../elements/nodes/mindmap-node"; // 自定义节点形状
 import "../elements/edges/round-poly"; // 自定义边
 import "./registerBehavior";
 import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
+import getCenterPointById from "../utils/getCenterPointById";
 
 interface Window {
   mindTree?: TreeGraph;
@@ -99,10 +99,10 @@ class Tree {
   container: HTMLElement | null;
   data: NodeData | GraphData | TreeGraphData | undefined;
   tree: TreeGraph | null;
+  config
 
-  constructor(containerId: string, data: InputData | InputData[]) {
+  constructor(containerId: string) {
     this.container = document.getElementById(containerId);
-    this.data = data;
     this.tree = null;
   }
 
@@ -153,10 +153,10 @@ class Tree {
         type: "mindmap",
         direction: "H",
         getHeight: (node: NodeData) => {
-          return node.style.height;
+          return node.style?.height;
         },
         getWidth: (node: NodeData) => {
-          return node.style.width;
+          return node.style?.width;
         },
         getVGap: () => {
           return layoutConfig?.yGap || 10;
@@ -165,7 +165,7 @@ class Tree {
           return layoutConfig?.xGap || 30;
         },
         getSide: (node: INode) => {
-          return node.data.side || "right";
+          return "right";
         },
       },
       defaultEdge: {
@@ -174,7 +174,7 @@ class Tree {
           lineWidth: branch.value,
           stroke: branchColor.value,
           radius: 8,
-          lineAppendWidth: branch.value + layoutConfig?.yGap / 2
+          lineAppendWidth:  branch.value + (layoutConfig?.yGap || 10) / 2
         },
       },
       scaleRatio: layoutConfig?.scaleRatio || 1,
@@ -190,9 +190,6 @@ class Tree {
     if (layoutConfig?.mindmap) {
       plugins.push(mindmap());
     }
-    if (layoutConfig?.edit) {
-      plugins.push(contextMenu());
-    }
     config.plugins = plugins;
     return config;
   }
@@ -200,22 +197,14 @@ class Tree {
   async init(layoutConfig?: layoutConfig) {
     if (!this.container) return;
     const config = this.createLayoutConfig(layoutConfig);
-    IMData.setConfig({ renderer: layoutConfig.renderer });
-    const data = IMData.init(this.data,true);
+    this.config = config;
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,
       animate: false,
       renderer: layoutConfig.renderer || "canvas",
     });
-    tree.data(data);
     this.tree = tree;
-    tree.layout();
-    tree.fitCenter();
-    tree.zoomTo(config.scaleRatio, {
-      x: tree.getWidth() / 2,
-      y: tree.getHeight() / 2,
-    });
     tree.setAutoPaint(true);
     this.enableFeature(layoutConfig);
     let global = window as Window;
@@ -224,6 +213,15 @@ class Tree {
     setGlobalTree(tree);
     this.bindEvent(tree);
     return tree;
+  }
+
+   render(_data) {
+    if(!_data?.length) return;
+    const data = IMData.init(_data,true);
+    this.tree.data(data);
+    this.tree.layout(true);
+    const { x, y } = getCenterPointById(this.container.id)
+    this.tree.zoomTo(this.config.scaleRatio, { x, y });
   }
 
   changeSize(width, height) {

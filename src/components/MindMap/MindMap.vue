@@ -8,10 +8,7 @@
 import "./css/Mindmap.scss";
 import { PropType } from "vue";
 import Tree from "./tree/tree";
-import { tooltip } from "./plugins";
 import {
-  changeNodeMenuList,
-  setGlobalTree,
   changehotKeyList,
 } from "./variable";
 import EditInput from "./editInput";
@@ -29,12 +26,10 @@ import {
 } from "./tree/methods";
 import emitter from "./mitt";
 import defaultHotKey from "./tree/hotkeys";
-import { Util } from '@antv/g6';
 const isArray = (arg) =>
   Object.prototype.toString.call(arg).toLowerCase().indexOf("array") > 5;
 const isObject = (arg) =>
   Object.prototype.toString.call(arg).toLowerCase() === "[object object]";
-let tree;
 // 深度遍历树节点，修改树对象
 export const transferTree = (tree, func, depth = 0, parent = null) => {
   let node, list = [...tree];
@@ -55,8 +50,8 @@ export default {
     // 脑图数据
     modelValue: { required: true },
     // 绘制所需的变量
-    xGap: { type: Number, default: 18 },
-    yGap: { type: Number, default: 84 },
+    xGap: { type: Number, default: 20 },
+    yGap: { type: Number, default: 20 },
     branch: {
       type: Number,
       default: 1,
@@ -115,7 +110,14 @@ export default {
     // 是否启用交互创建边
     createEdge: Boolean
   },
+  data() {
+    return {
+      id: "mxs-mindmap_container",
+      tree: void 0 as any
+    }
+  },
   mounted() {
+    this.treeInit();
     this.$props.onAdd && emitter.on("onAdd", this.$props.onAdd);
     this.$props.onExpand && emitter.on("onExpand", this.$props.onExpand);
     this.$props.onCollapse && emitter.on("onCollapse", this.$props.onCollapse);
@@ -145,8 +147,8 @@ export default {
     this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
     window.removeEventListener("resize", this.changeCanvasSize);
     emitter.off('onValueChange', this.handleValueChange);
-    tree.destroy();
-    tree = null;
+    this.tree.destroy();
+    this.tree = null;
   },
   methods: {
     changeCanvasSize() {
@@ -154,8 +156,8 @@ export default {
         const height = this.$el.parentNode.offsetHeight;
         const width = this.$el.offsetWidth;
         this.$el.style.height = height + "px";
-        if (tree) {
-          tree.changeSize(width, height);
+        if (this.tree) {
+          this.tree.changeSize(width, height);
         }
       });
     },
@@ -168,13 +170,12 @@ export default {
     },
     treeInit() {
       if (treeInited) return;
-      const { modelValue } = this.$props;
-      this.$nextTick(() => {
-        tree = new Tree("mxs-mindmap_container", modelValue);
-        tree.init(this.$props);
-        this.inputInit();
-        treeInited = true;
-      });
+      this.tree = new Tree("mxs-mindmap_container");
+      this.tree.init(this.$props);
+      this.tree.render(this.$props.modelValue)
+      console.log(this.tree);
+      this.inputInit();
+      treeInited = true;
     },
     inputInit() {
       EditInput.init("node-input");
@@ -198,62 +199,20 @@ export default {
       handler(val) {
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
-        this.treeInit();
+        this.tree.render(val)
       },
       immediate: true,
-    },
-    "$props.tooltip": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors(tooltip);
-        } else {
-          tree.removeBehaviors("tooltip");
-        }
-      },
     },
     "$props.edit": {
       handler(val) {
-        tree.changeEditMode(val);
+        this.tree.changeEditMode(val);
       },
-    },
-    "$props.drag": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("drag-canvas");
-        } else {
-          tree.removeBehaviors("drag-canvas");
-        }
-      },
-    },
-    "$props.zoom": {
-      handler(val) {
-        if (val) {
-          tree.addBehaviors("zoom-canvas");
-        } else {
-          tree.removeBehaviors("zoom-canvas");
-        }
-      },
-    },
-    centerBtn(val) {},
-    fitBtn(val) {},
-    downloadBtn(val) {},
-    timetravel(val) {},
-    mindmap(val) {},
-    addNodeBtn(val) {},
-    collapseBtn(val) {},
-    fisheye(val) {},
-    watchResize(val) {},
-    nodeMenu: {
-      handler(val) {
-        changeNodeMenuList(val);
-      },
-      immediate: true,
     },
     hotKey: {
       handler(val) {
         changehotKeyList(
           val
-            .filter((i) => i.enabled == null || i.enabled === true)
+            ?.filter((i) => i.enabled == null || i.enabled === true)
             .map((item) => {
               return (
                 defaultHotKey.filter(
