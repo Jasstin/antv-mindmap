@@ -1,4 +1,4 @@
-import G6, { IGroup, IShape } from "@antv/g6";
+import G6, { IGroup, IShape, registerNode } from "@antv/g6";
 import {
   themeColor,
   radius,
@@ -11,10 +11,10 @@ import {
   activeStrokeColor,
   isCurrentEdit,
   handleBtnAreaWidth,
-} from "../variable";
-import Shape from "../nodeTemplate/draw/shape";
-import getTextBounds from "../nodeTemplate/utils/getTextBounds";
-import { isSafari, isWin } from "../utils/testDevice";
+} from "../../variable";
+import Shape from "../../nodeTemplate/draw/shape";
+import getTextBounds from "../../nodeTemplate/utils/getTextBounds";
+import { isSafari, isWin } from "../../utils/testDevice";
 // startY 由于不同浏览器的展示规则不一致，导致垂直居中会存在1px误差，所以需要细调
 const diffY = isSafari ? -3 : isWin ? 2 : 0;
 
@@ -173,87 +173,7 @@ function getAttribute(cfg) {
   };
   return { ContainerStyle, RectStyle, TextStyle, DescWrapper, DescText, IconStyle };
 }
-function buildStyle(obj) {
-  let res = "";
-  for (let key in obj) {
-    res += `${key}:${obj[key]};`;
-  }
-  return res;
-}
-function getStyle(cfg) {
-  const {
-    style: { fontSize, FillColor, FontColor, stroke, nameLineHeight },
-  } = cfg;
-  return buildStyle({
-    width: "100%",
-    height: "100%",
-    display: "block",
-    "box-sizing": `border-box`,
-    "font-size": `${fontSize}px`,
-    "text-align": "left",
-    "border-radius": `${radius}px`,
-    "z-index": 1,
-    overflow: `hidden`,
-    "font-weight": 600,
-    color: FontColor,
-    background: FillColor,
-    border: `${stroke}px solid ${activeStrokeColor.value}`,
-    "line-height": nameLineHeight + "px",
-  });
-}
 
-function buildCanvasNode(cfg, group) {
-  const { ContainerStyle, RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
-    getAttribute(cfg);
-  const maxNodeWidth = cfg.style.maxWidth;
-  const { depth, collapse } = cfg;
-  const newNode = new Shape(group);
-  const rest = { draggable: depth > 0 }
-  const keyShape = newNode.Rect('container', ContainerStyle, rest)
-  newNode.Rect('wrapper', RectStyle, rest)
-  newNode.inner()
-  newNode.Image('icon', IconStyle, rest)
-  newNode.Text('title', TextStyle, maxNodeWidth, rest)
-  newNode.inner()
-  newNode.Rect('desc-wrapper', DescWrapper, rest)
-  newNode.Text('desc', DescText, maxNodeWidth, rest)
-  //  绘制操作按钮
-  drawHandleBtn(group, cfg, "add");
-  if (cfg.children.length > 0 || cfg._children.length > 0) {
-    drawHandleBtn(group, cfg, collapse ? "expand" : "collapse");
-  }
-  return keyShape;
-}
-function buildDomNode(cfg, group) {
-  const { depth } = cfg;
-  const container = group?.addShape("dom", {
-    attrs: {
-      width: cfg.style.width,
-      height: cfg.style.height,
-      html: `<div style=${getStyle(cfg)}>
-      <p style="margin:0;display:flex;align-items:center"><img src="${cfg.iconPath
-        }" style="width:${cfg.style.imageIconWidth}px;height:${cfg.style.imageIconWidth
-        }px"/>${cfg.name}</p>
-      <div style="max-height:${cfg.style.descHeight}px;overflow:overlay;">${cfg.desc
-        }</div>
-      </div>`,
-    },
-    name: `wrapper`,
-    zIndex: 0,
-    draggable: depth > 0,
-  });
-  return container;
-}
-
-function buildNullNode(cfg, group) {
-  const newNode = new Shape(group);
-  const res = newNode.Rect('wrapper', {
-    width: 0,
-    height: 0,
-    fill: 'transparent'
-  })
-  return res;
-}
 const getNode = (group, name) =>
   group.findAllByName(name)[0];
 const getCollapseBtn = (group) => getNode(group, "collapse");
@@ -297,80 +217,53 @@ function handleNodeSelected(state, node) {
   wrapper?.attr("stroke", state ? activeStrokeColor.value : "transparent");
 }
 
-// canvas节点
-G6.registerNode("mindmap-node", {
+
+
+registerNode('mindmap-node', {
+  // 自定义节点时的配置
+  options: {},
+  shapeType: 'mindmap-node',
+  // 文本位置
+  labelPosition: 'center',
   draw(cfg, group): IShape {
     const visible = cfg.style.visible;
-    const container = visible ? buildCanvasNode(cfg, group) : buildNullNode(cfg, group);
-    return container;
-  },
-  setState(name, state, node) {
-    if (name === "hover") handleNodeHover(state, node);
-    if (name === "selected") handleNodeSelected(state, node);
-  },
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
-  },
-});
-// dom节点
-G6.registerNode("dom-node", {
-  draw(cfg, group): IShape {
-    const container = buildDomNode(cfg, group);
-    return container;
-  },
-  setState(name, state, node) {
-    if (name === "hover") handleNodeHover(state, node);
-    if (name === "selected") handleNodeSelected(state, node);
-  },
-  getAnchorPoints() {
-    return [
-      [0, 0.5],
-      [1, 0.5],
-    ];
-  },
-});
-G6.registerEdge("hvh", {
-  draw(cfg, group) {
-    if (!cfg || !group) return;
-    const startPoint = cfg.startPoint;
-    const endPoint = cfg.endPoint;
-    let dist = endPoint.y < startPoint.y ? 10 : -10;
-    if (endPoint.y === startPoint.y) {
-      dist = 0;
+    const newNode = new Shape(group);
+    if (!visible) {
+      const shape = newNode.Rect('wrapper', {
+        width: 0,
+        height: 0,
+        fill: 'transparent'
+      })
+      return shape
     }
-    const sourceNode = cfg.sourceNode;
-    const sourceNodeData = sourceNode ? sourceNode.get('model') : {};
-    const shape = group.addShape("path", {
-      attrs: {
-        cursor: "pointer",
-        stroke: sourceNodeData.style.branchColor || branchColor.value,
-        lineWidth: branch.value,
-        opacity: cfg.style.opacity == null ? 1 : cfg.style.opacity,
-        path: [
-          ["M", startPoint.x, startPoint.y],
-          ["L", endPoint.x / 3 + (2 / 3) * startPoint.x, startPoint.y], // 三分之一处
-          [
-            "L",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y) + dist,
-          ],
-          [
-            "Q",
-            endPoint.x / 3 + (2 / 3) * startPoint.x,
-            startPoint.y + (endPoint.y - startPoint.y),
-            endPoint.x / 3 + (2 / 3) * startPoint.x + 10,
-            endPoint.y,
-          ], // 三分之二处
-          ["L", endPoint.x, endPoint.y],
-        ],
-      },
-      // must be assigned in G6 3.3 and later versions. it can be any value you want
-      name: "path-shape",
-      zIndex: 0,
-    });
-    return shape;
+    const { ContainerStyle, RectStyle, TextStyle, DescWrapper, DescText, IconStyle } =
+      getAttribute(cfg);
+    const maxNodeWidth = cfg.style.maxWidth;
+    const { depth, collapse } = cfg;
+    const rest = { draggable: depth > 0 }
+    const keyShape = newNode.Rect('container', ContainerStyle, rest)
+    newNode.Rect('wrapper', RectStyle, rest)
+    newNode.inner()
+    newNode.Image('icon', IconStyle, rest)
+    newNode.Text('title', TextStyle, maxNodeWidth, rest)
+    newNode.inner()
+    newNode.Rect('desc-wrapper', DescWrapper, rest)
+    newNode.Text('desc', DescText, maxNodeWidth, rest)
+    //  绘制操作按钮
+    drawHandleBtn(group, cfg, "add");
+    if (cfg.children.length > 0 || cfg._children.length > 0) {
+      drawHandleBtn(group, cfg, collapse ? "expand" : "collapse");
+    }
+    return keyShape;
+  },
+  getAnchorPoints(cfg) {
+    return [
+      [1, 0.5],
+      [0, 0.5]
+    ]
+  },
+  setState(name, state, node) {
+    if (name === "hover") handleNodeHover(state, node);
+    if (name === "selected") handleNodeSelected(state, node);
   },
 });

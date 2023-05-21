@@ -32,7 +32,8 @@ import {
   handleBtnAreaWidth,
   themeColor,
 } from "../variable";
-import "./registerNode"; // 自定义节点形状
+import "../elements/nodes/mindmap-node"; // 自定义节点形状
+import "../elements/edges/round-poly"; // 自定义边
 import "./registerBehavior";
 import { INode } from "@antv/g6-core/lib/interface/item"; // 自定义交互
 
@@ -139,7 +140,7 @@ class Tree {
         scaleRatio,
         leafThemeColor,
         leafFontColor,
-        lineType: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
+        lineType: layoutConfig?.sharpCorner ? "round-poly" : "cubic-horizontal",
         closeEditInput,
         controlMoveDirection,
         defaultAppendNode,
@@ -164,14 +165,16 @@ class Tree {
           return layoutConfig?.xGap || 30;
         },
         getSide: (node: INode) => {
-          return "right";
+          return node.data.side || "right";
         },
       },
       defaultEdge: {
-        type: layoutConfig?.sharpCorner ? "hvh" : "cubic-horizontal",
+        type: layoutConfig?.sharpCorner ? "round-poly" : "cubic-horizontal",
         style: {
           lineWidth: branch.value,
           stroke: branchColor.value,
+          radius: 8,
+          lineAppendWidth: branch.value + layoutConfig?.yGap / 2
         },
       },
       scaleRatio: layoutConfig?.scaleRatio || 1,

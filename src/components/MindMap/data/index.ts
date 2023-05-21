@@ -100,6 +100,7 @@ class IMData {
       parentId: parent?.id ?? "0",
       children: [],
       _children: [],
+      side: depth < 2 ? rawData.side : parent.side,
       rawData: isInit ? rawData : rawData?.rawData,
       ...buildNodeStyle({
         ...Object.assign({}, rawData, rawData.style || {}, isInit ? { name: rawData.info.title || rawData.name } : { name: rawData.name }), depth

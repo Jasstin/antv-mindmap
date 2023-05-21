@@ -1,4 +1,5 @@
-[{
+[
+    {
         "info": {
             "id": "61c46a75ff5d6d8f5ffe6691",
             "title": "思维导图思维导图"
@@ -8,7 +9,8 @@
                 "info": {
                     "id": "640c2b503409a5b0116f7fef",
                     "title": "自定义节点"
-                }
+                },
+                "side": "left"
             },
             {
                 "info": {
@@ -31,4 +33,5 @@
                 "children": null
             }
         ]
-    }]
+    }
+]
