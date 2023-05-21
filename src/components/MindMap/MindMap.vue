@@ -35,10 +35,11 @@ export const transferTree = (tree, func, depth = 0, parent = null) => {
   let node, list = [...tree];
   return list.map((item, index) => {
     node = func(item, index, depth, parent);
-    if (item.children) {
-      const children = transferTree(item.children, func, depth + 1, node);
-      if (children && children.length) {
-        node.children = children;
+    const children = item.children.length ? item.children : item._children
+    if (children) {
+      const _children = transferTree(children, func, depth + 1, node);
+      if (_children && _children.length) {
+        item.children.length ? node.children = _children : node._children = _children;
       }
     }
     return node
@@ -151,7 +152,7 @@ export default {
     handleValueChange(data) {
       let value = transferTree([...[data]], (node) => {
         const info = node?.rawData?.info;
-        return info ? { ...info, title: node.fullName } : { id: void 0, title: node.fullName }
+        return info ? { title: node.fullName, info, collapse: node.collapse, children: node.children, _children: node._children } : { ...node, id: void 0, title: node.fullName }
       });
       this.$emit('update:modelValue', value)
     },
@@ -186,7 +187,6 @@ export default {
       handler(val) {
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
-        console.log(`>>>>val`, val);
         this.tree.render(val)
       },
       immediate: true,
