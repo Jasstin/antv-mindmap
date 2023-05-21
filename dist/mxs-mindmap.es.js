@@ -19104,7 +19104,7 @@ class Tree {
           return (layoutConfig == null ? void 0 : layoutConfig.xGap) || 30;
         },
         getSide: (node) => {
-          return "right";
+          return node.data.side || "right";
         }
       },
       defaultNode: {

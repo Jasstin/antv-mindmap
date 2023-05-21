@@ -19110,7 +19110,7 @@ var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
             return (layoutConfig == null ? void 0 : layoutConfig.xGap) || 30;
           },
           getSide: (node) => {
-            return "right";
+            return node.data.side || "right";
           }
         },
         defaultNode: {
