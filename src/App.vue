@@ -191,7 +191,7 @@ export default defineComponent({
           },
           // ... // 其它边配置
         },
-      }, 'edit')
+      }, 'connect')
     },
     changeMode(mode) {
       this.mode = mode
