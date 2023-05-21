@@ -154,6 +154,7 @@ export default {
         const info = node?.rawData?.info;
         return info ? { title: node.fullName, info, collapse: node.collapse, children: node.children, _children: node._children } : { ...node, id: void 0, title: node.fullName }
       });
+      console.log(`>>>value`, value);
       this.$emit('update:modelValue', value)
     },
     treeInit() {
