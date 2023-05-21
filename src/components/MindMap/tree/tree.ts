@@ -1,7 +1,6 @@
 import G6, { GraphData, TreeGraph, TreeGraphData } from "@antv/g6";
 import IMData from "../data";
 import { NodeData, InputData } from "../interface";
-import { mindmap, toolbar, tooltip } from "../plugins";
 import { isMobile } from "../utils/testDevice";
 import {
   branch,
@@ -168,6 +167,9 @@ class Tree {
           return "right";
         },
       },
+      defaultNode:{
+        type:'mindmap-node'
+      },
       defaultEdge: {
         type: layoutConfig?.sharpCorner ? "round-poly" : "cubic-horizontal",
         style: {
@@ -177,27 +179,20 @@ class Tree {
           lineAppendWidth:  branch.value + (layoutConfig?.yGap || 10) / 2
         },
       },
-      scaleRatio: layoutConfig?.scaleRatio || 1,
       modes: {
-        default: ['default-view'],
-        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc"],
+        default: ['default-view',"double-finger-drag-canvas","drag-canvas"],
+        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc","my-shortcut","double-finger-drag-canvas","drag-canvas"],
+        connect:["double-finger-drag-canvas","drag-canvas"]
       },
-      plugins: [] as any,
       groupByTypes: false,
     };
-    const plugins = [];
-    plugins.push(toolbar());
-    if (layoutConfig?.mindmap) {
-      plugins.push(mindmap());
-    }
-    config.plugins = plugins;
     return config;
   }
 
   async init(layoutConfig?: layoutConfig) {
     if (!this.container) return;
     const config = this.createLayoutConfig(layoutConfig);
-    this.config = config;
+    this.config = layoutConfig;
     const tree = new G6.TreeGraph({
       ...config,
       container: this.container,
@@ -205,13 +200,10 @@ class Tree {
       renderer: layoutConfig.renderer || "canvas",
     });
     this.tree = tree;
-    tree.setAutoPaint(true);
-    this.enableFeature(layoutConfig);
     let global = window as Window;
     global.mindTree = tree;
-    global.mindTree.version = "2.0.0";
+    global.mindTree.version = "3.0.0";
     setGlobalTree(tree);
-    this.bindEvent(tree);
     return tree;
   }
 
@@ -222,45 +214,6 @@ class Tree {
     this.tree.layout(true);
     const { x, y } = getCenterPointById(this.container.id)
     this.tree.zoomTo(this.config.scaleRatio, { x, y });
-  }
-
-  changeSize(width, height) {
-    this.tree.changeSize(width, height);
-    this.tree.fitCenter();
-  }
-
-  bindEvent(tree) {}
-
-  enableFeature(layoutConfig?: layoutConfig) {
-    if (layoutConfig?.tooltip) {
-      this.addBehaviors(tooltip);
-    }
-    if (layoutConfig?.edit) {
-      this.changeEditMode(true);
-      this.addBehaviors("my-shortcut");
-    }
-    if (layoutConfig?.drag) {
-      this.addBehaviors("drag-canvas");
-    }
-    if (layoutConfig?.zoom) {
-      this.addBehaviors("double-finger-drag-canvas");
-    }
-    if (layoutConfig?.createEdge) {
-      this.addBehaviors({
-        type: 'create-edge',
-        key: 'shift',
-        edgeConfig: {
-          type: 'cubic',
-          style: {
-            stroke: themeColor.value,
-            lineWidth: 2,
-            lineDash: [5, 10]
-            // ... // 其它边样式配置
-          },
-          // ... // 其它边配置
-        },
-      })
-    }
   }
 
   changeVariable({
@@ -299,37 +252,6 @@ class Tree {
     closeEditInput && changeCloseEditInput(closeEditInput);
     controlMoveDirection && changeControlMoveDirection(controlMoveDirection);
     defaultAppendNode && changeDefaultAppendNode(defaultAppendNode);
-  }
-
-  changeLayout(layoutConfig?: layoutConfig) {
-    const config = this.createLayoutConfig(layoutConfig);
-    this.tree?.updateLayout(config);
-  }
-
-  addBehaviors(behavior: any, modeType?: string) {
-    if (modeType) {
-      this.tree?.addBehaviors(behavior, modeType);
-    } else {
-      this.tree?.addBehaviors(behavior, "default");
-      this.tree?.addBehaviors(behavior, "edit");
-    }
-  }
-
-  removeBehaviors(behavior: any, modeType: string) {
-    if (modeType) {
-      this.tree?.removeBehaviors(behavior, modeType);
-    } else {
-      this.tree?.removeBehaviors(behavior, "default");
-      this.tree?.removeBehaviors(behavior, "edit");
-    }
-  }
-
-  changeEditMode(edit: boolean) {
-    if (edit) {
-      this.tree?.setMode("edit");
-    } else {
-      this.tree?.setMode("default");
-    }
   }
 
   reBuild(layoutConfig?: layoutConfig) {

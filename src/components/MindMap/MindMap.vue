@@ -130,8 +130,6 @@ export default {
       emitter.on("onCancelSelected", this.$props.onCancelSelected);
     this.$props.onEdit && emitter.on("onEdit", this.$props.onEdit);
     emitter.on('onValueChange', this.handleValueChange);
-    this.changeCanvasSize();
-    window.addEventListener("resize", this.changeCanvasSize);
   },
   beforeUnmount() {
     this.$props.onAdd && emitter.off("onAdd", this.$props.onAdd);
@@ -145,22 +143,11 @@ export default {
     this.$props.onCancelSelected &&
       emitter.off("onCancelSelected", this.$props.onCancelSelected);
     this.$props.onEdit && emitter.off("onEdit", this.$props.onEdit);
-    window.removeEventListener("resize", this.changeCanvasSize);
     emitter.off('onValueChange', this.handleValueChange);
     this.tree.destroy();
     this.tree = null;
   },
   methods: {
-    changeCanvasSize() {
-      this.$nextTick(() => {
-        const height = this.$el.parentNode.offsetHeight;
-        const width = this.$el.offsetWidth;
-        this.$el.style.height = height + "px";
-        if (this.tree) {
-          this.tree.changeSize(width, height);
-        }
-      });
-    },
     handleValueChange(data) {
       let value = transferTree([...[data]], (node) => {
         const info = node?.rawData?.info;
@@ -199,6 +186,7 @@ export default {
       handler(val) {
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
+        console.log(`>>>>val`, val);
         this.tree.render(val)
       },
       immediate: true,

@@ -486,7 +486,7 @@ G6.registerBehavior("my-shortcut", {
     )
       return;
     const { key, shiftKey, ctrlKey, altKey, metaKey } = evt;
-    let handler = hotkeys.value.filter((item) => item.key === key);
+    let handler = hotkeys.value?.filter((item) => item.key === key) || [];
     if (shiftKey || ctrlKey || altKey || metaKey) {
       if (shiftKey) {
         handler = handler.filter((item) => item.control?.indexOf("shift") > -1);
