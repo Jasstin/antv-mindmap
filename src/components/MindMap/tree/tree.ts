@@ -164,7 +164,7 @@ class Tree {
           return layoutConfig?.xGap || 30;
         },
         getSide: (node: INode) => {
-          return "right";
+          return node.data.side || "right";
         },
       },
       defaultNode:{
