@@ -69,11 +69,19 @@ export default defineComponent({
       const graph = mindmapRef.tree.tree;
       const toolbar = new Menu({
         className: nodeMenuRef.className,
+        shouldBegin: function (e) {
+          const isCanvas = e?.target.isCanvas && e.target.isCanvas();
+          const isEdge = e?.item?.get('type') === 'edge';
+          console.log('当前模式', graph.getCurrentMode());
+          const mode = graph.getCurrentMode();
+          if (mode === 'default' && !isCanvas) return false; // 阅读模式不支持右键
+          if (mode === 'connect' && !isEdge) return false; // 联系模式只支持连线和切换线条
+          return true
+        },
         getContent: (e) => {
           const isCanvas = e?.target.isCanvas && e.target.isCanvas();
           const isEdge = e?.item?.get('type') === 'edge';
           const Dom = isCanvas ? canvasMenuRef.cloneNode(true) : isEdge ? edgeMenuRef.cloneNode(true) : nodeMenuRef.cloneNode(true)
-          console.log('当前模式', graph.getCurrentMode());
           const mode = graph.getCurrentMode();
           if (mode === 'default' && !isCanvas) return null; // 阅读模式不支持右键
           if (mode === 'connect' && !isEdge) return; // 联系模式只支持连线和切换线条
@@ -81,10 +89,10 @@ export default defineComponent({
             const item = e?.item;
             const expandDom = Dom?.querySelector('[code="expand"]');
             const collapseDom = Dom?.querySelector('[code="collapse"]');
-            if (!item?.getModel().children?.length) {
+            if (!item?.getModel().children?.length && !item?.getModel()._children?.length) {
               expandDom.style.display = "none";
               collapseDom.style.display = "none";
-            } else if (item.getModel().collapsed) {
+            } else if (item.getModel().collapse) {
               expandDom.style.display = "";
               collapseDom.style.display = "none";
             } else {
@@ -131,17 +139,13 @@ export default defineComponent({
       } else if (code === 'exportFile') {
         console.log(graph.save());
       } else if (code === 'addChild') {
-        return mindmapRef.addChild({
-          info: { title: '新添加的埋点' }
-        }, node);
+        return mindmapRef.add(node.get("id"), { title: '新建模型' });
       } else if (code === 'delete') {
-        graph.removeChild(node.get('id'))
+        return mindmapRef.deleteNode(node.get('id'))
       } else if (code === 'collapse') {
-        node.getModel().collapsed = true;
-        graph.layout()
+        return mindmapRef.collapse(node.get('id'))
       } else if (code === 'expand') {
-        node.getModel().collapsed = false;
-        graph.layout()
+        return mindmapRef.expand(node.get('id'))
       } else if (code === 'changeEdge') {
         const edge = node;
         const model = edge.getModel();

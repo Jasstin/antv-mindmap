@@ -26,6 +26,7 @@ import {
 } from "./tree/methods";
 import emitter from "./mitt";
 import defaultHotKey from "./tree/hotkeys";
+import getCenterPointById from "./utils/getCenterPointById";
 const isArray = (arg) =>
   Object.prototype.toString.call(arg).toLowerCase().indexOf("array") > 5;
 const isObject = (arg) =>
@@ -154,7 +155,6 @@ export default {
         const info = node?.rawData?.info;
         return info ? { title: node.fullName, info, collapse: node.collapse, children: node.children, _children: node._children } : { ...node, id: void 0, title: node.fullName }
       });
-      console.log(`>>>value`, value);
       this.$emit('update:modelValue', value)
     },
     treeInit() {
@@ -179,6 +179,39 @@ export default {
     addParent,
     find: findData,
     editNode: edit,
+    fitCenter() {
+      const tree = this.tree.tree as TreeGraph;
+      const { x, y } = getCenterPointById('mxs-mindmap_container')
+      tree.zoomTo(this.$props.scaleRatio, { x, y });
+    },
+    /**
+   * zoomOut 操作
+   */
+    zoomOut() {
+      const graph: IGraph = this.tree.tree;
+      const currentZoom = graph.getZoom();
+      const ratioOut = 1 / (1 - 0.05 * 2);
+      const maxZoom = graph.get('maxZoom');
+      const { x, y } = getCenterPointById(this.id)
+      if (ratioOut * currentZoom > maxZoom) {
+        return;
+      }
+      graph.zoomTo(currentZoom * ratioOut, { x, y });
+    },
+    /**
+     * zoomIn 操作
+     */
+    zoomIn() {
+      const graph: IGraph = this.tree.tree;
+      const currentZoom = graph.getZoom();
+      const ratioIn = 1 - 0.05 * 2;
+      const minZoom = graph.get('minZoom');
+      if (ratioIn * currentZoom < minZoom) {
+        return;
+      }
+      const { x, y } = getCenterPointById(this.id)
+      graph.zoomTo(currentZoom * ratioIn, { x, y });
+    },
     InputFocus() {
       EditInput.toFocus()
     }
