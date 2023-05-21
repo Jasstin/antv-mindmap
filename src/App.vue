@@ -1,6 +1,6 @@
 <template>
   <mindmap ref="mindMapRef" class="container" v-model="data" :controlMoveDirection="true" :edit="true" :zoom="true"
-    :drag="true" :mindmap="true" />
+    :drag="true" :mindmap="true" :sharp-corner="true" />
   <ul class="action-bar shadow bottom-right bgblur thin-border" ref="toolbarRef" style="position:fixed">
     <li class="button max480"><img src="./static/imgs/help.svg"></li>
     <li class="button" code="fitCenter"><img src="./static/imgs/fit.svg"></li>
@@ -40,6 +40,11 @@
       <li code="exportFile">导出文件</li>
     </ul>
   </div>
+  <div class="shadow bounceIn thin-border bgblur" ref="edgeMenuRef">
+    <ul>
+      <li code="zoomOut">切换为“特殊”标签</li>
+    </ul>
+  </div>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
@@ -66,14 +71,16 @@ export default defineComponent({
     addNodeMenu() {
       const nodeMenuRef = this.$refs.nodeMenuRef;
       const canvasMenuRef = this.$refs.canvasMenuRef;
+      const edgeMenuRef = this.$refs.edgeMenuRef;
       const mindmapRef = this.$refs.mindMapRef;
       const graph = mindmapRef.tree.tree;
       const toolbar = new Menu({
         className: nodeMenuRef.className,
         getContent: (e) => {
           const isCanvas = e?.target.isCanvas && e.target.isCanvas();
-          const Dom = isCanvas ? canvasMenuRef : nodeMenuRef
-          if (!isCanvas) {
+          const isEdge = e?.item?.get('type') === 'edge';
+          const Dom = isCanvas ? canvasMenuRef : isEdge ? edgeMenuRef : nodeMenuRef
+          if (!isCanvas && !isEdge) {
             const item = e?.item;
             const expandDom = Dom?.querySelector('[code="expand"]');
             const collapseDom = Dom?.querySelector('[code="collapse"]');
@@ -92,7 +99,7 @@ export default defineComponent({
           Dom.id = 'menu'
           return Dom
         },
-        itemTypes: ['node', 'canvas'],
+        itemTypes: ['node', 'canvas', 'edge'],
         handleMenuClick: (target, item) => {
           const code = target.getAttribute('code');
           this.handleClickCode(code, item);
