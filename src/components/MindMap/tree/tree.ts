@@ -28,6 +28,7 @@ import {
   changeDefaultAppendNode,
   handleBtnAreaWidth,
   themeColor,
+  setGlobalTree,
 } from "../variable";
 import "../elements/nodes/mindmap-node"; // 自定义节点形状
 import "../elements/edges/round-poly"; // 自定义边
@@ -180,9 +181,10 @@ class Tree {
         },
       },
       modes: {
-        default: ['default-view', "double-finger-drag-canvas", "drag-canvas"],
-        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", "my-shortcut", "double-finger-drag-canvas", "drag-canvas"],
-        connect: ["double-finger-drag-canvas", "drag-canvas"]
+        // default: ["drag-canvas","zoom-canvas"],
+        // default: ['default-view', "double-finger-drag-canvas", "drag-canvas"],
+        // edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", "my-shortcut", "double-finger-drag-canvas", "drag-canvas"],
+        // connect: ["double-finger-drag-canvas", "drag-canvas"]
       },
       groupByTypes: false,
     };
@@ -200,6 +202,7 @@ class Tree {
       renderer: layoutConfig.renderer || "canvas",
     });
     this.tree = tree;
+    setGlobalTree(tree);
     return tree;
   }
 

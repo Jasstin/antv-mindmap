@@ -27,7 +27,7 @@ import {
   controlMoveDirection,
 } from "../variable";
 import emitter from "../mitt";
-G6.registerBehavior('default-view',{
+G6.registerBehavior('default-view', {
   getEvents() {
     return {
       "node:click": "clickNode",
@@ -50,7 +50,7 @@ G6.registerBehavior('default-view',{
     } else {
       if (Date.now() - this.lastClickTime < 500) return; //  如果500ms内连续点击了两次为双击行为，不做任何处理
       this.lastClickTime = Date.now();
-      selectNode(model.id, !model.isCurrentSelected,false);
+      selectNode(model.id, !model.isCurrentSelected, false);
     }
   },
   hoverNode(evt) {
@@ -84,7 +84,7 @@ G6.registerBehavior("edit-mindmap-pc", {
       "node:dragstart": "dragStart",
       "canvas:click": "clickCanvas",
       "canvas:touchend": "clickCanvas",
-      "edge:click":"clickEdge"
+      "edge:click": "clickEdge"
     };
   },
   clickCanvas(evt) {
@@ -107,7 +107,7 @@ G6.registerBehavior("edit-mindmap-pc", {
       selectNode(model.id, !model.isCurrentSelected);
     }
   },
-  clickEdge(evt){
+  clickEdge(evt) {
     const node = evt.item.get('sourceNode');
     const tree = evt.currentTarget;
     if (isDragging.value) return;
@@ -324,7 +324,7 @@ G6.registerBehavior("edit-mindmap-pc", {
         if (node.id === this.dragNodeId) continue;
         if (
           this.nodePosition[node.id].clientY +
-            this.nodePosition[node.id].height / 2 <
+          this.nodePosition[node.id].height / 2 <
           this.upClientInfo[1]
         ) {
           index++;
@@ -512,19 +512,29 @@ G6.registerBehavior("my-shortcut", {
 });
 
 // 移动端自定义行为
-G6.registerBehavior("edit-mindmap-mobile", {
+G6.registerBehavior("mobile-behavior", {
   selectNodeId: null,
   dragNodeId: null,
   nodePosition: {},
   dragStatus: "",
   upClientInfo: [],
   readyToDrag: false,
+  clickNumber: 0,
+  timer: null,
+  getDefaultCfg(): object {
+    return {
+      onClick: () => {},
+      onDragEnd: () => {},
+      dragWaitTime: 1000,
+      clickDuring: 1000
+    };
+  },
   getEvents() {
     return {
       "node:touchstart": "handleTouchStart",
       "canvas:touchmove": "dragNode",
-      "canvas:touchend": "handleTouchEnd",
       "node:touchend": "handleTouchEnd",
+      "touchend":"dragEnd"
     };
   },
   handleTouchStart(evt) {
@@ -534,32 +544,28 @@ G6.registerBehavior("edit-mindmap-mobile", {
         this.dragStart(evt); // 长按拖拽
         clearTimeout(timer);
       }
-    }, 400);
+    }, this.get('dragWaitTime'));
   },
   handleTouchEnd(evt) {
     this.readyToDrag = false;
-    if (!isDragging.value) {
+    if (!isDragging.value && evt.item) {
       this.clickNode(evt); // 点击事件
+      clearTimeout(this.timer)
+      this.timer = setTimeout(() => {
+        this.clickNumber = 0
+        clearTimeout(this.timer);
+      }, this.get('clickDuring'));
     } else {
       this.dragEnd(evt); // 拖拽事件
     }
   },
   clickNode(evt) {
-    const tree = evt.currentTarget;
     const node = evt.item;
-    const model = evt.item.get("model");
     const name = evt.target.get("action");
-    if (name === "expand") {
-      expand(model.id);
-    } else if (name === "collapse") {
-      collapse(model.id);
-    } else if (name === "add") {
-      addData(model?.id as string, "", true);
-    } else if (node.hasState("selected")) {
-      // 判断如果当前节点时选中节点，那么编辑节点
-      edit(model.id);
-    } else {
-      selectNode(model.id, !model.isCurrentSelected);
+    const onClickFn = this.get('onClick');
+    if (node) {
+      this.clickNumber++;
+      onClickFn(name, node, this.clickNumber);
     }
   },
   dragStart(evt) {
@@ -723,6 +729,7 @@ G6.registerBehavior("edit-mindmap-mobile", {
     }
   },
   dragEnd(evt) {
+    if(!isDragging.value) return;
     const { currentTarget: tree } = evt;
     setIsDragging(false);
     document.documentElement.style.cursor = "default";
@@ -744,6 +751,10 @@ G6.registerBehavior("edit-mindmap-mobile", {
         findData(this.selectNodeId),
         index,
       ]);
+      const diagEnd = this.get('onDragEnd');
+      diagEnd(findData(this.dragNodeId),
+        findData(this.selectNodeId),
+        index);
       moveData(this.selectNodeId, this.dragNodeId, index);
     }
     //    还原
@@ -771,7 +782,7 @@ G6.registerBehavior("edit-mindmap-mobile", {
     this.nodePosition = {};
   },
   showDragDiv(clientX, clientY, showLine, parentId) {
-    const tree = globalTree.value;
+    const tree = this.get('graph');
     const { x, y } = tree.getPointByClient(clientX, clientY);
     const model = {
       id: "moveNode",
@@ -818,7 +829,7 @@ G6.registerBehavior("edit-mindmap-mobile", {
     return { moveNode: moveNode[0] };
   },
   hideDragDiv() {
-    const tree = globalTree.value;
+    const tree = this.get('graph');
     const moveNode = tree
       .getNodes()
       .filter((item) => item.get("id") === "moveNode");
