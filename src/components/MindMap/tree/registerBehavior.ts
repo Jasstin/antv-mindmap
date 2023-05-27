@@ -82,7 +82,6 @@ G6.registerBehavior("edit-mindmap-pc", {
       "node:mouseover": "hoverNode",
       "node:mouseleave": "clearHoverStatus",
       "node:dragstart": "dragStart",
-      "node:contextmenu": "selectNode",
       "canvas:click": "clickCanvas",
       "canvas:touchend": "clickCanvas",
       "edge:click":"clickEdge"

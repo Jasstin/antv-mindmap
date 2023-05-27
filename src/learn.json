@@ -23,7 +23,22 @@
                     "id": "640c2b543409a5b0116f7ff1",
                     "title": "自定义交互"
                 },
-                "children": null
+                "children": [
+                    {
+                        "info": {
+                            "id": "640c2b543409a5b0116f7ff1",
+                            "title": "toolbar"
+                        },
+                        "children": null
+                    },
+                    {
+                        "info": {
+                            "id": "640c2b543409a5b0116f7ff1",
+                            "title": "menu"
+                        },
+                        "children": null
+                    }
+                ]
             },
             {
                 "info": {

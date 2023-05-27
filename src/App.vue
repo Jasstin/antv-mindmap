@@ -1,12 +1,11 @@
 <template>
   <div>
     <ul class="action-bar top-bar">
-      <li :class="{ active: mode === 'default' }" @click="changeMode('default')">阅读</li>
-      <li :class="{ active: mode === 'edit' }" @click="changeMode('edit')">编辑</li>
-      <li :class="{ active: mode === 'connect' }" @click="changeMode('connect')">联系</li>
+      <li v-for="item in modeList" :key="item.value" :class="{ active: mode === item.value }"
+        @click="changeMode(item.value)">{{ item.label }}</li>
     </ul>
   </div>
-  <mindmap ref="mindMapRef" class="container" v-model="data" :mindmap="true" :sharp-corner="true" />
+  <mindmap ref="mindMapRef" class="container" v-model="data" :sharp-corner="true" />
   <ul class="action-bar shadow bottom-right bgblur thin-border" ref="toolbarRef" style="position:fixed">
     <li class="button max480"><img src="./static/imgs/help.svg"></li>
     <li class="button" code="fitCenter"><img src="./static/imgs/fit.svg"></li>
@@ -19,6 +18,7 @@
       <li code="delete">删除节点</li>
       <li code="collapse">折叠节点</li>
       <li code="expand">展开节点</li>
+      <li code="see-detail">在子窗口查看节点视图</li>
     </ul>
   </div>
   <div class="shadow bounceIn thin-border bgblur" ref="canvasMenuRef" style="display:none">
@@ -35,22 +35,27 @@
       <li code="changeEdge">切换为“特殊”标签</li>
     </ul>
   </div>
+  <subMindMap v-model="visible" :data="subMindMapData" v-if="visible"></subMindMap>
 </template>
 <script lang="ts">
-import { defineComponent } from "vue";
 import learn from "./learn.json";
 import Mindmap from "./components/MindMap";
 import './static/index.scss';
-import { Menu, ToolBar, Minimap } from "@antv/g6";
-export default defineComponent({
+import { Menu, ToolBar, Minimap, TreeGraph, Node } from "@antv/g6";
+import subMindMap from './page/components/subMindMap.vue';
+export default {
   name: "App",
   components: {
     Mindmap,
+    subMindMap,
   },
   data() {
     return {
       data: [],
-      mode: 'default'
+      modeList: [{ label: '阅读', value: 'default' }, { label: '编辑', value: 'edit' }, { label: '联系', value: 'connect' }],
+      mode: 'default',
+      visible: false,
+      subMindMapData: [],
     }
   },
   mounted() {
@@ -88,15 +93,19 @@ export default defineComponent({
           if (!isCanvas && !isEdge) {
             const item = e?.item;
             const expandDom = Dom?.querySelector('[code="expand"]');
+            const seeDetailDom = Dom?.querySelector('[code="see-detail"]');
             const collapseDom = Dom?.querySelector('[code="collapse"]');
             if (!item?.getModel().children?.length && !item?.getModel()._children?.length) {
               expandDom.style.display = "none";
               collapseDom.style.display = "none";
+              seeDetailDom.style.display = "none";
             } else if (item.getModel().collapse) {
               expandDom.style.display = "";
+              seeDetailDom.style.display = "";
               collapseDom.style.display = "none";
             } else {
               collapseDom.style.display = "";
+              seeDetailDom.style.display = "none";
               expandDom.style.display = "none";
             }
           }
@@ -125,41 +134,35 @@ export default defineComponent({
       graph.addPlugin(toolbar);
       this.toolbar = toolbar;
     },
-    handleClickCode(code, node?) {
-      const mindmapRef = this.$refs.mindMapRef;
+    handleClickCode(code: string, node: Node) {
+      const mindmapRef = this.$refs.mindMapRef as any;
       const graph = mindmapRef.tree.tree;
-      if (code === 'fitCenter') {
-        // 在渲染和动画完成后调用
-        graph.fitCenter();
-        return mindmapRef.fitCenter();
-      } else if (code === 'zoomIn') {
-        return mindmapRef.zoomIn();
-      } else if (code === 'zoomOut') {
-        return mindmapRef.zoomOut();
-      } else if (code === 'exportFile') {
-        console.log(graph.save());
-      } else if (code === 'addChild') {
-        return mindmapRef.add(node.get("id"), { title: '新建模型' });
-      } else if (code === 'delete') {
-        return mindmapRef.deleteNode(node.get('id'))
-      } else if (code === 'collapse') {
-        return mindmapRef.collapse(node.get('id'))
-      } else if (code === 'expand') {
-        return mindmapRef.expand(node.get('id'))
-      } else if (code === 'changeEdge') {
-        const edge = node;
-        const model = edge.getModel();
-        model.oriLabel = model.label;
-        graph.updateItem(edge, {
-          label: '特殊',
-          labelCfg: {
-            style: {
-              fill: '#003a8c',
-            },
-          },
-        });
+      switch (code) {
+        case 'fitCenter': mindmapRef.fitCenter(); break;
+        case 'zoomIn': mindmapRef.zoomIn(); break;
+        case 'zoomOut': mindmapRef.zoomOut(); break;
+        case 'exportFile': console.log(graph.save()); break;
+        case 'addChild': mindmapRef.add(node.get("id"), { title: '新建模型' }); break;
+        case 'delete': mindmapRef.deleteNode(node.get('id')); break;
+        case 'collapse': mindmapRef.collapse(node.get('id')); break;
+        case 'expand': mindmapRef.expand(node.get('id')); break;
+        case 'changeEdge': this.changeEdge(node, graph); break;
+        case 'see-detail': this.seeDetail(node, graph); break;
+        default: this.toolbar.handleDefaultOperator(code, graph);
       }
-      this.toolbar.handleDefaultOperator(code, graph);
+    },
+    changeEdge(node: Node, graph: TreeGraph) {
+      const edge = node;
+      const model = edge.getModel();
+      model.oriLabel = model.label;
+      graph.updateItem(edge, {
+        label: '特殊',
+        labelCfg: {
+          style: {
+            fill: '#003a8c',
+          },
+        },
+      });
     },
     addMindmap() {
       const minimap = new Minimap({
@@ -198,9 +201,15 @@ export default defineComponent({
       const mindmapRef = this.$refs.mindMapRef;
       const graph = mindmapRef.tree.tree;
       graph.setMode(mode)
+    },
+    seeDetail(node, graph) {
+      const mindmapRef = this.$refs.mindMapRef;
+      const data = mindmapRef.parseData(node.getModel(), true);
+      this.subMindMapData = data;
+      this.visible = true;
     }
   }
-});
+};
 </script>
 <style lang="scss">
 html,

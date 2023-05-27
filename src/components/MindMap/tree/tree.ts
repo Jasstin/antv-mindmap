@@ -23,7 +23,6 @@ import {
   lineType,
   paddingH,
   paddingV,
-  setGlobalTree,
   setLineType,
   changeControlMoveDirection,
   changeDefaultAppendNode,
@@ -71,7 +70,7 @@ interface layoutConfig {
   renderer?: string;
   controlMoveDirection?: boolean;
   defaultAppendNode: boolean;
-  createEdge?:boolean;
+  createEdge?: boolean;
 }
 
 interface Variable {
@@ -145,9 +144,10 @@ class Tree {
         defaultAppendNode,
       });
     }
+    const { width, height } = this.container.getBoundingClientRect();
     const config = {
-      width: this.container?.scrollWidth,
-      height: this.container?.scrollHeight ?? 0 - 20,
+      width,
+      height,
       layout: {
         type: "mindmap",
         direction: "H",
@@ -167,8 +167,8 @@ class Tree {
           return node.data.side || "right";
         },
       },
-      defaultNode:{
-        type:'mindmap-node'
+      defaultNode: {
+        type: 'mindmap-node'
       },
       defaultEdge: {
         type: layoutConfig?.sharpCorner ? "round-poly" : "cubic-horizontal",
@@ -176,13 +176,13 @@ class Tree {
           lineWidth: branch.value,
           stroke: branchColor.value,
           radius: 8,
-          lineAppendWidth:  branch.value + (layoutConfig?.yGap || 10) / 2
+          lineAppendWidth: branch.value + (layoutConfig?.yGap || 10) / 2
         },
       },
       modes: {
-        default: ['default-view',"double-finger-drag-canvas","drag-canvas"],
-        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc","my-shortcut","double-finger-drag-canvas","drag-canvas"],
-        connect:["double-finger-drag-canvas","drag-canvas"]
+        default: ['default-view', "double-finger-drag-canvas", "drag-canvas"],
+        edit: [isMobile() ? "edit-mindmap-mobile" : "edit-mindmap-pc", "my-shortcut", "double-finger-drag-canvas", "drag-canvas"],
+        connect: ["double-finger-drag-canvas", "drag-canvas"]
       },
       groupByTypes: false,
     };
@@ -200,20 +200,18 @@ class Tree {
       renderer: layoutConfig.renderer || "canvas",
     });
     this.tree = tree;
-    let global = window as Window;
-    global.mindTree = tree;
-    global.mindTree.version = "3.0.0";
-    setGlobalTree(tree);
     return tree;
   }
 
-   render(_data) {
-    if(!_data?.length) return;
-    const data = IMData.init(_data,true);
+  render(_data) {
+    if (!_data?.length) return;
+    const data = IMData.init(_data, true);
     this.tree.data(data);
     this.tree.layout(true);
-    const { x, y } = getCenterPointById(this.container.id)
-    this.tree.zoomTo(this.config.scaleRatio, { x, y });
+    if (this.config.scaleRatio != 1) {
+      const { x, y } = getCenterPointById(this.container.id)
+      this.tree.zoomTo(this.config.scaleRatio, { x, y });
+    }
   }
 
   changeVariable({

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <div id="mxs-mindmap_container" class="mindmap-container" tabindex="1" />
-    <input id="node-input" type="textarea" tabIndex="2" />
+    <div :id="id" class="mindmap-container" tabindex="1" />
+    <input id="node-input" type="textarea" tabIndex="2" style="display: none;" />
   </div>
 </template>
 <script lang="ts">
@@ -46,7 +46,6 @@ export const transferTree = (tree, func, depth = 0, parent = null) => {
     return node
   });
 }
-let treeInited = false;
 export default {
   props: {
     // 脑图数据
@@ -74,7 +73,7 @@ export default {
       type: Object as PropType<[number, number]>,
       default: [0.1, 8],
     },
-    scaleRatio: { type: Number, default: 1 },
+    scaleRatio: { type: Number, default: 0.9 },
     // 功能设置
     tooltip: Boolean,
     edit: Boolean,
@@ -114,8 +113,9 @@ export default {
   },
   data() {
     return {
-      id: "mxs-mindmap_container",
-      tree: void 0 as any
+      id: "mxs-mindmap_container_" + Date.now(),
+      tree: void 0 as any,
+      treeInited: false
     }
   },
   mounted() {
@@ -151,20 +151,15 @@ export default {
   },
   methods: {
     handleValueChange(data) {
-      let value = transferTree([...[data]], (node) => {
-        const info = node?.rawData?.info;
-        return info ? { title: node.fullName, info, collapse: node.collapse, children: node.children, _children: node._children } : { ...node, id: void 0, title: node.fullName }
-      });
-      this.$emit('update:modelValue', value)
+      this.$emit('update:modelValue', this.parseData(data))
     },
     treeInit() {
-      if (treeInited) return;
-      this.tree = new Tree("mxs-mindmap_container");
+      if (this.treeInited) return;
+      this.tree = new Tree(this.id);
       this.tree.init(this.$props);
       this.tree.render(this.$props.modelValue)
-      console.log(this.tree);
       this.inputInit();
-      treeInited = true;
+      this.treeInited = true;
     },
     inputInit() {
       EditInput.init("node-input");
@@ -179,9 +174,21 @@ export default {
     addParent,
     find: findData,
     editNode: edit,
+    parseData(data, expand = false) {
+      return transferTree([...[data]], (node) => {
+        const info = node?.rawData?.info;
+        if (!info) {
+          return { ...node, id: void 0, title: node.fullName, side: node.side }
+        }
+        if (expand && node.collapse) {
+          return { title: node.fullName, info, collapse: false, children: node._children, side: node.side }
+        }
+        return { title: node.fullName, info, collapse: node.collapse, children: node.children, _children: node._children, side: node.side }
+      });
+    },
     fitCenter() {
       const tree = this.tree.tree as TreeGraph;
-      const { x, y } = getCenterPointById('mxs-mindmap_container')
+      const { x, y } = getCenterPointById(this.id)
       tree.zoomTo(this.$props.scaleRatio, { x, y });
     },
     /**
@@ -221,7 +228,7 @@ export default {
       handler(val) {
         if (isArray(val) && !val.length) return;
         if (isObject(val) && !Object.keys(val).length) return;
-        this.tree.render(val)
+        this.tree?.render(val)
       },
       immediate: true,
     },
